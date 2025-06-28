@@ -288,7 +288,8 @@ class FlatpakBuilder:
                     "name": "calendifier",
                     "buildsystem": "simple",
                     "build-commands": [
-                        "pip3 install --verbose --prefix=\"${FLATPAK_DEST}\" .",
+                        "python3 setup.py build",
+                        "python3 setup.py install --prefix=${FLATPAK_DEST} --optimize=1",
                         "install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg",
                         "install -Dm644 assets/calendar_icon_128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png",
                         "install -Dm644 assets/calendar_icon_64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/${FLATPAK_ID}.png",
@@ -469,6 +470,18 @@ setup(
 )
 """
     
+    def create_manifest_in(self) -> str:
+        """Create a MANIFEST.in file to include additional files."""
+        return """include README.md
+include LICENSE
+include requirements.txt
+include version.py
+recursive-include assets *
+recursive-include calendar_app/localization/translations *.json
+recursive-include calendar_app/localization/locale_holiday_translations *.json
+recursive-include flatpak *.desktop *.xml
+"""
+    
     def prepare_build_environment(self) -> bool:
         """Prepare the build environment."""
         print("🏗️ Preparing build environment...")
@@ -503,6 +516,12 @@ setup(
             setup_content = self.create_setup_py()
             with open(setup_py_path, 'w') as f:
                 f.write(setup_content)
+        
+        # Create MANIFEST.in for proper file inclusion
+        manifest_in_path = self.project_root / "MANIFEST.in"
+        manifest_in_content = self.create_manifest_in()
+        with open(manifest_in_path, 'w') as f:
+            f.write(manifest_in_content)
         
         # Create manifest
         manifest = self.create_flatpak_manifest()

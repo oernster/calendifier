@@ -250,6 +250,14 @@ If you encounter 404 errors or download failures during build:
 # Make sure your firewall allows flatpak-builder to access the internet
 ```
 
+#### "Directory is not installable" Error
+If you see errors about the directory not being installable:
+```bash
+# The build script automatically creates setup.py and MANIFEST.in
+# If you see this error, ensure the build script completed the preparation phase
+# Check that setup.py exists in your project root after running the script
+```
+
 #### Runtime Issues
 ```bash
 # Ensure Flatpak runtimes are installed
