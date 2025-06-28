@@ -318,7 +318,9 @@ def _get_translation_from_locale_file(holiday_name: str, locale: str) -> str:
         import json
         
         # Convert holiday name to key format
-        key = f"holiday_{holiday_name.lower().replace(' ', '_').replace('\'', '').replace('-', '_')}"
+        # Fix: Cannot use backslash in f-string expression, so use separate variable
+        clean_name = holiday_name.lower().replace(' ', '_').replace("'", '').replace('-', '_')
+        key = f"holiday_{clean_name}"
         
         # Load locale file
         locale_file = Path(__file__).parent.parent / "localization" / "translations" / f"{locale}.json"
