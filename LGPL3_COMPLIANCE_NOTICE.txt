@@ -1,0 +1,43 @@
+LGPL3 COMPLIANCE NOTICE FOR CALENDIFIER
+========================================
+
+This application uses PySide6, which is licensed under the GNU Lesser General Public License v3.0 (LGPL3).
+In compliance with LGPL3 requirements, this notice provides information about the LGPL3-licensed 
+components and your rights as a user.
+
+LGPL3-LICENSED COMPONENTS:
+- PySide6 (Qt6 Python bindings) - LGPL3
+
+SOURCE CODE AVAILABILITY:
+The complete source code for this application is available at:
+https://github.com/oernster/calendifier
+
+PySide6 source code is available at:
+https://code.qt.io/cgit/pyside/pyside-setup.git/
+
+LIBRARY REPLACEMENT:
+You have the right to replace the LGPL3-licensed libraries (PySide6) with compatible versions.
+The PySide6 libraries are dynamically linked and can be replaced by:
+1. Installing a different version of PySide6 in your Python environment
+2. Modifying the application to use a different Qt6 Python binding
+
+LICENSE TERMS:
+The full LGPL3 license text is available in the LGPL3_LICENSE.txt file included with this 
+application and at: https://www.gnu.org/licenses/lgpl-3.0.html
+
+APPLICATION LICENSE:
+The Calendifier application itself is licensed under the MIT License.
+See LICENSE file for details.
+
+COMPLIANCE STATEMENT:
+This distribution complies with LGPL3 requirements by:
+- Providing this notice
+- Including the full LGPL3 license text
+- Making source code available
+- Informing users of their rights to replace LGPL3 libraries
+
+Build Information:
+- Application: Calendifier v1.0.0
+- PySide6: Dynamically linked
+- Distribution: Flatpak package
+- Compliance Date: 2025-06-28

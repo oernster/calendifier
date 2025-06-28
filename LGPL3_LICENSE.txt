@@ -1,0 +1,24 @@
+GNU LESSER GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+This file contains the GNU Lesser General Public License v3.0 (LGPL3) which applies to PySide6 used in this application.
+
+The full license text is available at:
+https://www.gnu.org/licenses/lgpl-3.0.html
+
+Key points of LGPL3:
+- You may use this software for any purpose
+- You may modify and redistribute this software
+- If you distribute modified versions, you must make source code available
+- You may replace LGPL3 libraries with compatible versions
+- The application using LGPL3 libraries may be under a different license
+
+For PySide6 specifically:
+- PySide6 is dynamically linked to this application
+- You can replace PySide6 with a compatible Qt6 Python binding
+- Source code for PySide6 is available at: https://code.qt.io/cgit/pyside/pyside-setup.git/
+
+This application (Calendifier) itself is licensed under the MIT License (see LICENSE file).
+Only the PySide6 dependency is under LGPL3.
+
+For the complete LGPL3 license text, visit: https://www.gnu.org/licenses/lgpl-3.0.html
