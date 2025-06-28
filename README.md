@@ -1,5 +1,9 @@
 # 📅 Calendifier
 
+**Author: Oliver Ernster**
+
+### If you like it please buy me a coffee: [Donation link](https://www.paypal.com/ncp/payment/7XYN6DCYK24VY)
+
 <!-- Multi-language summary -->
 **🇺🇸 English (US):** A sophisticated cross-platform desktop calendar application with comprehensive internationalization, multi-country holiday support, and real-time features.
 
