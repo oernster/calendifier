@@ -209,12 +209,18 @@ python build.py --clean
 
 ### 📦 Linux Flatpak Package
 
-Build a universal Flatpak package for all Linux distributions:
+Build a universal Flatpak package for all Linux distributions using the bash script:
 
 ```bash
-# Convert icons for Linux compatibility (required first)
-python convert_icon.py
+# Make the build script executable (on Linux)
+chmod +x build_flatpak.sh
 
+# Run the build script with automatic dependency installation
+./build_flatpak.sh
+```
+
+**Alternative Python Script** (legacy, may have compatibility issues):
+```bash
 # Auto-install dependencies and build
 python build_flatpak.py --install-deps
 
@@ -232,6 +238,13 @@ python build_flatpak.py --clean
 - Void Linux
 
 📖 **Detailed Instructions**: See [`FLATPAK_BUILD_README.md`](FLATPAK_BUILD_README.md)
+
+**🔧 Build Script Features:**
+- **Automatic Distribution Detection** - Detects your Linux distribution and configures accordingly
+- **Desktop Environment Integration** - Optimizes for GNOME, KDE, Cinnamon, etc.
+- **Dependency Management** - Automatically installs required Flatpak runtimes
+- **Cross-Distribution Support** - Works on all major Linux distributions
+- **Interactive Installation** - Prompts to install the built package automatically
 
 ## 📦 Legacy Build Information (Nuitka)
 
