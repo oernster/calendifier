@@ -75,8 +75,8 @@ class ProgressBar:
         else:
             eta_str = "ETA: --:--"
         
-        # Print progress
-        print(f"\r🔨 {self.description}: [{bar}] {percentage:5.1f}% ({self.current_step}/{self.total_steps}) {eta_str} - {step_description}", end="", flush=True)
+        # Print progress without step counter
+        print(f"\r🔨 {self.description}: [{bar}] {percentage:5.1f}% {eta_str} - {step_description}", end="", flush=True)
         
         if self.current_step >= self.total_steps:
             elapsed_str = f"{int(elapsed//60):02d}:{int(elapsed%60):02d}"
@@ -787,13 +787,13 @@ calendar_app = [
                 start_time = time.time()
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 
-                # Update progress while process runs
-                last_update = 0
+                # Update progress while process runs - only call update() once per second
+                update_count = 0
                 while process.poll() is None:
                     elapsed = time.time() - start_time
                     
-                    # Only update progress every second to avoid resetting
-                    if elapsed >= last_update + 1:
+                    # Only update once per second and don't exceed estimated time
+                    if update_count < estimated_time and elapsed >= update_count + 1:
                         if elapsed < 60:
                             progress.update(f"Compressing {repo_size_mb:.0f}MB repository...")
                         elif elapsed < estimated_time:
@@ -801,7 +801,7 @@ calendar_app = [
                         else:
                             progress.update("Almost done - finalizing bundle...")
                         
-                        last_update = elapsed
+                        update_count += 1
                     
                     time.sleep(0.5)
                 
