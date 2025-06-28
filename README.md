@@ -88,6 +88,9 @@ The application automatically detects and displays holidays for 14 countries wit
 | 🇮🇳 India | राष्ट्रीय अवकाश | ✅ |
 | 🇸🇦 Saudi Arabia | الأعياد الوطنية | ✅ |
 
+## Screen shot
+![image](https://github.com/user-attachments/assets/cf719f46-9f10-418c-bff7-5145aa4ac762)
+
 ## 🚀 Quick Start
 
 ### 📋 Prerequisites
