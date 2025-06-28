@@ -751,10 +751,16 @@ calendar_app = [
     
     def create_bundle(self) -> bool:
         """Create a .flatpak bundle file for distribution."""
-        spinner = SpinnerProgress("Creating Flatpak bundle (this may take several minutes)")
-        spinner.start()
-        
         bundle_path = self.project_root / f"{APP_ID}-{APP_VERSION}.flatpak"
+        
+        # Estimate bundle creation time based on repository size
+        try:
+            repo_size = sum(f.stat().st_size for f in self.repo_dir.rglob('*') if f.is_file())
+            estimated_time = max(30, min(600, repo_size // (1024 * 1024)))  # 30s to 10min based on size
+        except:
+            estimated_time = 120  # Default 2 minutes
+        
+        progress = ProgressBar(estimated_time, "Creating Flatpak bundle")
         
         try:
             cmd = [
@@ -765,48 +771,51 @@ calendar_app = [
             ]
             
             if self.debug:
-                spinner.stop(f"Running: {' '.join(cmd)}")
                 print(f"🔧 Running: {' '.join(cmd)}")
                 result = subprocess.run(cmd, text=True)
+                progress.finish("Bundle creation completed")
             else:
-                # Run with timeout and progress indication
-                import signal
+                # Run process in background and update progress
+                import threading
                 
-                def timeout_handler(signum, frame):
-                    raise TimeoutError("Bundle creation timed out")
+                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 
-                # Set a 10-minute timeout
-                signal.signal(signal.SIGALRM, timeout_handler)
-                signal.alarm(600)  # 10 minutes
+                # Update progress while process runs
+                start_time = time.time()
+                while process.poll() is None:
+                    elapsed = time.time() - start_time
+                    if elapsed < estimated_time:
+                        # Simulate progress based on elapsed time
+                        progress.current_step = int(elapsed)
+                        progress.update(f"Compressing {repo_size // (1024*1024):.0f}MB repository...")
+                    else:
+                        # If taking longer than estimated, show indeterminate progress
+                        progress.current_step = estimated_time - 1
+                        progress.update("Large bundle - still compressing...")
+                    
+                    time.sleep(1)
                 
-                try:
-                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-                    signal.alarm(0)  # Cancel timeout
-                except subprocess.TimeoutExpired:
-                    spinner.stop("Bundle creation timed out after 10 minutes")
-                    print("❌ Bundle creation timed out. This might indicate:")
-                    print("   - Very large dependencies (PySide6 is ~200MB)")
-                    print("   - Slow disk I/O")
-                    print("   - System resource constraints")
-                    print("   Try running with --debug for more details")
-                    return False
-                except TimeoutError:
-                    spinner.stop("Bundle creation timed out")
-                    return False
-            
-            spinner.stop("")
+                # Get final result
+                stdout, stderr = process.communicate()
+                result = process
+                
+                progress.finish("Bundle creation completed")
             
             if result.returncode == 0:
-                size_mb = bundle_path.stat().st_size / (1024 * 1024)
-                print(f"✅ Bundle created: {bundle_path}")
-                print(f"📏 Bundle size: {size_mb:.1f} MB")
-                return True
+                if bundle_path.exists():
+                    size_mb = bundle_path.stat().st_size / (1024 * 1024)
+                    print(f"✅ Bundle created: {bundle_path}")
+                    print(f"📏 Bundle size: {size_mb:.1f} MB")
+                    return True
+                else:
+                    print("❌ Bundle creation reported success but file not found")
+                    return False
             else:
-                print(f"❌ Bundle creation failed: {result.stderr}")
+                error_msg = stderr if 'stderr' in locals() else "Unknown error"
+                print(f"❌ Bundle creation failed: {error_msg}")
                 return False
                 
         except Exception as e:
-            spinner.stop("")
             print(f"❌ Unexpected error creating bundle: {e}")
             return False
     
