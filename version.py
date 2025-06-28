@@ -4,8 +4,8 @@
 This module contains version information and emoji constants used throughout the application.
 """
 
-__version__ = "1.0.1"
-__version_info__ = (1, 0, 1)
+__version__ = "1.0.2"
+__version_info__ = (1, 0, 2)
 __app_name__ = "📅 Calendar Application"
 __author__ = "Oliver Ernster"
 __description__ = "Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays"
