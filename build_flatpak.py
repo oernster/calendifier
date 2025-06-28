@@ -288,8 +288,8 @@ class FlatpakBuilder:
                     "name": "calendifier",
                     "buildsystem": "simple",
                     "build-commands": [
-                        "python3 setup.py build",
-                        "python3 setup.py install --prefix=${FLATPAK_DEST} --optimize=1",
+                        "ls -la",
+                        "pip3 install --verbose --prefix=${FLATPAK_DEST} --no-build-isolation .",
                         "install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg",
                         "install -Dm644 assets/calendar_icon_128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png",
                         "install -Dm644 assets/calendar_icon_64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/${FLATPAK_ID}.png",
