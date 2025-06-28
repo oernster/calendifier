@@ -71,30 +71,42 @@ class CalendarDayWidget(QLabel):
         """🔄 Update day display."""
         day = self.calendar_day
         
-        # Build display text using plain text with line breaks
-        text_parts = []
+        # Build display text using HTML for better formatting
+        html_parts = []
         
         # Day number (normal size)
         day_num = day.date.day
-        text_parts.append(str(day_num))
+        html_parts.append(f'<div style="font-weight: bold; margin-bottom: 2px;">{day_num}</div>')
         
-        # Add event indicators
+        # Add event indicators as larger icons
         if day.has_events():
             indicators = day.get_event_indicators()
             if indicators:
-                text_parts.append("\n")  # Line break
-                text_parts.append(" ".join(indicators))
+                # Create a grid layout for icons (2 columns, up to 3 rows)
+                icon_html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; font-size: 20px;">'
+                
+                for i, indicator in enumerate(indicators):
+                    if i < 6:  # Maximum 6 slots (5 icons + 1 overflow)
+                        icon_html += f'<span style="text-align: center;">{indicator}</span>'
+                
+                # Fill remaining slots with empty spans to maintain grid
+                remaining_slots = 6 - len(indicators)
+                for _ in range(remaining_slots):
+                    icon_html += '<span></span>'
+                
+                icon_html += '</div>'
+                html_parts.append(icon_html)
         
         # Add holiday indicator
         if day.is_holiday and day.holiday:
-            text_parts.append("\n")
-            # Show the actual holiday name instead of just the flag
             holiday_name = day.holiday.name if hasattr(day.holiday, 'name') else str(day.holiday)
-            # Allow word wrapping for longer holiday names by not truncating
-            text_parts.append(holiday_name)
+            # Truncate long holiday names to fit
+            if len(holiday_name) > 12:
+                holiday_name = holiday_name[:10] + "..."
+            html_parts.append(f'<div style="font-size: 8px; color: #d13438; margin-top: 1px;">{holiday_name}</div>')
         
-        # Set plain text content
-        self.setText("".join(text_parts))
+        # Set HTML content
+        self.setText("".join(html_parts))
         
         # Set widget class for styling
         self._update_style_class()
