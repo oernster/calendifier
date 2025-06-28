@@ -121,6 +121,8 @@ HOLIDAY_TRANSLATIONS = {
         'Navratri': 'नवरात्रि',
         'Eid al-Fitr': 'ईद उल-फितर',
         'Eid al-Adha': 'ईद उल-अधा',
+        'Milad-un-Nabi': 'मिलाद-उन-नबी',
+        "Prophet's Birthday": 'पैगंबर का जन्मदिन',
         'Good Friday': 'गुड फ्राइडे',
         'Day off': 'छुट्टी का दिन',
         'observed': 'मनाया गया',
