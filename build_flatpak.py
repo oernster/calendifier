@@ -30,6 +30,8 @@ import subprocess
 import platform
 import argparse
 import tempfile
+import time
+import threading
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import urllib.request
@@ -43,6 +45,79 @@ PYTHON_VERSION = "3.12.3"
 RUNTIME_VERSION = "23.08"
 BUILD_DIR = "flatpak-build"
 REPO_DIR = "flatpak-repo"
+
+class ProgressBar:
+    """Simple progress bar for build operations."""
+    
+    def __init__(self, total_steps: int, description: str = "Progress"):
+        self.total_steps = total_steps
+        self.current_step = 0
+        self.description = description
+        self.start_time = time.time()
+        
+    def update(self, step_description: str = ""):
+        """Update progress bar."""
+        self.current_step += 1
+        percentage = (self.current_step / self.total_steps) * 100
+        
+        # Create progress bar
+        bar_length = 40
+        filled_length = int(bar_length * self.current_step // self.total_steps)
+        bar = '█' * filled_length + '░' * (bar_length - filled_length)
+        
+        # Calculate elapsed time
+        elapsed = time.time() - self.start_time
+        
+        # Estimate remaining time
+        if self.current_step > 0:
+            eta = (elapsed / self.current_step) * (self.total_steps - self.current_step)
+            eta_str = f"ETA: {int(eta//60):02d}:{int(eta%60):02d}"
+        else:
+            eta_str = "ETA: --:--"
+        
+        # Print progress
+        print(f"\r🔨 {self.description}: [{bar}] {percentage:5.1f}% ({self.current_step}/{self.total_steps}) {eta_str} - {step_description}", end="", flush=True)
+        
+        if self.current_step >= self.total_steps:
+            elapsed_str = f"{int(elapsed//60):02d}:{int(elapsed%60):02d}"
+            print(f"\n✅ {self.description} completed in {elapsed_str}")
+    
+    def finish(self, message: str = ""):
+        """Finish progress bar."""
+        elapsed = time.time() - self.start_time
+        elapsed_str = f"{int(elapsed//60):02d}:{int(elapsed%60):02d}"
+        print(f"\n✅ {self.description} completed in {elapsed_str} - {message}")
+
+class SpinnerProgress:
+    """Spinner for indeterminate progress."""
+    
+    def __init__(self, description: str):
+        self.description = description
+        self.spinner_chars = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+        self.running = False
+        self.thread = None
+        
+    def start(self):
+        """Start spinner."""
+        self.running = True
+        self.thread = threading.Thread(target=self._spin, daemon=True)
+        self.thread.start()
+        
+    def stop(self, message: str = ""):
+        """Stop spinner."""
+        self.running = False
+        if self.thread:
+            self.thread.join(timeout=0.5)
+        print(f"\r✅ {self.description} - {message}")
+        
+    def _spin(self):
+        """Spinner animation."""
+        i = 0
+        while self.running:
+            char = self.spinner_chars[i % len(self.spinner_chars)]
+            print(f"\r{char} {self.description}...", end="", flush=True)
+            time.sleep(0.1)
+            i += 1
 
 class DistroDetector:
     """Detect Linux distribution and provide appropriate package manager commands."""
@@ -167,13 +242,14 @@ class FlatpakBuilder:
     
     def install_dependencies(self) -> bool:
         """Install dependencies based on the detected distribution."""
-        print("📦 Installing dependencies...")
+        progress = ProgressBar(6, "Installing dependencies")
         
         distro_family, distro_name = DistroDetector.detect_distro()
-        print(f"🐧 Detected distribution: {distro_name} ({distro_family})")
+        progress.update(f"Detected distribution: {distro_name} ({distro_family})")
         
         if distro_family == 'unknown':
-            print("❌ Unknown distribution. Please install dependencies manually:")
+            progress.finish("❌ Unknown distribution")
+            print("Please install dependencies manually:")
             print("   - flatpak")
             print("   - flatpak-builder")
             print("   - python3.12")
@@ -184,53 +260,53 @@ class FlatpakBuilder:
         
         try:
             # Update package database
-            print(f"🔄 Updating package database...")
+            progress.update("Updating package database")
             try:
                 subprocess.run(commands['update'].split(), check=True)
             except subprocess.CalledProcessError as e:
-                print(f"⚠️ Package database update failed (exit code {e.returncode}), continuing...")
+                print(f"\n⚠️ Package database update failed (exit code {e.returncode}), continuing...")
             
             # Install packages
-            print(f"📥 Installing packages...")
+            progress.update("Installing system packages")
             install_cmd = f"{commands['install']} {commands['packages']}"
             try:
                 subprocess.run(install_cmd.split(), check=True)
             except subprocess.CalledProcessError as e:
-                print(f"⚠️ Some packages may have failed to install (exit code {e.returncode})")
+                print(f"\n⚠️ Some packages may have failed to install (exit code {e.returncode})")
                 print("   This might be due to conflicting files or packages already installed.")
                 print("   Continuing with build - please ensure required dependencies are available.")
             
-            # Install Flatpak runtimes
-            print("🏗️ Installing Flatpak runtimes...")
-            
-            # Add Flathub remote if not already added
+            # Add Flathub remote
+            progress.update("Adding Flathub remote")
             try:
                 subprocess.run([
                     'flatpak', 'remote-add', '--if-not-exists', 'flathub',
                     'https://flathub.org/repo/flathub.flatpakrepo'
                 ], check=True)
             except subprocess.CalledProcessError:
-                print("⚠️ Could not add Flathub remote (may already exist)")
+                pass  # May already exist
             
             # Install Platform runtime
+            progress.update("Installing Flatpak Platform runtime")
             try:
                 subprocess.run([
                     'flatpak', 'install', '-y', 'flathub',
                     f'org.freedesktop.Platform//{RUNTIME_VERSION}'
                 ], check=True)
             except subprocess.CalledProcessError:
-                print(f"⚠️ Platform runtime may already be installed or unavailable")
+                pass  # May already be installed
             
             # Install SDK runtime
+            progress.update("Installing Flatpak SDK runtime")
             try:
                 subprocess.run([
                     'flatpak', 'install', '-y', 'flathub',
                     f'org.freedesktop.Sdk//{RUNTIME_VERSION}'
                 ], check=True)
             except subprocess.CalledProcessError:
-                print(f"⚠️ SDK runtime may already be installed or unavailable")
+                pass  # May already be installed
             
-            print("✅ Dependencies installed successfully")
+            progress.finish("Dependencies installed successfully")
             return True
             
         except subprocess.CalledProcessError as e:
@@ -573,15 +649,17 @@ calendar_app = [
     
     def prepare_build_environment(self) -> bool:
         """Prepare the build environment."""
-        print("🏗️ Preparing build environment...")
+        progress = ProgressBar(8, "Preparing build environment")
         
         # Clean previous builds
+        progress.update("Cleaning previous builds")
         if self.build_dir.exists():
             shutil.rmtree(self.build_dir)
         if self.repo_dir.exists():
             shutil.rmtree(self.repo_dir)
         
         # Create directories
+        progress.update("Creating build directories")
         self.build_dir.mkdir(parents=True, exist_ok=True)
         self.repo_dir.mkdir(parents=True, exist_ok=True)
         
@@ -590,16 +668,19 @@ calendar_app = [
         flatpak_dir.mkdir(exist_ok=True)
         
         # Create desktop file
+        progress.update("Creating desktop file")
         desktop_content = self.create_desktop_file()
         with open(flatpak_dir / f"{APP_ID}.desktop", 'w') as f:
             f.write(desktop_content)
         
         # Create metainfo file
+        progress.update("Creating metainfo file")
         metainfo_content = self.create_metainfo_file()
         with open(flatpak_dir / f"{APP_ID}.metainfo.xml", 'w') as f:
             f.write(metainfo_content)
         
         # Create setup.py if it doesn't exist
+        progress.update("Creating setup.py")
         setup_py_path = self.project_root / "setup.py"
         if not setup_py_path.exists():
             setup_content = self.create_setup_py()
@@ -607,24 +688,27 @@ calendar_app = [
                 f.write(setup_content)
         
         # Create pyproject.toml for modern Python packaging
+        progress.update("Creating pyproject.toml")
         pyproject_path = self.project_root / "pyproject.toml"
         pyproject_content = self.create_pyproject_toml()
         with open(pyproject_path, 'w') as f:
             f.write(pyproject_content)
         
         # Create MANIFEST.in for proper file inclusion
+        progress.update("Creating MANIFEST.in")
         manifest_in_path = self.project_root / "MANIFEST.in"
         manifest_in_content = self.create_manifest_in()
         with open(manifest_in_path, 'w') as f:
             f.write(manifest_in_content)
         
         # Create manifest
+        progress.update("Creating Flatpak manifest")
         manifest = self.create_flatpak_manifest()
         manifest_path = self.build_dir / f"{APP_ID}.json"
         with open(manifest_path, 'w') as f:
             json.dump(manifest, f, indent=2)
         
-        print("✅ Build environment prepared")
+        progress.finish("Build environment prepared")
         return True
     
     def build_flatpak(self) -> bool:
@@ -767,30 +851,48 @@ def main():
         print("\n💡 Tip: Use --install-deps to automatically install dependencies")
         sys.exit(1)
     
+    # Overall build progress
+    total_steps = 4
+    if args.clean:
+        total_steps += 1
+    
+    overall_progress = ProgressBar(total_steps, "Overall Build Progress")
+    
     # Clean if requested
     if args.clean:
-        print("🧹 Cleaning previous builds...")
+        overall_progress.update("Cleaning previous builds")
         if builder.build_dir.exists():
             shutil.rmtree(builder.build_dir)
         if builder.repo_dir.exists():
             shutil.rmtree(builder.repo_dir)
     
     # Prepare build environment
+    overall_progress.update("Preparing build environment")
     if not builder.prepare_build_environment():
         sys.exit(1)
     
     # Build Flatpak
-    if not builder.build_flatpak():
+    overall_progress.update("Building Flatpak package")
+    spinner = SpinnerProgress("Building Flatpak package (this may take several minutes)")
+    spinner.start()
+    
+    success = builder.build_flatpak()
+    spinner.stop("Build completed" if success else "Build failed")
+    
+    if not success:
         sys.exit(1)
     
     # Create bundle
+    overall_progress.update("Creating distribution bundle")
     if not builder.create_bundle():
         sys.exit(1)
+    
+    overall_progress.finish("Flatpak build completed successfully!")
     
     # Show installation instructions
     builder.show_installation_instructions()
     
-    print("\n🎉 Flatpak build completed successfully!")
+    print(f"\n🎉 Build completed successfully!")
     print(f"📦 Bundle: {APP_ID}-{APP_VERSION}.flatpak")
     print(f"🗂️ Repository: {builder.repo_dir}")
     
