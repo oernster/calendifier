@@ -3,6 +3,7 @@ ntplib>=0.4.0
 python-dateutil>=2.8.0
 holidays>=0.34
 icalendar>=5.0.0
+nuitka
 tzdata>=2025.2
 pytest>=7.4.0
 pytest-qt>=4.2.0

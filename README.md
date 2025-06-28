@@ -1,4 +1,4 @@
-# 📅 Calendar Application - Calendifier
+# 📅 Calendifier
 
 <!-- Multi-language summary -->
 **🇺🇸 English (US):** A sophisticated cross-platform desktop calendar application with comprehensive internationalization, multi-country holiday support, and real-time features.
@@ -177,19 +177,6 @@ pip install -r requirements.txt
 python main.py
 ```
 
-### 🧪 Running Tests
-
-```bash
-# Install test dependencies
-pip install -r requirements.txt
-
-# Run test suite
-pytest tests/
-
-# Run with coverage
-pytest --cov=calendar_app tests/
-```
-
 ### 🌍 Adding New Languages
 
 1. Create translation file: `calendar_app/localization/translations/{locale}.json`
@@ -198,6 +185,67 @@ pytest --cov=calendar_app tests/
 4. Test language switching functionality
 
 See [Architecture Documentation](docs/architecture.md#-adding-new-languages) for detailed instructions.
+## 📦 Building Executable
+
+Calendifier includes a Nuitka build script that creates a single executable file while complying with PySide6's LGPL3 license requirements:
+
+### 🔧 Build Requirements
+
+```bash
+# Install Nuitka (required for building)
+pip install nuitka
+```
+
+### 🚀 Build Commands
+
+```bash
+# Standard build - creates single executable with progress monitoring
+python build.py
+
+# Debug build - shows verbose compilation output
+python build.py --debug
+
+# Clean build - removes all build artifacts first
+python build.py --clean
+```
+
+### ✨ Build Features
+
+**🎯 Single File Output:**
+- Creates **one executable file** (`calendifier.exe` on Windows)
+- **No additional .dll or .pyd files** in distribution
+- **Clean dist directory** with only essential files
+
+**📊 Real-time Progress:**
+- **Visual progress indicators** during compilation
+- **Animated spinner** for long compilation phases
+- **Heartbeat messages** every 30 seconds
+- **Detailed progress parsing** of Nuitka output
+
+**⚖️ LGPL3 Compliance:**
+- ✅ **License documentation** in dist root
+- ✅ **Source code availability** notice included
+- ✅ **Library replacement** instructions provided
+- ✅ **Compliance notice** with build timestamp
+
+### 📁 Build Output
+
+After successful build, the `dist/` directory contains exactly:
+```
+dist/
+├── calendifier.exe                    # Main executable
+├── CALENDIFIER_LICENSE.txt           # Application license
+└── LGPL3_COMPLIANCE_NOTICE.txt       # LGPL compliance documentation
+```
+
+**Build Process:**
+1. **Cleans** dist directory completely
+2. **Compiles** with Nuitka using `--onefile` mode
+3. **Includes** all translation files and assets
+4. **Creates** LGPL compliance documentation
+5. **Removes** any extra build artifacts
+6. **Shows** final file listing and size information
+
 
 ## 📦 Project Structure
 
