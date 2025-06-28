@@ -762,10 +762,13 @@ calendar_app = [
         try:
             repo_size = sum(f.stat().st_size for f in self.repo_dir.rglob('*') if f.is_file())
             repo_size_mb = repo_size / (1024 * 1024)
+            # Estimate time based on repository size (roughly 1MB per second)
+            estimated_time = max(30, min(300, int(repo_size_mb)))
         except:
             repo_size_mb = 100  # Default estimate
+            estimated_time = 120  # Default 2 minutes
         
-        print(f"🔨 Creating Flatpak bundle: [{' ' * 40}] 0.0% - Analyzing {repo_size_mb:.0f}MB repository...", end="", flush=True)
+        progress = ProgressBar(estimated_time, "Creating Flatpak bundle")
         
         try:
             cmd = [
@@ -776,54 +779,56 @@ calendar_app = [
             ]
             
             if self.debug:
-                print(f"\n🔧 Running: {' '.join(cmd)}")
+                print(f"🔧 Running: {' '.join(cmd)}")
                 result = subprocess.run(cmd, text=True)
+                progress.finish("Bundle creation completed")
             else:
-                # Run process and show simple progress
+                # Run process in background and update progress
                 start_time = time.time()
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 
-                # Simple progress animation while process runs
-                progress_chars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
-                char_index = 0
-                
+                # Update progress while process runs
                 while process.poll() is None:
                     elapsed = time.time() - start_time
-                    char = progress_chars[char_index % len(progress_chars)]
                     
-                    if elapsed < 60:
-                        print(f"\r{char} Creating Flatpak bundle: Compressing {repo_size_mb:.0f}MB repository... ({elapsed:.0f}s)", end="", flush=True)
+                    # Update progress based on elapsed time
+                    if elapsed < estimated_time:
+                        progress.current_step = int(elapsed)
+                        if elapsed < 60:
+                            progress.update(f"Compressing {repo_size_mb:.0f}MB repository...")
+                        else:
+                            progress.update(f"Large bundle - still compressing...")
                     else:
-                        print(f"\r{char} Creating Flatpak bundle: Large bundle - still compressing... ({elapsed:.0f}s)", end="", flush=True)
+                        # If taking longer than estimated, keep at 99%
+                        progress.current_step = estimated_time - 1
+                        progress.update("Almost done - finalizing bundle...")
                     
-                    char_index += 1
-                    time.sleep(0.2)
+                    time.sleep(1)
                 
                 # Get final result
                 stdout, stderr = process.communicate()
                 result = process
-            
-            # Clear progress line and show completion
-            elapsed = time.time() - start_time if 'start_time' in locals() else 0
-            elapsed_str = f"{int(elapsed//60):02d}:{int(elapsed%60):02d}"
+                
+                # Complete the progress bar
+                progress.current_step = estimated_time
+                progress.finish("Bundle creation completed")
             
             if result.returncode == 0:
                 if bundle_path.exists():
                     size_mb = bundle_path.stat().st_size / (1024 * 1024)
-                    print(f"\r✅ Creating Flatpak bundle completed in {elapsed_str}")
                     print(f"📦 Bundle created: {bundle_path}")
                     print(f"📏 Bundle size: {size_mb:.1f} MB")
                     return True
                 else:
-                    print(f"\r❌ Bundle creation reported success but file not found")
+                    print("❌ Bundle creation reported success but file not found")
                     return False
             else:
                 error_msg = stderr if 'stderr' in locals() and stderr else "Unknown error"
-                print(f"\r❌ Bundle creation failed after {elapsed_str}: {error_msg}")
+                print(f"❌ Bundle creation failed: {error_msg}")
                 return False
                 
         except Exception as e:
-            print(f"\r❌ Unexpected error creating bundle: {e}")
+            print(f"❌ Unexpected error creating bundle: {e}")
             return False
     
     
