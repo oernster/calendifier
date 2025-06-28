@@ -469,6 +469,17 @@ class CalendarApplication(QApplication):
                 if hasattr(self.main_window, 'set_holiday_provider'):
                     self.main_window.set_holiday_provider(self.holiday_provider)
                     logging.debug("✅ Injected holiday provider into main window")
+                
+                # CRITICAL FIX: Force locale refresh after app is fully initialized
+                # This ensures holidays are displayed in the correct language from startup
+                self.holiday_provider.force_locale_refresh()
+                logging.debug("✅ Forced holiday provider locale refresh after app initialization")
+                
+                # Also refresh the calendar widget to show translated holidays
+                calendar_widget = self.main_window.get_calendar_widget()
+                if calendar_widget and hasattr(calendar_widget, 'refresh_calendar'):
+                    calendar_widget.refresh_calendar()
+                    logging.debug("✅ Refreshed calendar widget to show translated holidays")
         except Exception as e:
             logging.warning(f"⚠️ Failed to inject holiday provider: {e}")
         

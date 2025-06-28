@@ -355,18 +355,32 @@ class MultiCountryHolidayProvider:
             except Exception as i18n_error:
                 logger.debug(f"🌍 I18n manager not available: {i18n_error}")
             
-            # If I18n manager failed, try to get from settings manager
-            if not current_locale or current_locale == 'en_US':
+            # If I18n manager failed or returned default, try to get from settings manager
+            if not current_locale or current_locale in ['en_US', 'en_GB']:
                 try:
                     from calendar_app.config.settings import SettingsManager
                     from pathlib import Path
                     app_data_dir = Path.home() / ".calendar_app"
                     settings_file = app_data_dir / "settings.json"
                     settings_manager = SettingsManager(settings_file)
-                    current_locale = settings_manager.get_locale()
-                    logger.debug(f"🌍 Holiday provider using locale from settings: {current_locale}")
+                    settings_locale = settings_manager.get_locale()
+                    if settings_locale and settings_locale not in ['en_US', 'en_GB']:
+                        current_locale = settings_locale
+                        logger.debug(f"🌍 Holiday provider using locale from settings: {current_locale}")
                 except Exception as settings_error:
                     logger.debug(f"🌍 Settings manager not available: {settings_error}")
+            
+            # If still no valid locale, try system locale detection
+            if not current_locale or current_locale in ['en_US', 'en_GB']:
+                try:
+                    from calendar_app.localization.locale_detector import LocaleDetector
+                    detector = LocaleDetector()
+                    detected_locale = detector.detect_system_locale()
+                    if detected_locale and detected_locale not in ['en_US', 'en_GB']:
+                        current_locale = detected_locale
+                        logger.debug(f"🌍 Holiday provider using detected system locale: {current_locale}")
+                except Exception as detect_error:
+                    logger.debug(f"🌍 System locale detection failed: {detect_error}")
             
             # Final fallback
             if not current_locale:
@@ -813,8 +827,40 @@ class MultiCountryHolidayProvider:
         This should be called when the locale changes to ensure
         holiday names are re-translated in the new language.
         """
+        # Clear cache to force reload with new locale
         self.clear_cache()
-        logger.debug("🌍 Holiday translations refreshed for locale change")
+        
+        # Force re-detection of current locale
+        current_locale = self._get_current_locale()
+        
+        # Pre-load current year holidays to ensure they're available immediately
+        from datetime import date
+        current_year = date.today().year
+        self._get_holidays_for_year(current_year)
+        
+        logger.debug(f"🌍 Holiday translations refreshed for locale change to: {current_locale}")
+    
+    def force_locale_refresh(self) -> None:
+        """🔄 Force complete locale refresh - useful during app startup.
+        
+        This method should be called after the application is fully initialized
+        to ensure the holiday provider uses the correct locale.
+        """
+        logger.debug("🌍 Forcing complete locale refresh for holiday provider")
+        
+        # Clear all caches
+        self.clear_cache()
+        
+        # Force re-detection of locale and country
+        current_locale = self._get_current_locale()
+        
+        # Pre-load holidays for current and next year
+        from datetime import date
+        current_year = date.today().year
+        self._get_holidays_for_year(current_year)
+        self._get_holidays_for_year(current_year + 1)
+        
+        logger.debug(f"🌍 Complete locale refresh completed - using locale: {current_locale}, country: {self.country_code}")
     
     @classmethod
     def get_supported_countries(cls) -> Dict[str, Dict[str, str]]:

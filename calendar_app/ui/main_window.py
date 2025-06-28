@@ -444,18 +444,19 @@ class MainWindow(QMainWindow):
                     # CRITICAL FIX: Refresh holiday translations for the new locale
                     # This ensures holidays are displayed in the correct language
                     if hasattr(self, 'holiday_provider') and self.holiday_provider:
-                        self.holiday_provider.refresh_translations()
-                        logger.debug("🌍 Holiday translations refreshed for new locale")
+                        self.holiday_provider.force_locale_refresh()
+                        logger.debug("🌍 Holiday provider forced locale refresh for new locale")
                     
                     # Also refresh calendar widget's holiday provider if it has one
                     if self.calendar_widget and hasattr(self.calendar_widget, 'holiday_provider'):
                         if self.calendar_widget.holiday_provider:
-                            self.calendar_widget.holiday_provider.refresh_translations()
-                            logger.debug("🌍 Calendar widget holiday translations refreshed")
+                            self.calendar_widget.holiday_provider.force_locale_refresh()
+                            logger.debug("🌍 Calendar widget holiday provider forced locale refresh")
                     
                     # Force calendar refresh to show translated holidays
                     if self.calendar_widget:
                         self.calendar_widget.refresh_calendar()
+                        logger.debug("🌍 Calendar widget refreshed to show translated holidays")
                     
                     # FORCE COMPLETE UI REFRESH
                     logger.debug("🔄 FORCING COMPLETE UI REFRESH after language change")
