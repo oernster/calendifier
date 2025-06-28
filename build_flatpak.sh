@@ -264,6 +264,41 @@ echo "Detected desktop environment: $DESKTOP"
 SOURCE_DIR="$(pwd)"
 echo "Building from source directory: $SOURCE_DIR"
 
+# Create simple runner script to start calendifier directly
+cat > calendifier-runner.sh << 'EOL'
+#!/bin/bash
+
+# Set Python path to include app directory and site-packages
+export PYTHONPATH="/app:/app/lib/python3.12/site-packages:$PYTHONPATH"
+
+# PySide6/Qt6 Configuration for KDE Platform
+export QT_PLUGIN_PATH="/app/lib/python3.12/site-packages/PySide6/Qt/plugins"
+export QT_QPA_PLATFORM_PLUGIN_PATH="/app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms"
+
+# Platform detection for PySide6 on KDE runtime
+if [ -n "$WAYLAND_DISPLAY" ] && [ -z "$FORCE_X11" ]; then
+    export QT_QPA_PLATFORM=wayland
+    echo 'Calendifier: Using Wayland platform'
+elif [ -n "$DISPLAY" ]; then
+    export QT_QPA_PLATFORM=xcb
+    echo 'Calendifier: Using X11/XCB platform'
+else
+    export QT_QPA_PLATFORM=xcb
+    echo 'Calendifier: Using XCB as fallback'
+fi
+
+# Additional Qt6 environment variables
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
+export QT_ENABLE_HIGHDPI_SCALING=1
+
+# Change to app directory and run Calendifier
+cd /app
+exec python3 main.py "$@"
+EOL
+
+# Make runner script executable
+chmod +x calendifier-runner.sh
+
 # Create Flatpak manifest with KDE Platform for better Qt6/PySide6 support
 cat > com.calendifier.Calendar.json << 'EOL'
 {
@@ -337,44 +372,9 @@ cat > com.calendifier.Calendar.json << 'EOL'
                 "test -f ${FLATPAK_DEST}/main.py && echo 'main.py successfully copied' || (echo 'ERROR: main.py not found!' && exit 1)",
                 "echo 'Verifying calendar_app directory exists:'",
                 "test -d ${FLATPAK_DEST}/calendar_app && echo 'calendar_app directory successfully copied' || (echo 'ERROR: calendar_app directory not found!' && exit 1)",
-                "echo 'Creating launcher script...'",
+                "echo 'Installing launcher script...'",
                 "mkdir -p ${FLATPAK_DEST}/bin",
-                "cat > ${FLATPAK_DEST}/bin/calendifier << 'EOF'",
-                "#!/bin/bash",
-                "# Set Python path to include app directory and site-packages",
-                "export PYTHONPATH=\"/app:/app/lib/python3.12/site-packages:$PYTHONPATH\"",
-                "",
-                "# PySide6/Qt6 Configuration for KDE Platform",
-                "export QT_PLUGIN_PATH=\"/app/lib/python3.12/site-packages/PySide6/Qt/plugins\"",
-                "export QT_QPA_PLATFORM_PLUGIN_PATH=\"/app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms\"",
-                "",
-                "# Platform detection for PySide6 on KDE runtime",
-                "if [ -n \"$WAYLAND_DISPLAY\" ] && [ -z \"$FORCE_X11\" ]; then",
-                "    export QT_QPA_PLATFORM=wayland",
-                "    echo 'Calendifier: Using Wayland platform'",
-                "elif [ -n \"$DISPLAY\" ]; then",
-                "    export QT_QPA_PLATFORM=xcb",
-                "    echo 'Calendifier: Using X11/XCB platform'",
-                "else",
-                "    export QT_QPA_PLATFORM=xcb",
-                "    echo 'Calendifier: Using XCB as fallback'",
-                "fi",
-                "",
-                "# Additional Qt6 environment variables",
-                "export QT_AUTO_SCREEN_SCALE_FACTOR=1",
-                "export QT_ENABLE_HIGHDPI_SCALING=1",
-                "",
-                "# Change to app directory",
-                "cd /app",
-                "",
-                "# Debug: Show Qt plugin paths (can be removed in production)",
-                "echo 'Qt Plugin Path:' $QT_PLUGIN_PATH",
-                "echo 'Available platforms:'",
-                "ls -la /app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms/ 2>/dev/null || echo 'Platform plugins directory not found'",
-                "",
-                "# Run the Calendifier application",
-                "exec python3 main.py \"$@\"",
-                "EOF",
+                "cp calendifier-runner.sh ${FLATPAK_DEST}/bin/calendifier",
                 "chmod +x ${FLATPAK_DEST}/bin/calendifier",
                 "echo 'Verifying launcher script:'",
                 "test -x ${FLATPAK_DEST}/bin/calendifier && echo 'Launcher script created successfully' || (echo 'ERROR: Launcher script creation failed!' && exit 1)",
