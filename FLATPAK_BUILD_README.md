@@ -4,17 +4,17 @@ This guide provides comprehensive instructions for building Calendifier as a Fla
 
 ## 🎯 Overview
 
-The [`build_flatpak.py`](build_flatpak.py) script creates a universal Flatpak package that works across all Linux distributions, ensuring consistent behavior and easy installation.
+The [`build_flatpak.sh`](build_flatpak.sh) script creates a universal Flatpak package that works across all Linux distributions, ensuring consistent behavior and easy installation.
 
 ### ✨ Features
 
 - **🐧 Universal Linux Support**: Works on all major distributions
-- **🐍 Python 3.12.3**: Uses the specified Python version
+- **🔧 Auto-dependency Detection**: Automatically detects and installs required dependencies
 - **📦 Single Package**: Creates a `.flatpak` bundle for easy distribution
-- **🔧 Auto-dependency Detection**: Automatically installs required dependencies
-- **🧪 Built-in Testing**: Tests the package before distribution
+- **🎯 Progress Indicators**: Visual progress bars during build process
 - **🌍 Multi-language Support**: Includes all 14 language translations
 - **🎨 Icon Support**: Includes PNG and SVG icons for all sizes
+- **⚖️ LGPL3 Compliance**: Includes proper license compliance for PySide6
 
 ## 🏗️ Supported Distributions
 
@@ -32,19 +32,27 @@ The [`build_flatpak.py`](build_flatpak.py) script creates a universal Flatpak pa
 
 ## 🚀 Quick Start
 
-### 1. Auto-Install Dependencies
+### 1. Make Script Executable
 
 ```bash
-# Automatically detect your distribution and install dependencies
-python3 build_flatpak.py --install-deps
+# Make the build script executable
+chmod +x build_flatpak.sh
 ```
 
-### 2. Build the Flatpak
+### 2. Run the Build Script
 
 ```bash
-# Build the Flatpak package
-python3 build_flatpak.py
+# Run the interactive build script (auto-detects distribution and installs dependencies)
+./build_flatpak.sh
 ```
+
+The script will automatically:
+- Detect your Linux distribution
+- Install required dependencies
+- Set up Flatpak runtimes
+- Build the Flatpak package
+- Create the distributable bundle
+- Optionally install the package
 
 
 ## 📋 Manual Installation Guide
@@ -64,106 +72,73 @@ flatpak install -y flathub org.freedesktop.Platform//23.08
 flatpak install -y flathub org.freedesktop.Sdk//23.08
 
 # Build the package
-python3 build_flatpak.py
+chmod +x build_flatpak.sh
+./build_flatpak.sh
 ```
 
 ### Fedora/RHEL/CentOS/Rocky Linux/AlmaLinux
 
 ```bash
-# Install dependencies
+# Install dependencies (optional - script can do this automatically)
 sudo dnf update -y
-sudo dnf install -y flatpak flatpak-builder python3.12 python3.12-devel git
-
-# Add Flathub repository
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-# Install Flatpak runtimes
-flatpak install -y flathub org.freedesktop.Platform//23.08
-flatpak install -y flathub org.freedesktop.Sdk//23.08
+sudo dnf install -y flatpak flatpak-builder git
 
 # Build the package
-python3 build_flatpak.py
+chmod +x build_flatpak.sh
+./build_flatpak.sh
 ```
 
 ### Arch Linux/EndeavourOS/Manjaro
 
 ```bash
-# Install dependencies
+# Install dependencies (optional - script can do this automatically)
 sudo pacman -Syu
-sudo pacman -S --noconfirm flatpak flatpak-builder python git
-
-# Add Flathub repository
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-# Install Flatpak runtimes
-flatpak install -y flathub org.freedesktop.Platform//23.08
-flatpak install -y flathub org.freedesktop.Sdk//23.08
+sudo pacman -S --noconfirm flatpak flatpak-builder git
 
 # Build the package
-python3 build_flatpak.py
+chmod +x build_flatpak.sh
+./build_flatpak.sh
 ```
 
 ### openSUSE (Leap/Tumbleweed)
 
 ```bash
-# Install dependencies
+# Install dependencies (optional - script can do this automatically)
 sudo zypper refresh
-sudo zypper install -y flatpak flatpak-builder python312 python312-devel git
-
-# Add Flathub repository
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-# Install Flatpak runtimes
-flatpak install -y flathub org.freedesktop.Platform//23.08
-flatpak install -y flathub org.freedesktop.Sdk//23.08
+sudo zypper install -y flatpak flatpak-builder git
 
 # Build the package
-python3 build_flatpak.py
+chmod +x build_flatpak.sh
+./build_flatpak.sh
 ```
 
 ### Void Linux
 
 ```bash
-# Install dependencies
+# Install dependencies (optional - script can do this automatically)
 sudo xbps-install -Su
-sudo xbps-install -y flatpak flatpak-builder python3.12 python3.12-devel git
-
-# Add Flathub repository
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-# Install Flatpak runtimes
-flatpak install -y flathub org.freedesktop.Platform//23.08
-flatpak install -y flathub org.freedesktop.Sdk//23.08
+sudo xbps-install -y flatpak flatpak-builder git
 
 # Build the package
-python3 build_flatpak.py
+chmod +x build_flatpak.sh
+./build_flatpak.sh
 ```
 
 ## 🔧 Build Options
 
-### Command Line Arguments
+The bash build script automatically handles most configuration:
 
 ```bash
-python3 build_flatpak.py [OPTIONS]
-
-Options:
-  --debug         Enable debug mode with verbose output
-  --clean         Clean build artifacts before building
-  --install-deps  Automatically install required dependencies
+# Basic build (recommended)
+./build_flatpak.sh
 ```
 
-### Examples
-
-```bash
-# Clean build with debug output
-python3 build_flatpak.py --clean --debug
-
-# Auto-install dependencies
-python3 build_flatpak.py --install-deps
-
-# Full build process
-python3 build_flatpak.py --install-deps --clean
-```
+The script automatically:
+- Detects your Linux distribution
+- Installs required dependencies
+- Sets up Flatpak repositories and runtimes
+- Builds and installs the application
+- Provides progress feedback throughout the process
 
 ## 📦 Output Files
 
@@ -219,27 +194,31 @@ After installation, Calendifier will appear in your application menu with:
 
 #### Missing Dependencies
 ```bash
-# Check what's missing
-python3 build_flatpak.py
+# The script automatically installs dependencies, but if it fails:
+# Run the script and it will show what's missing
+./build_flatpak.sh
 
-# Auto-install missing dependencies
-python3 build_flatpak.py --install-deps
+# Or install manually based on your distribution (see manual installation guide above)
 ```
 
 #### Dependency Installation Conflicts
 If you encounter package conflicts (like nvidia firmware conflicts), you can:
 ```bash
-# Skip automatic dependency installation and install manually
-sudo pacman -S flatpak flatpak-builder python git --needed
+# Install dependencies manually before running the script
+# On Arch-based systems:
+sudo pacman -S flatpak flatpak-builder git --needed
 
 # Or force overwrite conflicting files (use with caution)
-sudo pacman -S flatpak flatpak-builder python git --overwrite '*'
+sudo pacman -S flatpak flatpak-builder git --overwrite '*'
 ```
 
 #### Build Failures
 ```bash
-# Clean and rebuild with debug output
-python3 build_flatpak.py --clean --debug
+# Clean build directory and try again
+rm -rf .flatpak-builder build-dir repo
+./build_flatpak.sh
+
+# Check the script output for detailed error messages
 ```
 
 #### Download/Network Issues
@@ -250,12 +229,14 @@ If you encounter 404 errors or download failures during build:
 # Make sure your firewall allows flatpak-builder to access the internet
 ```
 
-#### "Directory is not installable" Error
-If you see errors about the directory not being installable:
+#### Permission Issues
+If you encounter permission errors:
 ```bash
-# The build script automatically creates setup.py and MANIFEST.in
-# If you see this error, ensure the build script completed the preparation phase
-# Check that setup.py exists in your project root after running the script
+# Make sure the script is executable
+chmod +x build_flatpak.sh
+
+# Check script permissions
+ls -la build_flatpak.sh
 ```
 
 #### Runtime Issues
@@ -268,18 +249,17 @@ flatpak install flathub org.freedesktop.Sdk//23.08
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 ```
 
-### Debug Mode
-
-Enable debug mode for detailed build information:
+#### Application Won't Start
 ```bash
-python3 build_flatpak.py --debug
-```
+# Check if the application is properly installed
+flatpak list | grep calendifier
 
-This will show:
-- Detailed Flatpak builder output
-- Dependency resolution steps
-- File installation process
-- Error details
+# Try running with verbose output
+flatpak run --verbose com.calendifier.Calendar
+
+# Check application logs
+journalctl --user -f | grep flatpak
+```
 
 ## 📋 Manifest Details
 
