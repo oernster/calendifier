@@ -1,4 +1,39 @@
-#!/bin/bash
+"cat > ${FLATPAK_DEST}/bin/calendifier << 'EOF'",
+                "#!/bin/bash",
+                "# Set Python path to include app directory and site-packages",
+                "export PYTHONPATH=\"/app:/app/lib/python3.12/site-packages:$PYTHONPATH\"",
+                "",
+                "# PySide6/Qt6 Configuration",
+                "export QT_PLUGIN_PATH=\"/app/lib/python3.12/site-packages/PySide6/Qt/plugins\"",
+                "export QT_QPA_PLATFORM_PLUGIN_PATH=\"/app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms\"",
+                "",
+                "# Platform detection for PySide6",
+                "if [ -n \"$WAYLAND_DISPLAY\" ] && [ -z \"$FORCE_X11\" ]; then",
+                "    export QT_QPA_PLATFORM=wayland",
+                "    echo 'PySide6: Using Wayland platform'",
+                "elif [ -n \"$DISPLAY\" ]; then",
+                "    export QT_QPA_PLATFORM=xcb",
+                "    echo 'PySide6: Using X11/XCB platform'",
+                "else",
+                "    export QT_QPA_PLATFORM=xcb",
+                "    echo 'PySide6: Using XCB as fallback'",
+                "fi",
+                "",
+                "# Additional Qt6 environment variables",
+                "export QT_AUTO_SCREEN_SCALE_FACTOR=1",
+                "export QT_ENABLE_HIGHDPI_SCALING=1",
+                "",
+                "# Change to app directory",
+                "cd /app",
+                "",
+                "# Debug: Show Qt plugin paths",
+                "echo 'Qt Plugin Path:' $QT_PLUGIN_PATH",
+                "echo 'Available platforms:'",
+                "ls -la /app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms/ 2>/dev/null || echo 'Platform plugins directory not found'",
+                "",
+                "# Run the application",
+                "exec python3 main.py \"$@\"",
+                "EOF",#!/bin/bash
 
 # Exit on error
 set -e
@@ -151,6 +186,7 @@ cat > com.calendifier.Calendar.json << 'EOL'
         "--share=ipc",
         "--socket=x11",
         "--socket=wayland",
+        "--socket=fallback-x11",
         "--device=dri",
         "--share=network",
         "--filesystem=home",
@@ -158,7 +194,9 @@ cat > com.calendifier.Calendar.json << 'EOL'
         "--filesystem=xdg-download",
         "--talk-name=org.freedesktop.Notifications",
         "--talk-name=org.kde.StatusNotifierWatcher",
-        "--own-name=com.calendifier.Calendar"
+        "--own-name=com.calendifier.Calendar",
+        "--env=QT_QPA_PLATFORM_PLUGIN_PATH=/app/lib/python3.12/site-packages/PySide6/Qt/plugins",
+        "--env=QT_PLUGIN_PATH=/app/lib/python3.12/site-packages/PySide6/Qt/plugins"
     ],
     "build-options": {
         "env": {
@@ -180,13 +218,19 @@ cat > com.calendifier.Calendar.json << 'EOL'
             "name": "python-dependencies",
             "buildsystem": "simple",
             "build-commands": [
+                "echo 'Installing PySide6 and dependencies...'",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} PySide6>=6.5.0",
+                "echo 'Verifying PySide6 installation...'",
+                "python3 -c 'import PySide6; print(\"PySide6 version:\", PySide6.__version__)'",
+                "echo 'Installing other Python dependencies...'",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} ntplib>=0.4.0",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} python-dateutil>=2.8.0",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} holidays>=0.34",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} icalendar>=5.0.0",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} tzdata>=2025.2",
-                "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} psutil>=5.9.0"
+                "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} psutil>=5.9.0",
+                "echo 'Checking PySide6 Qt plugins...'",
+                "find ${FLATPAK_DEST}/lib/python3.12/site-packages/PySide6/Qt/plugins -name '*platform*' -type d || echo 'Platform plugins not found in expected location'"
             ]
         },
         {
