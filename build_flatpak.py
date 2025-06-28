@@ -788,29 +788,31 @@ calendar_app = [
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 
                 # Update progress while process runs
+                last_update = 0
                 while process.poll() is None:
                     elapsed = time.time() - start_time
                     
-                    # Update progress based on elapsed time
-                    if elapsed < estimated_time:
-                        progress.current_step = int(elapsed)
+                    # Only update progress every second to avoid resetting
+                    if elapsed >= last_update + 1:
                         if elapsed < 60:
                             progress.update(f"Compressing {repo_size_mb:.0f}MB repository...")
-                        else:
+                        elif elapsed < estimated_time:
                             progress.update(f"Large bundle - still compressing...")
-                    else:
-                        # If taking longer than estimated, keep at 99%
-                        progress.current_step = estimated_time - 1
-                        progress.update("Almost done - finalizing bundle...")
+                        else:
+                            progress.update("Almost done - finalizing bundle...")
+                        
+                        last_update = elapsed
                     
-                    time.sleep(1)
+                    time.sleep(0.5)
                 
                 # Get final result
                 stdout, stderr = process.communicate()
                 result = process
                 
-                # Complete the progress bar
-                progress.current_step = estimated_time
+                # Complete the progress bar to 100%
+                while progress.current_step < progress.total_steps:
+                    progress.update("Finalizing bundle...")
+                
                 progress.finish("Bundle creation completed")
             
             if result.returncode == 0:
