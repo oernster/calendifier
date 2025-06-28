@@ -32,21 +32,14 @@ The [`build_flatpak.py`](build_flatpak.py) script creates a universal Flatpak pa
 
 ## 🚀 Quick Start
 
-### 1. Prerequisites
-
-Ensure you have the converted icons (run this first):
-```bash
-python convert_icon.py
-```
-
-### 2. Auto-Install Dependencies
+### 1. Auto-Install Dependencies
 
 ```bash
 # Automatically detect your distribution and install dependencies
 python build_flatpak.py --install-deps
 ```
 
-### 3. Build the Flatpak
+### 2. Build the Flatpak
 
 ```bash
 # Build the Flatpak package
