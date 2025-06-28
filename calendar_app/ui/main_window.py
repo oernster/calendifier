@@ -306,6 +306,9 @@ class MainWindow(QMainWindow):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         
+        # Enable size grip (the small square in bottom right)
+        self.status_bar.setSizeGripEnabled(True)
+        
         # Add language selector to status bar
         self._create_language_selector()
         

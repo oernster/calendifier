@@ -546,6 +546,15 @@ QStatusBar {{
     border-top: {borders['width']}px solid {colors['border']};
 }}
 
+/* Status Bar Size Grip (bottom right corner) */
+QSizeGrip {{
+    background-color: {colors['text_primary']};
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin: 2px;
+}}
+
 /* Tool Tips */
 QToolTip {{
     background-color: {colors['surface_variant']};
