@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="calendarGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="headerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E74C3C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C0392B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Calendar body -->
+  <rect x="16" y="24" width="96" height="88" rx="8" ry="8" fill="url(#calendarGradient)" stroke="#2C3E50" stroke-width="2"/>
+  
+  <!-- Calendar header -->
+  <rect x="16" y="24" width="96" height="24" rx="8" ry="8" fill="url(#headerGradient)"/>
+  <rect x="16" y="40" width="96" height="8" fill="url(#headerGradient)"/>
+  
+  <!-- Spiral bindings -->
+  <rect x="28" y="16" width="4" height="16" rx="2" ry="2" fill="#7F8C8D"/>
+  <rect x="40" y="16" width="4" height="16" rx="2" ry="2" fill="#7F8C8D"/>
+  <rect x="52" y="16" width="4" height="16" rx="2" ry="2" fill="#7F8C8D"/>
+  <rect x="64" y="16" width="4" height="16" rx="2" ry="2" fill="#7F8C8D"/>
+  <rect x="76" y="16" width="4" height="16" rx="2" ry="2" fill="#7F8C8D"/>
+  <rect x="88" y="16" width="4" height="16" rx="2" ry="2" fill="#7F8C8D"/>
+  <rect x="100" y="16" width="4" height="16" rx="2" ry="2" fill="#7F8C8D"/>
+  
+  <!-- Calendar grid -->
+  <!-- Week 1 -->
+  <rect x="24" y="56" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="40" y="56" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="56" y="56" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="72" y="56" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="88" y="56" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  
+  <!-- Week 2 -->
+  <rect x="24" y="72" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="40" y="72" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="56" y="72" width="12" height="10" fill="#E74C3C" rx="1"/>
+  <rect x="72" y="72" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="88" y="72" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  
+  <!-- Week 3 -->
+  <rect x="24" y="88" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="40" y="88" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="56" y="88" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="72" y="88" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  <rect x="88" y="88" width="12" height="10" fill="#ECF0F1" rx="1"/>
+  
+  <!-- Date numbers -->
+  <text x="30" y="64" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">1</text>
+  <text x="46" y="64" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">2</text>
+  <text x="62" y="64" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">3</text>
+  <text x="78" y="64" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">4</text>
+  <text x="94" y="64" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">5</text>
+  
+  <text x="30" y="80" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">8</text>
+  <text x="46" y="80" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">9</text>
+  <text x="62" y="80" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#FFFFFF" text-anchor="middle">10</text>
+  <text x="78" y="80" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">11</text>
+  <text x="94" y="80" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">12</text>
+  
+  <text x="30" y="96" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">15</text>
+  <text x="46" y="96" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">16</text>
+  <text x="62" y="96" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">17</text>
+  <text x="78" y="96" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">18</text>
+  <text x="94" y="96" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2C3E50" text-anchor="middle">19</text>
+</svg>

@@ -185,7 +185,55 @@ python main.py
 4. Test language switching functionality
 
 See [Architecture Documentation](docs/architecture.md#-adding-new-languages) for detailed instructions.
-## 📦 Building Executable
+
+## 📦 Building & Distribution
+
+Calendifier supports multiple build targets for maximum compatibility across platforms:
+
+### 🖥️ Cross-Platform Executable (Nuitka)
+
+Build a single executable file for Windows, macOS, and Linux:
+
+```bash
+# Standard build
+python build.py
+
+# Debug build with verbose output
+python build.py --debug
+
+# Clean build
+python build.py --clean
+```
+
+**Output**: Single executable file in `dist/` directory
+
+### 📦 Linux Flatpak Package
+
+Build a universal Flatpak package for all Linux distributions:
+
+```bash
+# Convert icons for Linux compatibility (required first)
+python convert_icon.py
+
+# Auto-install dependencies and build
+python build_flatpak.py --install-deps
+
+# Build with clean environment
+python build_flatpak.py --clean
+```
+
+**Output**: `.flatpak` bundle and repository in project directory
+
+**Supported Distributions**:
+- Debian/Ubuntu/Linux Mint/Pop!_OS
+- Fedora/RHEL/CentOS/Rocky/AlmaLinux
+- Arch Linux/EndeavourOS/Manjaro
+- openSUSE (Leap/Tumbleweed)
+- Void Linux
+
+📖 **Detailed Instructions**: See [`FLATPAK_BUILD_README.md`](FLATPAK_BUILD_README.md)
+
+## 📦 Legacy Build Information (Nuitka)
 
 Calendifier includes a Nuitka build script that creates a single executable file while complying with PySide6's LGPL3 license requirements:
 
