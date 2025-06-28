@@ -75,8 +75,8 @@ class ProgressBar:
         else:
             eta_str = "ETA: --:--"
         
-        # Print progress without step counter
-        print(f"\r🔨 {self.description}: [{bar}] {percentage:5.1f}% {eta_str} - {step_description}", end="", flush=True)
+        # Print progress with ETA on new line
+        print(f"\r🔨 {self.description}: [{bar}] {percentage:5.1f}%\n   {eta_str} - {step_description}", end="", flush=True)
         
         if self.current_step >= self.total_steps:
             elapsed_str = f"{int(elapsed//60):02d}:{int(elapsed%60):02d}"
