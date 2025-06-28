@@ -326,8 +326,8 @@ class FlatpakBuilder:
                         "if [ -f assets/calendar_icon_48x48.png ]; then install -Dm644 assets/calendar_icon_48x48.png ${FLATPAK_DEST}/share/icons/hicolor/48x48/apps/${FLATPAK_ID}.png; fi",
                         "if [ -f assets/calendar_icon_32x32.png ]; then install -Dm644 assets/calendar_icon_32x32.png ${FLATPAK_DEST}/share/icons/hicolor/32x32/apps/${FLATPAK_ID}.png; fi",
                         "if [ -f assets/calendar_icon_16x16.png ]; then install -Dm644 assets/calendar_icon_16x16.png ${FLATPAK_DEST}/share/icons/hicolor/16x16/apps/${FLATPAK_ID}.png; fi",
-                        "install -Dm644 flatpak/${FLATPAK_ID}.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop",
-                        "install -Dm644 flatpak/${FLATPAK_ID}.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml"
+                        "if [ -f flatpak/${FLATPAK_ID}.desktop ]; then install -Dm644 flatpak/${FLATPAK_ID}.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop; fi",
+                        "if [ -f flatpak/${FLATPAK_ID}.metainfo.xml ]; then install -Dm644 flatpak/${FLATPAK_ID}.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml; fi"
                     ],
                     "sources": [
                         {
