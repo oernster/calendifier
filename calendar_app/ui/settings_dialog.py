@@ -636,13 +636,45 @@ class HolidaySettingsWidget(QWidget):
             if all_holidays:
                 # Add holidays to the list
                 for holiday in all_holidays:
-                    # Format: "January 1 - New Year's Day"
-                    date_str = holiday.date.strftime("%B %d")
-                    item_text = f"{date_str} - {holiday.name}"
-                    
-                    item = QListWidgetItem(item_text)
-                    item.setToolTip(f"{holiday.date.strftime('%A, %B %d, %Y')}\n{holiday.name}")
-                    self.holiday_list.addItem(item)
+                    # Format: "जनवरी 1 - New Year's Day" (using translated month names)
+                    try:
+                        # Get translated month names
+                        month_names = [
+                            _("calendar.months.january", default="January"), _("calendar.months.february", default="February"),
+                            _("calendar.months.march", default="March"), _("calendar.months.april", default="April"),
+                            _("calendar.months.may", default="May"), _("calendar.months.june", default="June"),
+                            _("calendar.months.july", default="July"), _("calendar.months.august", default="August"),
+                            _("calendar.months.september", default="September"), _("calendar.months.october", default="October"),
+                            _("calendar.months.november", default="November"), _("calendar.months.december", default="December")
+                        ]
+                        
+                        # Get translated weekday names for tooltip
+                        weekday_names = [
+                            _("calendar.days.monday", default="Monday"), _("calendar.days.tuesday", default="Tuesday"),
+                            _("calendar.days.wednesday", default="Wednesday"), _("calendar.days.thursday", default="Thursday"),
+                            _("calendar.days.friday", default="Friday"), _("calendar.days.saturday", default="Saturday"),
+                            _("calendar.days.sunday", default="Sunday")
+                        ]
+                        
+                        month = month_names[holiday.date.month - 1]
+                        date_str = f"{month} {holiday.date.day}"
+                        item_text = f"{date_str} - {holiday.name}"
+                        
+                        # Create tooltip with translated weekday and month
+                        weekday = weekday_names[holiday.date.weekday()]
+                        tooltip_str = f"{weekday}, {holiday.date.day} {month} {holiday.date.year}\n{holiday.name}"
+                        
+                        item = QListWidgetItem(item_text)
+                        item.setToolTip(tooltip_str)
+                        self.holiday_list.addItem(item)
+                    except Exception as date_error:
+                        logger.warning(f"⚠️ Failed to format holiday date: {date_error}")
+                        # Fallback to English formatting
+                        date_str = holiday.date.strftime("%B %d")
+                        item_text = f"{date_str} - {holiday.name}"
+                        item = QListWidgetItem(item_text)
+                        item.setToolTip(f"{holiday.date.strftime('%A, %B %d, %Y')}\n{holiday.name}")
+                        self.holiday_list.addItem(item)
                 
                 logger.debug(f"🔄 Loaded {len(all_holidays)} holidays for preview")
             else:
