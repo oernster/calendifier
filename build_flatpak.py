@@ -319,7 +319,7 @@ class FlatpakBuilder:
                         "echo '    install_requires=[]' >> setup.py",
                         "echo ')' >> setup.py",
                         "cat setup.py",
-                        "python3 setup.py install --prefix=${FLATPAK_DEST}",
+                        "pip3 install --no-deps --prefix=${FLATPAK_DEST} .",
                         "install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg",
                         "install -Dm644 assets/calendar_icon_128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png",
                         "install -Dm644 assets/calendar_icon_64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/${FLATPAK_ID}.png",
