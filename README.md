@@ -96,7 +96,7 @@ The application automatically detects and displays holidays for 14 countries wit
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/calendifier.git
+   git clone https://github.com/oernster/calendifier.git
    cd calendifier
    ```
 
