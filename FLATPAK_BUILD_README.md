@@ -226,6 +226,16 @@ python build_flatpak.py
 python build_flatpak.py --install-deps
 ```
 
+#### Dependency Installation Conflicts
+If you encounter package conflicts (like nvidia firmware conflicts), you can:
+```bash
+# Skip automatic dependency installation and install manually
+sudo pacman -S flatpak flatpak-builder python git --needed
+
+# Or force overwrite conflicting files (use with caution)
+sudo pacman -S flatpak flatpak-builder python git --overwrite '*'
+```
+
 #### Build Failures
 ```bash
 # Clean and rebuild with debug output
@@ -237,6 +247,9 @@ python build_flatpak.py --clean --debug
 # Ensure Flatpak runtimes are installed
 flatpak install flathub org.freedesktop.Platform//23.08
 flatpak install flathub org.freedesktop.Sdk//23.08
+
+# Add Flathub if not already added
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 ```
 
 ### Debug Mode

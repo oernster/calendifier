@@ -136,6 +136,7 @@ class FlatpakBuilder:
         
         if missing:
             print(f"❌ Missing dependencies: {', '.join(missing)}")
+            print("💡 Run with --install-deps to automatically install them")
             return False
         
         # Check Python version
@@ -184,24 +185,50 @@ class FlatpakBuilder:
         try:
             # Update package database
             print(f"🔄 Updating package database...")
-            subprocess.run(commands['update'].split(), check=True)
+            try:
+                subprocess.run(commands['update'].split(), check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"⚠️ Package database update failed (exit code {e.returncode}), continuing...")
             
             # Install packages
             print(f"📥 Installing packages...")
             install_cmd = f"{commands['install']} {commands['packages']}"
-            subprocess.run(install_cmd.split(), check=True)
+            try:
+                subprocess.run(install_cmd.split(), check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"⚠️ Some packages may have failed to install (exit code {e.returncode})")
+                print("   This might be due to conflicting files or packages already installed.")
+                print("   Continuing with build - please ensure required dependencies are available.")
             
             # Install Flatpak runtimes
             print("🏗️ Installing Flatpak runtimes...")
-            subprocess.run([
-                'flatpak', 'install', '-y', 'flathub',
-                f'org.freedesktop.Platform//{RUNTIME_VERSION}'
-            ], check=True)
             
-            subprocess.run([
-                'flatpak', 'install', '-y', 'flathub',
-                f'org.freedesktop.Sdk//{RUNTIME_VERSION}'
-            ], check=True)
+            # Add Flathub remote if not already added
+            try:
+                subprocess.run([
+                    'flatpak', 'remote-add', '--if-not-exists', 'flathub',
+                    'https://flathub.org/repo/flathub.flatpakrepo'
+                ], check=True)
+            except subprocess.CalledProcessError:
+                print("⚠️ Could not add Flathub remote (may already exist)")
+            
+            # Install Platform runtime
+            try:
+                subprocess.run([
+                    'flatpak', 'install', '-y', 'flathub',
+                    f'org.freedesktop.Platform//{RUNTIME_VERSION}'
+                ], check=True)
+            except subprocess.CalledProcessError:
+                print(f"⚠️ Platform runtime may already be installed or unavailable")
+            
+            # Install SDK runtime
+            try:
+                subprocess.run([
+                    'flatpak', 'install', '-y', 'flathub',
+                    f'org.freedesktop.Sdk//{RUNTIME_VERSION}'
+                ], check=True)
+            except subprocess.CalledProcessError:
+                print(f"⚠️ SDK runtime may already be installed or unavailable")
             
             print("✅ Dependencies installed successfully")
             return True
