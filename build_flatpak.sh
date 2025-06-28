@@ -1,39 +1,4 @@
-"cat > ${FLATPAK_DEST}/bin/calendifier << 'EOF'",
-                "#!/bin/bash",
-                "# Set Python path to include app directory and site-packages",
-                "export PYTHONPATH=\"/app:/app/lib/python3.12/site-packages:$PYTHONPATH\"",
-                "",
-                "# PySide6/Qt6 Configuration",
-                "export QT_PLUGIN_PATH=\"/app/lib/python3.12/site-packages/PySide6/Qt/plugins\"",
-                "export QT_QPA_PLATFORM_PLUGIN_PATH=\"/app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms\"",
-                "",
-                "# Platform detection for PySide6",
-                "if [ -n \"$WAYLAND_DISPLAY\" ] && [ -z \"$FORCE_X11\" ]; then",
-                "    export QT_QPA_PLATFORM=wayland",
-                "    echo 'PySide6: Using Wayland platform'",
-                "elif [ -n \"$DISPLAY\" ]; then",
-                "    export QT_QPA_PLATFORM=xcb",
-                "    echo 'PySide6: Using X11/XCB platform'",
-                "else",
-                "    export QT_QPA_PLATFORM=xcb",
-                "    echo 'PySide6: Using XCB as fallback'",
-                "fi",
-                "",
-                "# Additional Qt6 environment variables",
-                "export QT_AUTO_SCREEN_SCALE_FACTOR=1",
-                "export QT_ENABLE_HIGHDPI_SCALING=1",
-                "",
-                "# Change to app directory",
-                "cd /app",
-                "",
-                "# Debug: Show Qt plugin paths",
-                "echo 'Qt Plugin Path:' $QT_PLUGIN_PATH",
-                "echo 'Available platforms:'",
-                "ls -la /app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms/ 2>/dev/null || echo 'Platform plugins directory not found'",
-                "",
-                "# Run the application",
-                "exec python3 main.py \"$@\"",
-                "EOF",#!/bin/bash
+#!/bin/bash
 
 # Exit on error
 set -e
@@ -82,6 +47,131 @@ detect_desktop() {
         fi
     fi
     echo $DESKTOP
+}
+
+# Function to apply enhanced Fedora Cinnamon icon fixes
+fix_fedora_cinnamon_icon() {
+    echo "===== Applying Fedora Cinnamon Icon Fixes ====="
+    
+    # 1. First, find existing icons we can use
+    echo "Locating existing Calendifier icons..."
+    ICON_SOURCE=""
+    
+    # Check exported flatpak icon - dynamically find paths based on installation
+    FLATPAK_EXPORTS=$(find ~/.local/share/flatpak/exports/share/icons -name "*calendifier*.png" 2>/dev/null | head -1)
+    FLATPAK_APP_ICONS=$(find ~/.local/share/flatpak/app/com.calendifier.Calendar -name "*calendar*.png" 2>/dev/null | head -1)
+    LOCAL_ICON=$(find ~/.local/share/icons -name "*calendifier*.png" 2>/dev/null | head -1)
+    SOURCE_ICON_128="$SOURCE_DIR/assets/calendar_icon_128x128.png"
+    SOURCE_ICON="$SOURCE_DIR/assets/calendar_icon.png"
+    
+    if [ -n "$FLATPAK_EXPORTS" ]; then
+        ICON_SOURCE="$FLATPAK_EXPORTS"
+        echo "Found icon in Flatpak exports"
+    elif [ -n "$FLATPAK_APP_ICONS" ]; then
+        ICON_SOURCE="$FLATPAK_APP_ICONS"
+        echo "Found icon in Flatpak app directory"
+    elif [ -n "$LOCAL_ICON" ]; then
+        ICON_SOURCE="$LOCAL_ICON"
+        echo "Found icon in local icons directory"
+    elif [ -f "$SOURCE_ICON_128" ]; then
+        ICON_SOURCE="$SOURCE_ICON_128"
+        echo "Using source directory 128x128 icon"
+    elif [ -f "$SOURCE_ICON" ]; then
+        ICON_SOURCE="$SOURCE_ICON"
+        echo "Using source directory icon"
+    else
+        # Extract from the flatpak as last resort
+        echo "No existing icon found, extracting from Flatpak..."
+        mkdir -p /tmp/calendifier-fix
+        flatpak run --command=sh com.calendifier.Calendar -c "find /app -name '*calendar*.png' -exec cp {} /tmp/calendifier-fix/icon.png \; -quit" || true
+        
+        if [ -f /tmp/calendifier-fix/icon.png ]; then
+            ICON_SOURCE="/tmp/calendifier-fix/icon.png"
+            echo "Extracted icon from Flatpak"
+        else
+            echo "WARNING: Could not find or extract any icons, icon may be missing in menu."
+            return 1
+        fi
+    fi
+    
+    # 2. Create all the necessary icon directories
+    echo "Creating icon directories..."
+    mkdir -p ~/.icons
+    mkdir -p ~/.local/share/icons/hicolor/16x16/apps
+    mkdir -p ~/.local/share/icons/hicolor/22x22/apps
+    mkdir -p ~/.local/share/icons/hicolor/24x24/apps
+    mkdir -p ~/.local/share/icons/hicolor/32x32/apps
+    mkdir -p ~/.local/share/icons/hicolor/48x48/apps
+    mkdir -p ~/.local/share/icons/hicolor/64x64/apps
+    mkdir -p ~/.local/share/icons/hicolor/128x128/apps
+    mkdir -p ~/.local/share/icons/hicolor/256x256/apps
+    
+    # 3. Copy the icon to all standard locations
+    echo "Copying icon to standard locations..."
+    cp "$ICON_SOURCE" ~/.icons/com.calendifier.Calendar.png
+    cp "$ICON_SOURCE" ~/.local/share/icons/hicolor/128x128/apps/com.calendifier.Calendar.png
+    cp "$ICON_SOURCE" ~/.local/share/icons/hicolor/256x256/apps/com.calendifier.Calendar.png
+    
+    # Also copy with alternate names that Cinnamon might be looking for
+    cp "$ICON_SOURCE" ~/.local/share/icons/hicolor/128x128/apps/calendifier.png
+    cp "$ICON_SOURCE" ~/.icons/calendifier.png
+    
+    # 4. Fix the desktop file
+    echo "Fixing desktop file..."
+    if [ -f ~/.local/share/applications/com.calendifier.Calendar.desktop ]; then
+        # Make backup
+        cp ~/.local/share/applications/com.calendifier.Calendar.desktop ~/.local/share/applications/com.calendifier.Calendar.desktop.bak
+        
+        # Change to simple icon name (more reliable)
+        sed -i "s|Icon=.*|Icon=com.calendifier.Calendar|g" ~/.local/share/applications/com.calendifier.Calendar.desktop
+        
+        echo "Desktop file updated to use standard icon name"
+    else
+        echo "Desktop file not found in expected location"
+    fi
+    
+    # 5. Create an additional desktop file in the specific Cinnamon location
+    echo "Creating additional desktop file for Cinnamon..."
+    mkdir -p ~/.local/share/cinnamon/applets/menu@cinnamon.org
+    
+    # Copy desktop file
+    cp ~/.local/share/applications/com.calendifier.Calendar.desktop ~/.local/share/cinnamon/applets/menu@cinnamon.org/com.calendifier.Calendar.desktop 2>/dev/null || true
+    
+    # 6. Refresh icon cache
+    echo "Refreshing icon cache..."
+    if command -v gtk-update-icon-cache &> /dev/null; then
+        gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor 2>/dev/null || true
+    fi
+    
+    # 7. Create desktop shortcut as fallback if Desktop directory exists
+    if [ -d ~/Desktop ]; then
+        echo "Creating desktop shortcut..."
+        cat > ~/Desktop/Calendifier.desktop << EOL
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Calendifier
+GenericName=Calendar Application
+Comment=A sophisticated cross-platform desktop calendar application
+Icon=com.calendifier.Calendar
+Exec=flatpak run com.calendifier.Calendar
+Terminal=false
+Categories=Office;Calendar;Qt;
+Keywords=calendar;event;schedule;appointment;reminder;date;time;
+StartupNotify=true
+X-GNOME-UsesNotifications=true
+X-Cinnamon-UsesNotifications=true
+EOL
+        chmod +x ~/Desktop/Calendifier.desktop
+    fi
+    
+    # 8. Try to refresh Cinnamon menu
+    echo "Attempting to refresh Cinnamon menu..."
+    dbus-send --session --dest=org.Cinnamon --type=method_call /org/Cinnamon org.Cinnamon.Eval string:'Main.panel.menuManager._updateMenus();' &>/dev/null || true
+    dbus-send --session --dest=org.Cinnamon --type=method_call /org/Cinnamon org.Cinnamon.Eval string:'Main.placesManager._refreshAll();' &>/dev/null || true
+    
+    echo "Fedora Cinnamon icon fixes applied successfully!"
+    return 0
 }
 
 # Function to display installation instructions for flatpak-builder
@@ -174,13 +264,13 @@ echo "Detected desktop environment: $DESKTOP"
 SOURCE_DIR="$(pwd)"
 echo "Building from source directory: $SOURCE_DIR"
 
-# Create Flatpak manifest with Python 3.12 runtime
+# Create Flatpak manifest with KDE Platform for better Qt6/PySide6 support
 cat > com.calendifier.Calendar.json << 'EOL'
 {
     "app-id": "com.calendifier.Calendar",
-    "runtime": "org.freedesktop.Platform",
-    "runtime-version": "24.08",
-    "sdk": "org.freedesktop.Sdk",
+    "runtime": "org.kde.Platform",
+    "runtime-version": "6.8",
+    "sdk": "org.kde.Sdk",
     "command": "calendifier",
     "finish-args": [
         "--share=ipc",
@@ -194,9 +284,7 @@ cat > com.calendifier.Calendar.json << 'EOL'
         "--filesystem=xdg-download",
         "--talk-name=org.freedesktop.Notifications",
         "--talk-name=org.kde.StatusNotifierWatcher",
-        "--own-name=com.calendifier.Calendar",
-        "--env=QT_QPA_PLATFORM_PLUGIN_PATH=/app/lib/python3.12/site-packages/PySide6/Qt/plugins",
-        "--env=QT_PLUGIN_PATH=/app/lib/python3.12/site-packages/PySide6/Qt/plugins"
+        "--own-name=com.calendifier.Calendar"
     ],
     "build-options": {
         "env": {
@@ -218,7 +306,7 @@ cat > com.calendifier.Calendar.json << 'EOL'
             "name": "python-dependencies",
             "buildsystem": "simple",
             "build-commands": [
-                "echo 'Installing PySide6 and dependencies...'",
+                "echo 'Installing PySide6 and dependencies for Calendifier...'",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} PySide6>=6.5.0",
                 "echo 'Verifying PySide6 installation...'",
                 "python3 -c 'import PySide6; print(\"PySide6 version:\", PySide6.__version__)'",
@@ -255,9 +343,36 @@ cat > com.calendifier.Calendar.json << 'EOL'
                 "#!/bin/bash",
                 "# Set Python path to include app directory and site-packages",
                 "export PYTHONPATH=\"/app:/app/lib/python3.12/site-packages:$PYTHONPATH\"",
+                "",
+                "# PySide6/Qt6 Configuration for KDE Platform",
+                "export QT_PLUGIN_PATH=\"/app/lib/python3.12/site-packages/PySide6/Qt/plugins\"",
+                "export QT_QPA_PLATFORM_PLUGIN_PATH=\"/app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms\"",
+                "",
+                "# Platform detection for PySide6 on KDE runtime",
+                "if [ -n \"$WAYLAND_DISPLAY\" ] && [ -z \"$FORCE_X11\" ]; then",
+                "    export QT_QPA_PLATFORM=wayland",
+                "    echo 'Calendifier: Using Wayland platform'",
+                "elif [ -n \"$DISPLAY\" ]; then",
+                "    export QT_QPA_PLATFORM=xcb",
+                "    echo 'Calendifier: Using X11/XCB platform'",
+                "else",
+                "    export QT_QPA_PLATFORM=xcb",
+                "    echo 'Calendifier: Using XCB as fallback'",
+                "fi",
+                "",
+                "# Additional Qt6 environment variables",
+                "export QT_AUTO_SCREEN_SCALE_FACTOR=1",
+                "export QT_ENABLE_HIGHDPI_SCALING=1",
+                "",
                 "# Change to app directory",
                 "cd /app",
-                "# Run the application",
+                "",
+                "# Debug: Show Qt plugin paths (can be removed in production)",
+                "echo 'Qt Plugin Path:' $QT_PLUGIN_PATH",
+                "echo 'Available platforms:'",
+                "ls -la /app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms/ 2>/dev/null || echo 'Platform plugins directory not found'",
+                "",
+                "# Run the Calendifier application",
                 "exec python3 main.py \"$@\"",
                 "EOF",
                 "chmod +x ${FLATPAK_DEST}/bin/calendifier",
@@ -287,7 +402,7 @@ cat > com.calendifier.Calendar.json << 'EOL'
 }
 EOL
 
-# Create desktop file
+# Create desktop file following Flatpak conventions
 cat > com.calendifier.Calendar.desktop << EOL
 [Desktop Entry]
 Version=1.0
@@ -303,6 +418,7 @@ Keywords=calendar;event;schedule;appointment;reminder;date;time;
 StartupNotify=true
 StartupWMClass=calendifier
 MimeType=text/calendar;application/ics;
+X-Flatpak=com.calendifier.Calendar
 EOL
 
 # Add desktop environment specific entries
@@ -383,6 +499,11 @@ cat > com.calendifier.Calendar.metainfo.xml << 'EOL'
     <control>pointing</control>
     <control>keyboard</control>
   </supports>
+  <categories>
+    <category>Office</category>
+    <category>Calendar</category>
+    <category>Qt</category>
+  </categories>
 </component>
 EOL
 
@@ -408,18 +529,18 @@ setup_flathub() {
 # Setup Flathub repository
 setup_flathub
 
-# Install required runtimes (now using 24.08 for Python 3.12)
-echo "Installing Freedesktop Platform and SDK version 24.08 (includes Python 3.12)..."
+# Install required KDE 6.8 runtimes with specific distribution handling
+echo "Installing KDE 6.8 Platform and SDK (optimized for Qt6/PySide6)..."
 
 # Check for Arch-based systems with special handling
 if [[ "$DISTRO" == "arch" || "$DISTRO" == "manjaro" || "$DISTRO" == "endeavouros" ]]; then
     echo "Detected Arch-based system. Using special installation procedure..."
     
     # First try to install the runtime with user installation
-    if ! flatpak install --user -y flathub org.freedesktop.Platform//24.08; then
+    if ! flatpak install --user -y flathub org.kde.Platform//6.8; then
         echo "User installation failed. Trying system installation..."
-        if ! sudo flatpak install -y flathub org.freedesktop.Platform//24.08; then
-            echo "Failed to install Freedesktop Platform runtime. Please check your internet connection."
+        if ! sudo flatpak install -y flathub org.kde.Platform//6.8; then
+            echo "Failed to install KDE Platform runtime. Please check your internet connection."
             echo "You may need to install the ca-certificates package: sudo pacman -S ca-certificates"
             echo "Also ensure your Flathub repository is correctly configured."
             exit 1
@@ -427,17 +548,17 @@ if [[ "$DISTRO" == "arch" || "$DISTRO" == "manjaro" || "$DISTRO" == "endeavouros
     fi
     
     # Then install the SDK
-    if ! flatpak install --user -y flathub org.freedesktop.Sdk//24.08; then
+    if ! flatpak install --user -y flathub org.kde.Sdk//6.8; then
         echo "User installation failed. Trying system installation..."
-        if ! sudo flatpak install -y flathub org.freedesktop.Sdk//24.08; then
-            echo "Failed to install Freedesktop SDK runtime. Please check your internet connection."
+        if ! sudo flatpak install -y flathub org.kde.Sdk//6.8; then
+            echo "Failed to install KDE SDK runtime. Please check your internet connection."
             exit 1
         fi
     fi
 else
     # For non-Arch systems, use the original method
-    if ! flatpak install --user -y flathub org.freedesktop.Platform//24.08; then
-        echo "Failed to install Freedesktop Platform runtime. Please check your internet connection."
+    if ! flatpak install --user -y flathub org.kde.Platform//6.8; then
+        echo "Failed to install KDE Platform runtime. Please check your internet connection."
         case $DISTRO in
             "ubuntu" | "debian" | "linuxmint" | "pop")
                 echo "You may need to install the ca-certificates package: sudo apt install ca-certificates"
@@ -449,8 +570,8 @@ else
         exit 1
     fi
 
-    if ! flatpak install --user -y flathub org.freedesktop.Sdk//24.08; then
-        echo "Failed to install Freedesktop SDK runtime. Please check your internet connection."
+    if ! flatpak install --user -y flathub org.kde.Sdk//6.8; then
+        echo "Failed to install KDE SDK runtime. Please check your internet connection."
         exit 1
     fi
 fi
@@ -462,6 +583,22 @@ mkdir -p build
 
 # Clean any previous builds
 rm -rf build/* 2>/dev/null || true
+
+# Create special permissions for Arch/EndeavourOS with Cinnamon
+if [[ "$DISTRO" == "arch" || "$DISTRO" == "manjaro" || "$DISTRO" == "endeavouros" ]]; then
+    echo "Configuring special permissions for Arch-based systems..."
+    
+    # Create temporary file with fixed permissions for Cinnamon
+    cat > flatpak_override_settings << EOL
+[Context]
+shared=network;ipc;
+sockets=x11;wayland;
+devices=dri;
+filesystems=xdg-documents:ro;xdg-download:ro;
+EOL
+    
+    echo "Will apply these custom permissions after build."
+fi
 
 # Build the Flatpak with dependencies from Flathub
 echo "Building with flatpak-builder..."
@@ -544,6 +681,29 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     # Check if installation was successful
     if flatpak list | grep -q com.calendifier.Calendar; then
         echo "Flatpak installed successfully."
+        
+        # Apply custom overrides for Arch/EndeavourOS if needed
+        if [[ "$DISTRO" == "arch" || "$DISTRO" == "manjaro" || "$DISTRO" == "endeavouros" ]]; then
+            echo "Applying custom permission overrides for better compatibility with $DISTRO..."
+            mkdir -p ~/.local/share/flatpak/overrides
+            cp flatpak_override_settings ~/.local/share/flatpak/overrides/com.calendifier.Calendar
+            echo "Custom permissions applied."
+        fi
+        
+        # Apply custom overrides for Fedora+Cinnamon
+        if [[ "$DISTRO" == "fedora" && ("$DESKTOP" == *"Cinnamon"* || "$DESKTOP" == *"CINNAMON"* || "$DESKTOP" == *"X-Cinnamon"*) ]]; then
+            echo "Applying Fedora+Cinnamon specific overrides..."
+            mkdir -p ~/.local/share/flatpak/overrides
+            cat > ~/.local/share/flatpak/overrides/com.calendifier.Calendar << EOL
+[Context]
+shared=network;ipc;
+sockets=x11;wayland;
+devices=dri;
+filesystems=xdg-documents:ro;xdg-download:ro;~/.config/cinnamon:ro;~/.local/share/cinnamon:ro;
+EOL
+            echo "Fedora+Cinnamon overrides applied."
+        fi
+        
         echo "You can run it with: flatpak run com.calendifier.Calendar"
         
         # Enhanced desktop integration
@@ -574,6 +734,12 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             if command -v gtk-update-icon-cache &> /dev/null; then
                 gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor 2>/dev/null || true
             fi
+        fi
+        
+        # Apply enhanced icon fixes for Fedora+Cinnamon
+        if [[ "$DISTRO" == "fedora" && ("$DESKTOP" == *"Cinnamon"* || "$DESKTOP" == *"CINNAMON"* || "$DESKTOP" == *"X-Cinnamon"*) ]]; then
+            echo "Applying enhanced icon fixes for Fedora+Cinnamon..."
+            fix_fedora_cinnamon_icon
         fi
         
         # Special menu integration for Cinnamon
@@ -614,7 +780,7 @@ echo "flatpak install calendifier.flatpak"
 echo ""
 echo "The Flatpak is self-contained and works on any Linux distribution"
 echo "that supports Flatpak, regardless of the user's home directory or username."
-echo "The necessary Freedesktop runtime will be automatically downloaded if needed."
+echo "The necessary KDE runtime will be automatically downloaded if needed."
 echo ""
-echo "Runtime used: org.freedesktop.Platform//24.08 (includes Python 3.12)"
+echo "Runtime used: org.kde.Platform//6.8 (includes complete Qt6 support for PySide6)"
 echo "================================================================"
