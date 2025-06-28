@@ -29,7 +29,7 @@ from typing import List, Optional
 
 # Build configuration
 APP_NAME = "Calendifier"
-APP_VERSION = "1.0.2"
+APP_VERSION = "1.1.0"
 MAIN_SCRIPT = "main.py"
 OUTPUT_DIR = "dist"
 BUILD_DIR = "build"
@@ -44,15 +44,15 @@ def get_platform_specific_options() -> List[str]:
             "--windows-icon-from-ico=assets/calendar_icon.ico",  # Application icon
             "--windows-company-name=Oliver Ernster",
             "--windows-product-name=Calendifier",
-            "--windows-file-version=1.0.2.0",
-            "--windows-product-version=1.0.2.0",
+            "--windows-file-version=1.1.0.0",
+            "--windows-product-version=1.1.0.0",
             "--windows-file-description=Cross-platform Desktop Calendar Application"
         ])
     elif platform.system() == "Darwin":  # macOS
         options.extend([
             "--macos-app-icon=assets/calendar_icon.icns",  # macOS icon (if available)
             "--macos-app-name=Calendifier",
-            "--macos-app-version=1.0.2"
+            "--macos-app-version=1.1.0"
         ])
     elif platform.system() == "Linux":
         options.extend([

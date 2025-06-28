@@ -607,12 +607,9 @@ class MainWindow(QMainWindow):
         layout.setSpacing(16)
         layout.setContentsMargins(8, 8, 8, 8)
         
-        # Clock widget
+        # Clock widget (now centered within itself)
         self.clock_widget = ClockWidget()
         layout.addWidget(self.clock_widget)
-        
-        # Add stretch to push notes to bottom
-        layout.addStretch()
         
         # Notes widget
         self.notes_widget = NotesWidget()

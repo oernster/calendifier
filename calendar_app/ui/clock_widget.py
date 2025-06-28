@@ -438,20 +438,23 @@ class ClockWidget(QWidget):
         layout.setSpacing(16)
         layout.setContentsMargins(8, 8, 8, 8)
         
-        # Analog clock
+        # Analog clock with minimal weight
         self.analog_clock = AnalogClockWidget()
-        layout.addWidget(self.analog_clock)
+        layout.addWidget(self.analog_clock, 1, Qt.AlignmentFlag.AlignCenter)
         
-        # Digital display
+        # Add massive stretch to force digital components way down
+        layout.addStretch(10)
+        
+        # Digital display with no weight - stays at bottom
         self.digital_display = DigitalDisplayWidget()
-        layout.addWidget(self.digital_display)
+        layout.addWidget(self.digital_display, 0, Qt.AlignmentFlag.AlignCenter)
         
-        # Theme controls
+        # Add extra spacing between digital display and theme controls
+        layout.addSpacing(12)
+        
+        # Theme controls with no weight - stays at bottom
         self.theme_controls = ThemeControlWidget(self.theme_manager)
-        layout.addWidget(self.theme_controls)
-        
-        # Add stretch to push everything to top
-        layout.addStretch()
+        layout.addWidget(self.theme_controls, 0, Qt.AlignmentFlag.AlignCenter)
     
     def _setup_timer(self):
         """⏰ Setup update timer."""
