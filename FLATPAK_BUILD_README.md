@@ -162,7 +162,7 @@ After a successful build, you'll find:
 #### Direct Installation
 ```bash
 # Install the bundle directly
-flatpak install --user com.calendifier.Calendar-1.0.0.flatpak
+flatpak install --user calendifier.flatpak
 
 # Run the application
 flatpak run com.calendifier.Calendar
