@@ -482,6 +482,65 @@ recursive-include calendar_app/localization/locale_holiday_translations *.json
 recursive-include flatpak *.desktop *.xml
 """
     
+    def create_pyproject_toml(self) -> str:
+        """Create a pyproject.toml file for modern Python packaging."""
+        return f"""[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "calendifier"
+version = "{APP_VERSION}"
+description = "A sophisticated cross-platform desktop calendar application"
+readme = "README.md"
+license = {{text = "MIT"}}
+authors = [
+    {{name = "Oliver Ernster", email = "oliver.ernster@example.com"}}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Scheduling",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "PySide6>=6.5.0",
+    "ntplib>=0.4.0",
+    "python-dateutil>=2.8.0",
+    "holidays>=0.34",
+    "icalendar>=5.0.0",
+    "tzdata>=2025.2",
+    "psutil>=5.9.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/oernster/calendifier"
+"Bug Tracker" = "https://github.com/oernster/calendifier/issues"
+Documentation = "https://github.com/oernster/calendifier/blob/main/README.md"
+
+[project.scripts]
+calendifier = "main:main"
+
+[tool.setuptools]
+packages = ["calendar_app", "calendar_app.config", "calendar_app.core", "calendar_app.data", "calendar_app.localization", "calendar_app.ui", "calendar_app.utils"]
+
+[tool.setuptools.package-data]
+calendar_app = [
+    "localization/translations/*.json",
+    "localization/locale_holiday_translations/*.json"
+]
+"*" = ["assets/*", "LICENSE", "README.md"]
+"""
+    
     def prepare_build_environment(self) -> bool:
         """Prepare the build environment."""
         print("🏗️ Preparing build environment...")
@@ -516,6 +575,12 @@ recursive-include flatpak *.desktop *.xml
             setup_content = self.create_setup_py()
             with open(setup_py_path, 'w') as f:
                 f.write(setup_content)
+        
+        # Create pyproject.toml for modern Python packaging
+        pyproject_path = self.project_root / "pyproject.toml"
+        pyproject_content = self.create_pyproject_toml()
+        with open(pyproject_path, 'w') as f:
+            f.write(pyproject_content)
         
         # Create MANIFEST.in for proper file inclusion
         manifest_in_path = self.project_root / "MANIFEST.in"
