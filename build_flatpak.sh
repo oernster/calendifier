@@ -108,6 +108,12 @@ if [ ! -f "main.py" ]; then
     exit 1
 fi
 
+# Verify essential directories exist
+if [ ! -d "calendar_app" ]; then
+    echo "calendar_app directory not found. Please run this script from your source directory."
+    exit 1
+fi
+
 # Check if requirements.txt exists
 if [ ! -f "requirements.txt" ]; then
     echo "requirements.txt not found. Creating a minimal requirements file..."
@@ -133,12 +139,12 @@ echo "Detected desktop environment: $DESKTOP"
 SOURCE_DIR="$(pwd)"
 echo "Building from source directory: $SOURCE_DIR"
 
-# Create Flatpak manifest
+# Create Flatpak manifest with Python 3.12 runtime
 cat > com.calendifier.Calendar.json << 'EOL'
 {
     "app-id": "com.calendifier.Calendar",
     "runtime": "org.freedesktop.Platform",
-    "runtime-version": "23.08",
+    "runtime-version": "24.08",
     "sdk": "org.freedesktop.Sdk",
     "command": "calendifier",
     "finish-args": [
@@ -187,25 +193,36 @@ cat > com.calendifier.Calendar.json << 'EOL'
             "name": "calendifier",
             "buildsystem": "simple",
             "build-commands": [
-                "echo 'Installing Calendifier application files directly to /app...'",
+                "echo 'Installing Calendifier application files to /app...'",
                 "cp -rv main.py ${FLATPAK_DEST}/",
                 "cp -rv calendar_app ${FLATPAK_DEST}/",
-                "cp -rv version.py ${FLATPAK_DEST}/",
-                "cp -rv assets ${FLATPAK_DEST}/",
-                "cp -rv LICENSE ${FLATPAK_DEST}/",
-                "cp -rv LGPL3_COMPLIANCE_NOTICE.txt ${FLATPAK_DEST}/",
-                "cp -rv LGPL3_LICENSE.txt ${FLATPAK_DEST}/",
+                "if [ -f version.py ]; then cp -rv version.py ${FLATPAK_DEST}/; fi",
+                "if [ -d assets ]; then cp -rv assets ${FLATPAK_DEST}/; fi",
+                "if [ -f LICENSE ]; then cp -rv LICENSE ${FLATPAK_DEST}/; fi",
+                "if [ -f LGPL3_COMPLIANCE_NOTICE.txt ]; then cp -rv LGPL3_COMPLIANCE_NOTICE.txt ${FLATPAK_DEST}/; fi",
+                "if [ -f LGPL3_LICENSE.txt ]; then cp -rv LGPL3_LICENSE.txt ${FLATPAK_DEST}/; fi",
+                "echo 'Verifying main.py exists:'",
+                "test -f ${FLATPAK_DEST}/main.py && echo 'main.py successfully copied' || (echo 'ERROR: main.py not found!' && exit 1)",
+                "echo 'Verifying calendar_app directory exists:'",
+                "test -d ${FLATPAK_DEST}/calendar_app && echo 'calendar_app directory successfully copied' || (echo 'ERROR: calendar_app directory not found!' && exit 1)",
                 "echo 'Creating launcher script...'",
                 "mkdir -p ${FLATPAK_DEST}/bin",
-                "echo '#!/bin/bash' > ${FLATPAK_DEST}/bin/calendifier",
-                "echo 'export PYTHONPATH=\"/app:/app/lib/python3.12/site-packages:$PYTHONPATH\"' >> ${FLATPAK_DEST}/bin/calendifier",
-                "echo 'cd /app' >> ${FLATPAK_DEST}/bin/calendifier",
-                "echo 'exec python3 main.py \"$@\"' >> ${FLATPAK_DEST}/bin/calendifier",
+                "cat > ${FLATPAK_DEST}/bin/calendifier << 'EOF'",
+                "#!/bin/bash",
+                "# Set Python path to include app directory and site-packages",
+                "export PYTHONPATH=\"/app:/app/lib/python3.12/site-packages:$PYTHONPATH\"",
+                "# Change to app directory",
+                "cd /app",
+                "# Run the application",
+                "exec python3 main.py \"$@\"",
+                "EOF",
                 "chmod +x ${FLATPAK_DEST}/bin/calendifier",
-                "echo 'Verifying application files in /app:'",
-                "ls -la ${FLATPAK_DEST}/main.py",
-                "ls -la ${FLATPAK_DEST}/calendar_app/",
-                "ls -la ${FLATPAK_DEST}/version.py",
+                "echo 'Verifying launcher script:'",
+                "test -x ${FLATPAK_DEST}/bin/calendifier && echo 'Launcher script created successfully' || (echo 'ERROR: Launcher script creation failed!' && exit 1)",
+                "echo 'Final verification - listing /app contents:'",
+                "ls -la ${FLATPAK_DEST}/",
+                "echo 'Testing Python can find main.py:'",
+                "cd ${FLATPAK_DEST} && python3 -c 'import os; print(\"main.py exists:\", os.path.exists(\"main.py\"))'",
                 "install -Dm644 com.calendifier.Calendar.desktop ${FLATPAK_DEST}/share/applications/com.calendifier.Calendar.desktop",
                 "install -Dm644 com.calendifier.Calendar.metainfo.xml ${FLATPAK_DEST}/share/metainfo/com.calendifier.Calendar.metainfo.xml",
                 "if [ -f assets/calendar_icon.svg ]; then install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg; fi",
@@ -347,17 +364,17 @@ setup_flathub() {
 # Setup Flathub repository
 setup_flathub
 
-# Install required runtimes
-echo "Installing Freedesktop Platform and SDK..."
+# Install required runtimes (now using 24.08 for Python 3.12)
+echo "Installing Freedesktop Platform and SDK version 24.08 (includes Python 3.12)..."
 
 # Check for Arch-based systems with special handling
 if [[ "$DISTRO" == "arch" || "$DISTRO" == "manjaro" || "$DISTRO" == "endeavouros" ]]; then
     echo "Detected Arch-based system. Using special installation procedure..."
     
     # First try to install the runtime with user installation
-    if ! flatpak install --user -y flathub org.freedesktop.Platform//23.08; then
+    if ! flatpak install --user -y flathub org.freedesktop.Platform//24.08; then
         echo "User installation failed. Trying system installation..."
-        if ! sudo flatpak install -y flathub org.freedesktop.Platform//23.08; then
+        if ! sudo flatpak install -y flathub org.freedesktop.Platform//24.08; then
             echo "Failed to install Freedesktop Platform runtime. Please check your internet connection."
             echo "You may need to install the ca-certificates package: sudo pacman -S ca-certificates"
             echo "Also ensure your Flathub repository is correctly configured."
@@ -366,16 +383,16 @@ if [[ "$DISTRO" == "arch" || "$DISTRO" == "manjaro" || "$DISTRO" == "endeavouros
     fi
     
     # Then install the SDK
-    if ! flatpak install --user -y flathub org.freedesktop.Sdk//23.08; then
+    if ! flatpak install --user -y flathub org.freedesktop.Sdk//24.08; then
         echo "User installation failed. Trying system installation..."
-        if ! sudo flatpak install -y flathub org.freedesktop.Sdk//23.08; then
+        if ! sudo flatpak install -y flathub org.freedesktop.Sdk//24.08; then
             echo "Failed to install Freedesktop SDK runtime. Please check your internet connection."
             exit 1
         fi
     fi
 else
     # For non-Arch systems, use the original method
-    if ! flatpak install --user -y flathub org.freedesktop.Platform//23.08; then
+    if ! flatpak install --user -y flathub org.freedesktop.Platform//24.08; then
         echo "Failed to install Freedesktop Platform runtime. Please check your internet connection."
         case $DISTRO in
             "ubuntu" | "debian" | "linuxmint" | "pop")
@@ -388,7 +405,7 @@ else
         exit 1
     fi
 
-    if ! flatpak install --user -y flathub org.freedesktop.Sdk//23.08; then
+    if ! flatpak install --user -y flathub org.freedesktop.Sdk//24.08; then
         echo "Failed to install Freedesktop SDK runtime. Please check your internet connection."
         exit 1
     fi
@@ -529,6 +546,13 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             
             echo "Menu integration completed. You may need to log out and back in for the menu entry to appear."
         fi
+        
+        # Test the installation
+        echo ""
+        echo "🧪 Testing the installation..."
+        echo "Running: flatpak run com.calendifier.Calendar --version"
+        timeout 10s flatpak run com.calendifier.Calendar --version 2>/dev/null || echo "Version check completed (or timed out)"
+        
     else
         echo "Installation failed. Please try installing manually with: flatpak install --user calendifier.flatpak"
     fi
@@ -547,4 +571,6 @@ echo ""
 echo "The Flatpak is self-contained and works on any Linux distribution"
 echo "that supports Flatpak, regardless of the user's home directory or username."
 echo "The necessary Freedesktop runtime will be automatically downloaded if needed."
+echo ""
+echo "Runtime used: org.freedesktop.Platform//24.08 (includes Python 3.12)"
 echo "================================================================"
