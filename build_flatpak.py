@@ -288,7 +288,12 @@ class FlatpakBuilder:
                     "name": "calendifier",
                     "buildsystem": "simple",
                     "build-commands": [
+                        "echo 'Current directory contents:'",
                         "ls -la",
+                        "echo 'Checking for packaging files:'",
+                        "ls -la setup.py pyproject.toml || echo 'Packaging files not found'",
+                        "echo 'Creating minimal setup.py if missing:'",
+                        "if [ ! -f setup.py ] && [ ! -f pyproject.toml ]; then echo 'from setuptools import setup, find_packages; setup(name=\"calendifier\", version=\"1.0.0\", packages=find_packages(), install_requires=[\"PySide6>=6.5.0\", \"ntplib>=0.4.0\", \"python-dateutil>=2.8.0\", \"holidays>=0.34\", \"icalendar>=5.0.0\", \"tzdata>=2025.2\", \"psutil>=5.9.0\"], entry_points={\"console_scripts\": [\"calendifier=main:main\"]})' > setup.py; fi",
                         "pip3 install --verbose --prefix=${FLATPAK_DEST} --no-build-isolation .",
                         "install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg",
                         "install -Dm644 assets/calendar_icon_128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png",
