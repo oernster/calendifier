@@ -252,32 +252,6 @@ class FlatpakBuilder:
         """Create the Flatpak manifest."""
         print("📝 Creating Flatpak manifest...")
         
-        # Read requirements.txt to get Python dependencies
-        requirements_path = self.project_root / "requirements.txt"
-        python_modules = []
-        
-        if requirements_path.exists():
-            with open(requirements_path, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#'):
-                        # Parse requirement (handle version specifiers)
-                        module_name = line.split('>=')[0].split('==')[0].split('<')[0].split('>')[0]
-                        python_modules.append({
-                            "name": f"python3-{module_name.lower()}",
-                            "buildsystem": "simple",
-                            "build-commands": [
-                                f"pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${{PWD}}\" --prefix=\"${{FLATPAK_DEST}}\" \"{line}\" --no-build-isolation"
-                            ],
-                            "sources": [
-                                {
-                                    "type": "file",
-                                    "url": f"https://pypi.io/packages/source/{module_name[0]}/{module_name}/{module_name}-{line.split('>=')[1] if '>=' in line else 'latest'}.tar.gz",
-                                    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-                                }
-                            ]
-                        })
-        
         manifest = {
             "app-id": APP_ID,
             "runtime": f"org.freedesktop.Platform",
@@ -297,6 +271,11 @@ class FlatpakBuilder:
                 "--talk-name=org.kde.StatusNotifierWatcher",
                 "--own-name=com.calendifier.Calendar"
             ],
+            "build-options": {
+                "env": {
+                    "PIP_CACHE_DIR": "/run/build/calendifier/pip-cache"
+                }
+            },
             "modules": [
                 {
                     "name": "python3-pip",
@@ -306,24 +285,10 @@ class FlatpakBuilder:
                     ]
                 },
                 {
-                    "name": "python3-pyside6",
-                    "buildsystem": "simple",
-                    "build-commands": [
-                        "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=\"${FLATPAK_DEST}\" PySide6>=6.5.0 --no-build-isolation"
-                    ],
-                    "sources": [
-                        {
-                            "type": "file",
-                            "url": "https://files.pythonhosted.org/packages/source/P/PySide6/PySide6-6.8.1.tar.gz",
-                            "sha256": "d50eb4e8446f1b229e72b8506e4e0b2e4b9b8b5b5b5b5b5b5b5b5b5b5b5b5b5b"
-                        }
-                    ]
-                },
-                {
                     "name": "calendifier",
                     "buildsystem": "simple",
                     "build-commands": [
-                        "pip3 install --verbose --exists-action=i --no-deps --prefix=\"${FLATPAK_DEST}\" .",
+                        "pip3 install --verbose --prefix=\"${FLATPAK_DEST}\" .",
                         "install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg",
                         "install -Dm644 assets/calendar_icon_128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png",
                         "install -Dm644 assets/calendar_icon_64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/${FLATPAK_ID}.png",

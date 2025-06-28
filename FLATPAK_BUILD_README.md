@@ -242,6 +242,14 @@ sudo pacman -S flatpak flatpak-builder python git --overwrite '*'
 python build_flatpak.py --clean --debug
 ```
 
+#### Download/Network Issues
+If you encounter 404 errors or download failures during build:
+```bash
+# Ensure you have internet access during build
+# The build process downloads Python dependencies from PyPI
+# Make sure your firewall allows flatpak-builder to access the internet
+```
+
 #### Runtime Issues
 ```bash
 # Ensure Flatpak runtimes are installed
