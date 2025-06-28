@@ -36,14 +36,14 @@ The [`build_flatpak.py`](build_flatpak.py) script creates a universal Flatpak pa
 
 ```bash
 # Automatically detect your distribution and install dependencies
-python build_flatpak.py --install-deps
+python3 build_flatpak.py --install-deps
 ```
 
 ### 2. Build the Flatpak
 
 ```bash
 # Build the Flatpak package
-python build_flatpak.py
+python3 build_flatpak.py
 ```
 
 
@@ -64,7 +64,7 @@ flatpak install -y flathub org.freedesktop.Platform//23.08
 flatpak install -y flathub org.freedesktop.Sdk//23.08
 
 # Build the package
-python build_flatpak.py
+python3 build_flatpak.py
 ```
 
 ### Fedora/RHEL/CentOS/Rocky Linux/AlmaLinux
@@ -82,7 +82,7 @@ flatpak install -y flathub org.freedesktop.Platform//23.08
 flatpak install -y flathub org.freedesktop.Sdk//23.08
 
 # Build the package
-python build_flatpak.py
+python3 build_flatpak.py
 ```
 
 ### Arch Linux/EndeavourOS/Manjaro
@@ -100,7 +100,7 @@ flatpak install -y flathub org.freedesktop.Platform//23.08
 flatpak install -y flathub org.freedesktop.Sdk//23.08
 
 # Build the package
-python build_flatpak.py
+python3 build_flatpak.py
 ```
 
 ### openSUSE (Leap/Tumbleweed)
@@ -118,7 +118,7 @@ flatpak install -y flathub org.freedesktop.Platform//23.08
 flatpak install -y flathub org.freedesktop.Sdk//23.08
 
 # Build the package
-python build_flatpak.py
+python3 build_flatpak.py
 ```
 
 ### Void Linux
@@ -136,7 +136,7 @@ flatpak install -y flathub org.freedesktop.Platform//23.08
 flatpak install -y flathub org.freedesktop.Sdk//23.08
 
 # Build the package
-python build_flatpak.py
+python3 build_flatpak.py
 ```
 
 ## 🔧 Build Options
@@ -144,7 +144,7 @@ python build_flatpak.py
 ### Command Line Arguments
 
 ```bash
-python build_flatpak.py [OPTIONS]
+python3 build_flatpak.py [OPTIONS]
 
 Options:
   --debug         Enable debug mode with verbose output
@@ -156,13 +156,13 @@ Options:
 
 ```bash
 # Clean build with debug output
-python build_flatpak.py --clean --debug
+python3 build_flatpak.py --clean --debug
 
 # Auto-install dependencies
-python build_flatpak.py --install-deps
+python3 build_flatpak.py --install-deps
 
 # Full build process
-python build_flatpak.py --install-deps --clean
+python3 build_flatpak.py --install-deps --clean
 ```
 
 ## 📦 Output Files
@@ -220,10 +220,10 @@ After installation, Calendifier will appear in your application menu with:
 #### Missing Dependencies
 ```bash
 # Check what's missing
-python build_flatpak.py
+python3 build_flatpak.py
 
 # Auto-install missing dependencies
-python build_flatpak.py --install-deps
+python3 build_flatpak.py --install-deps
 ```
 
 #### Dependency Installation Conflicts
@@ -239,7 +239,7 @@ sudo pacman -S flatpak flatpak-builder python git --overwrite '*'
 #### Build Failures
 ```bash
 # Clean and rebuild with debug output
-python build_flatpak.py --clean --debug
+python3 build_flatpak.py --clean --debug
 ```
 
 #### Download/Network Issues
@@ -272,7 +272,7 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 
 Enable debug mode for detailed build information:
 ```bash
-python build_flatpak.py --debug
+python3 build_flatpak.py --debug
 ```
 
 This will show:
