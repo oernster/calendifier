@@ -8,6 +8,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
+from version import __version__
 from calendar_app.data.models import AppSettings
 from calendar_app.localization import LocaleDetector
 
@@ -335,7 +336,7 @@ class SettingsManager:
             
             export_data = {
                 'calendar_app_settings': True,
-                'version': '1.0.0',
+                'version': __version__,
                 'settings': exportable_settings
             }
             

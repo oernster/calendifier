@@ -19,6 +19,13 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
+# Import version information from master version file
+try:
+    from version import __version__
+except ImportError:
+    # Fallback if version.py is not available
+    __version__ = '1.1.0'
+
 # Core components
 from .i18n_manager import I18nManager, MissingTranslationError, get_i18n_manager, set_i18n_manager
 from .locale_detector import LocaleDetector
@@ -331,7 +338,7 @@ def get_system_info() -> Dict[str, Any]:
         locale_detector = get_locale_detector()
         
         info = {
-            'version': '1.0.0',
+            'version': __version__,
             'total_supported_locales': len(locale_detector.get_supported_locales()),
             'current_locale': get_current_locale(),
             'system_locale': locale_detector.detect_system_locale(),
@@ -456,6 +463,5 @@ __all__ = [
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 # Module metadata
-__version__ = '1.0.0'
 __author__ = 'Calendifier Development Team'
 __description__ = 'Comprehensive 13-locale internationalization system with zero fallbacks'

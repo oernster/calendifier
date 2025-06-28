@@ -6,7 +6,7 @@ This module handles dark/light theme definitions and switching.
 
 import logging
 from typing import Dict, Any, Optional
-from version import UI_EMOJIS, THEME_DARK_ICON, THEME_LIGHT_ICON
+from version import __version__, UI_EMOJIS, THEME_DARK_ICON, THEME_LIGHT_ICON
 
 logger = logging.getLogger(__name__)
 
@@ -699,7 +699,7 @@ QWidget[class="event-holiday"] {{
             
             theme_data = {
                 "calendar_app_theme": True,
-                "version": "1.0.0",
+                "version": __version__,
                 "theme": self.themes[theme_name]
             }
             

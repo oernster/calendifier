@@ -451,8 +451,18 @@ EOL
         ;;
 esac
 
+# Extract version from version.py
+APP_VERSION=""
+if [ -f "version.py" ]; then
+    APP_VERSION=$(python3 -c "exec(open('version.py').read()); print(__version__)" 2>/dev/null || echo "1.1.0")
+else
+    APP_VERSION="1.1.0"
+fi
+
+echo "Using version: $APP_VERSION"
+
 # Create metainfo file
-cat > com.calendifier.Calendar.metainfo.xml << 'EOL'
+cat > com.calendifier.Calendar.metainfo.xml << EOL
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
   <id>com.calendifier.Calendar</id>
@@ -488,9 +498,9 @@ cat > com.calendifier.Calendar.metainfo.xml << 'EOL'
   <developer_name>Oliver Ernster</developer_name>
   <update_contact>oliver.ernster@example.com</update_contact>
   <releases>
-    <release version="1.1.0" date="2025-06-28">
+    <release version="$APP_VERSION" date="2025-06-28">
       <description>
-        <p>Version 1.1.0 with improved layout and user interface enhancements.</p>
+        <p>Version $APP_VERSION with improved layout and user interface enhancements.</p>
       </description>
     </release>
   </releases>

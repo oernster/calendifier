@@ -27,7 +27,7 @@ from PySide6.QtCore import QTimer, QThread, Signal, QObject
 from PySide6.QtGui import QIcon
 
 # Import application components
-from version import get_version_string, get_about_text, UI_EMOJIS
+from version import __version__, get_version_string, get_about_text, UI_EMOJIS
 from calendar_app.data.database import DatabaseManager
 from calendar_app.core.event_manager import EventManager
 from calendar_app.core.calendar_manager import CalendarManager
@@ -175,7 +175,7 @@ class CalendarApplication(QApplication):
         
         # Set application metadata
         self.setApplicationName("Calendar Application")
-        self.setApplicationVersion("1.0.0")
+        self.setApplicationVersion(__version__)
         self.setOrganizationName("Calendar App Team")
         self.setOrganizationDomain("calendar-app.local")
         
@@ -240,7 +240,7 @@ class CalendarApplication(QApplication):
             root_logger.addHandler(safe_console_handler)
         
         logger = logging.getLogger(__name__)
-        logger.info(f"{UI_EMOJIS['app_icon']} Starting Calendar Application v1.0.0")
+        logger.info(f"{UI_EMOJIS['app_icon']} Starting Calendar Application v{__version__}")
     
     def _setup_application(self):
         """Setup application properties and styling."""
@@ -266,7 +266,7 @@ class CalendarApplication(QApplication):
                 from ctypes import wintypes
                 
                 # Define the AppUserModelID
-                app_id = "CalendarApp.Desktop.Calendar.1.0"
+                app_id = f"CalendarApp.Desktop.Calendar.{__version__}"
                 
                 # Set the AppUserModelID
                 try:
