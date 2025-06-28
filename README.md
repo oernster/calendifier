@@ -1,4 +1,4 @@
-# 📅 Calendar Application
+# 📅 Calendar Application - Calendifier
 
 <!-- Multi-language summary -->
 **🇺🇸 English (US):** A sophisticated cross-platform desktop calendar application with comprehensive internationalization, multi-country holiday support, and real-time features.
@@ -163,7 +163,7 @@ graph LR
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/calendifier.git
+git clone https://github.com/oernster/calendifier.git
 cd calendifier
 
 # Create virtual environment
@@ -251,11 +251,11 @@ The application stores user data in:
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+I welcome contributions! Please see the [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ### 🐛 Bug Reports
 
-Please use the [GitHub Issues](https://github.com/your-username/calendifier/issues) page to report bugs. Include:
+Please use the [GitHub Issues](https://github.com/oernster/calendifier/issues) page to report bugs. Include:
 - Operating system and version
 - Python version
 - Steps to reproduce
@@ -264,11 +264,11 @@ Please use the [GitHub Issues](https://github.com/your-username/calendifier/issu
 
 ### 💡 Feature Requests
 
-We're always looking to improve! Submit feature requests via [GitHub Issues](https://github.com/your-username/calendifier/issues) with the "enhancement" label.
+I'm always looking to improve! Submit feature requests via [GitHub Issues](https://github.com/oernster/calendifier/issues) with the "enhancement" label.
 
 ### 🌍 Translations
 
-Help us support more languages! See [Adding New Languages](docs/architecture.md#-adding-new-languages) in our architecture documentation.
+Help me support more languages! See [Adding New Languages](docs/architecture.md#-adding-new-languages) in the architecture documentation.
 
 ## 📄 License
 
@@ -284,8 +284,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - 📖 **Documentation:** [Architecture Guide](docs/architecture.md)
-- 🐛 **Issues:** [GitHub Issues](https://github.com/your-username/calendifier/issues)
-- 💬 **Discussions:** [GitHub Discussions](https://github.com/your-username/calendifier/discussions)
+- 🐛 **Issues:** [GitHub Issues](https://github.com/oernster/calendifier/issues)
+- 💬 **Discussions:** [GitHub Discussions](https://github.com/oernster/calendifier/discussions)
 
 ---
 
