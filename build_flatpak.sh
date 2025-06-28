@@ -202,6 +202,7 @@ cat > com.calendifier.Calendar.json << 'EOL'
                 "echo 'Creating launcher script...'",
                 "mkdir -p ${FLATPAK_DEST}/bin",
                 "echo '#!/bin/bash' > ${FLATPAK_DEST}/bin/calendifier",
+                "echo 'export PYTHONPATH=\"/app:/app/lib/python3.11/site-packages:$PYTHONPATH\"' >> ${FLATPAK_DEST}/bin/calendifier",
                 "echo 'cd /app' >> ${FLATPAK_DEST}/bin/calendifier",
                 "echo 'exec python3 main.py \"$@\"' >> ${FLATPAK_DEST}/bin/calendifier",
                 "chmod +x ${FLATPAK_DEST}/bin/calendifier",
