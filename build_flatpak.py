@@ -751,7 +751,8 @@ calendar_app = [
     
     def create_bundle(self) -> bool:
         """Create a .flatpak bundle file for distribution."""
-        print("📦 Creating Flatpak bundle...")
+        spinner = SpinnerProgress("Creating Flatpak bundle (this may take several minutes)")
+        spinner.start()
         
         bundle_path = self.project_root / f"{APP_ID}-{APP_VERSION}.flatpak"
         
@@ -763,7 +764,37 @@ calendar_app = [
                 APP_ID
             ]
             
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            if self.debug:
+                spinner.stop(f"Running: {' '.join(cmd)}")
+                print(f"🔧 Running: {' '.join(cmd)}")
+                result = subprocess.run(cmd, text=True)
+            else:
+                # Run with timeout and progress indication
+                import signal
+                
+                def timeout_handler(signum, frame):
+                    raise TimeoutError("Bundle creation timed out")
+                
+                # Set a 10-minute timeout
+                signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(600)  # 10 minutes
+                
+                try:
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+                    signal.alarm(0)  # Cancel timeout
+                except subprocess.TimeoutExpired:
+                    spinner.stop("Bundle creation timed out after 10 minutes")
+                    print("❌ Bundle creation timed out. This might indicate:")
+                    print("   - Very large dependencies (PySide6 is ~200MB)")
+                    print("   - Slow disk I/O")
+                    print("   - System resource constraints")
+                    print("   Try running with --debug for more details")
+                    return False
+                except TimeoutError:
+                    spinner.stop("Bundle creation timed out")
+                    return False
+            
+            spinner.stop("")
             
             if result.returncode == 0:
                 size_mb = bundle_path.stat().st_size / (1024 * 1024)
@@ -775,6 +806,7 @@ calendar_app = [
                 return False
                 
         except Exception as e:
+            spinner.stop("")
             print(f"❌ Unexpected error creating bundle: {e}")
             return False
     
