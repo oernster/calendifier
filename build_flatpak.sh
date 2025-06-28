@@ -420,7 +420,49 @@ echo "Creating repository..."
 flatpak-builder --repo=repo --force-clean --user build com.calendifier.Calendar.json
 
 echo "Creating single-file bundle..."
-flatpak build-bundle repo calendifier.flatpak com.calendifier.Calendar
+
+# Function to show progress for bundle creation
+show_bundle_progress() {
+    local pid=$1
+    local chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+    local delay=0.1
+    local count=0
+    
+    while kill -0 $pid 2>/dev/null; do
+        local char=${chars:$((count % ${#chars})):1}
+        local elapsed=$((count / 10))
+        printf "\r%s Creating bundle... %02d:%02d elapsed" "$char" $((elapsed / 60)) $((elapsed % 60))
+        sleep $delay
+        ((count++))
+    done
+    
+    # Clear the progress line
+    printf "\r"
+}
+
+# Start bundle creation in background and show progress
+flatpak build-bundle repo calendifier.flatpak com.calendifier.Calendar &
+BUNDLE_PID=$!
+
+# Show progress while bundle is being created
+show_bundle_progress $BUNDLE_PID
+
+# Wait for bundle creation to complete
+wait $BUNDLE_PID
+BUNDLE_EXIT_CODE=$?
+
+if [ $BUNDLE_EXIT_CODE -eq 0 ]; then
+    echo "✅ Bundle creation completed successfully!"
+    
+    # Show bundle size if file exists
+    if [ -f "calendifier.flatpak" ]; then
+        BUNDLE_SIZE=$(du -h calendifier.flatpak | cut -f1)
+        echo "📦 Bundle size: $BUNDLE_SIZE"
+    fi
+else
+    echo "❌ Bundle creation failed with exit code $BUNDLE_EXIT_CODE"
+    exit 1
+fi
 
 echo "Done! You can install the Flatpak with:"
 echo "flatpak install --user calendifier.flatpak"
