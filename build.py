@@ -86,6 +86,12 @@ def get_nuitka_options(debug: bool = False) -> List[str]:
         # Plugin configuration
         "--enable-plugin=pyside6",  # PySide6 support
         
+        # CRITICAL: Holidays library data inclusion for Nuitka
+        "--follow-import-to=holidays",
+        "--include-module=holidays.countries",
+        "--include-package-data=holidays",
+        "--nofollow-import-to=holidays.financial",  # Exclude unused financial holidays
+        
         # Include data files and directories
         "--include-data-dir=calendar_app/localization/translations=calendar_app/localization/translations",
         "--include-data-dir=calendar_app/localization/locale_holiday_translations=calendar_app/localization/locale_holiday_translations",
@@ -93,7 +99,6 @@ def get_nuitka_options(debug: bool = False) -> List[str]:
         
         # Include package data
         "--include-package-data=calendar_app",
-        "--include-package-data=holidays",
         
         # Clean output - remove intermediate files
         "--remove-output",  # Remove build directory after successful build

@@ -475,6 +475,14 @@ class CalendarApplication(QApplication):
                 self.holiday_provider.force_locale_refresh()
                 logging.debug("✅ Forced holiday provider locale refresh after app initialization")
                 
+                # NUITKA FIX: Treat compiled executable launch like a locale switch
+                # This ensures holidays library data is properly loaded in compiled environment
+                import sys
+                if getattr(sys, 'frozen', False):
+                    logging.debug("🔥 Detected Nuitka compiled environment - performing additional holiday refresh")
+                    # Add a small delay to ensure all systems are ready
+                    QTimer.singleShot(500, lambda: self._nuitka_holiday_refresh())
+                
                 # Also refresh the calendar widget to show translated holidays
                 calendar_widget = self.main_window.get_calendar_widget()
                 if calendar_widget and hasattr(calendar_widget, 'refresh_calendar'):
@@ -493,6 +501,24 @@ class CalendarApplication(QApplication):
                 logging.debug("✅ Injected NTP client and time manager into clock widget")
         except Exception as e:
             logging.warning(f"⚠️ Failed to inject NTP client: {e}")
+    
+    def _nuitka_holiday_refresh(self):
+        """🔥 Special holiday refresh for Nuitka compiled environments."""
+        try:
+            if self.holiday_provider:
+                logging.debug("🔥 Performing Nuitka-specific holiday provider refresh")
+                # Clear cache and force complete reload
+                self.holiday_provider.clear_cache()
+                self.holiday_provider.force_locale_refresh()
+                
+                # Refresh calendar widget to show updated holidays
+                if self.main_window:
+                    calendar_widget = self.main_window.get_calendar_widget()
+                    if calendar_widget and hasattr(calendar_widget, 'refresh_calendar'):
+                        calendar_widget.refresh_calendar()
+                        logging.debug("✅ Nuitka holiday refresh completed - calendar updated")
+        except Exception as e:
+            logging.warning(f"⚠️ Nuitka holiday refresh failed: {e}")
     
     def _start_periodic_updates(self):
         """Start periodic background updates."""
