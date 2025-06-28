@@ -2,11 +2,13 @@
 🌐 NTP Client for Calendar Application
 
 This module provides NTP time synchronization functionality with fallback mechanisms.
+Supports locale-aware timezone handling.
 """
 
 import ntplib
 import logging
 import asyncio
+import zoneinfo
 from datetime import datetime, timezone
 from typing import Optional, List, Tuple
 from dataclasses import dataclass
@@ -16,15 +18,186 @@ from version import DEFAULT_NTP_SERVERS, STATUS_EMOJIS
 logger = logging.getLogger(__name__)
 
 
+def get_user_timezone() -> str:
+    """
+    Get the user's preferred timezone from settings.
+    
+    Returns:
+        str: Timezone identifier or 'auto' for system timezone
+    """
+    try:
+        # Try to get timezone from settings manager
+        from calendar_app.config.settings import SettingsManager
+        from pathlib import Path
+        
+        # Get settings file path
+        app_data_dir = Path.home() / '.calendar_app'
+        settings_file = app_data_dir / 'settings.json'
+        
+        if settings_file.exists():
+            settings_manager = SettingsManager(settings_file)
+            return settings_manager.get_timezone()
+    except Exception as e:
+        logger.debug(f"Could not get timezone from settings: {e}")
+    
+    # Default to auto (system timezone)
+    return 'auto'
+
+
+def get_system_timezone() -> str:
+    """
+    Get the system's local timezone.
+    
+    Returns:
+        str: System timezone identifier
+    """
+    try:
+        import platform
+        import subprocess
+        
+        system = platform.system()
+        if system == "Windows":
+            # Windows timezone detection with comprehensive mapping
+            try:
+                result = subprocess.run(['tzutil', '/g'], capture_output=True, text=True)
+                if result.returncode == 0:
+                    win_tz = result.stdout.strip()
+                    # Comprehensive Windows timezone to IANA mapping
+                    win_to_iana = {
+                        'GMT Standard Time': 'Europe/London',
+                        'Greenwich Standard Time': 'Europe/London',
+                        'Eastern Standard Time': 'America/New_York',
+                        'Central Standard Time': 'America/Chicago',
+                        'Mountain Standard Time': 'America/Denver',
+                        'Pacific Standard Time': 'America/Los_Angeles',
+                        'Central European Standard Time': 'Europe/Berlin',
+                        'W. Europe Standard Time': 'Europe/Paris',
+                        'Romance Standard Time': 'Europe/Paris',
+                        'Tokyo Standard Time': 'Asia/Tokyo',
+                        'China Standard Time': 'Asia/Shanghai',
+                        'India Standard Time': 'Asia/Kolkata',
+                        'Russian Standard Time': 'Europe/Moscow',
+                        'Arabic Standard Time': 'Asia/Riyadh',
+                        'E. South America Standard Time': 'America/Sao_Paulo',
+                        'Korea Standard Time': 'Asia/Seoul',
+                        'Taipei Standard Time': 'Asia/Taipei',
+                    }
+                    mapped_tz = win_to_iana.get(win_tz)
+                    if mapped_tz:
+                        return mapped_tz
+                    
+                    # If no mapping found, try to use the Windows timezone name directly
+                    # Some Windows timezone names might work with zoneinfo
+                    logger.debug(f"No mapping found for Windows timezone: {win_tz}, trying direct use")
+                    try:
+                        import zoneinfo
+                        zoneinfo.ZoneInfo(win_tz)
+                        return win_tz
+                    except Exception:
+                        pass
+            except Exception as e:
+                logger.debug(f"Windows timezone detection failed: {e}")
+        
+        elif system == "Linux" or system == "Darwin":
+            # Unix-like systems
+            try:
+                # Try reading /etc/timezone
+                with open('/etc/timezone', 'r') as f:
+                    return f.read().strip()
+            except Exception:
+                try:
+                    # Try timedatectl on systemd systems
+                    result = subprocess.run(['timedatectl', 'show', '--property=Timezone'],
+                                          capture_output=True, text=True)
+                    if result.returncode == 0:
+                        for line in result.stdout.split('\n'):
+                            if line.startswith('Timezone='):
+                                return line.split('=', 1)[1]
+                except Exception:
+                    pass
+        
+        # Try using Python's built-in timezone detection
+        try:
+            import time
+            # Get the local timezone offset
+            is_dst = time.daylight and time.localtime().tm_isdst
+            offset = -time.altzone if is_dst else -time.timezone
+            
+            # Convert offset to hours
+            offset_hours = offset // 3600
+            
+            # Map common offsets to timezones (simplified)
+            offset_to_tz = {
+                0: 'Europe/London',    # GMT/UTC
+                1: 'Europe/Berlin',    # CET
+                -5: 'America/New_York', # EST
+                -6: 'America/Chicago',  # CST
+                -7: 'America/Denver',   # MST
+                -8: 'America/Los_Angeles', # PST
+                9: 'Asia/Tokyo',       # JST
+                8: 'Asia/Shanghai',    # CST
+                5.5: 'Asia/Kolkata',   # IST (handle as 5 for simplicity)
+            }
+            
+            # Handle half-hour offsets
+            if offset % 3600 == 1800:  # 30 minutes
+                if offset_hours == 5:  # +5:30
+                    return 'Asia/Kolkata'
+            
+            return offset_to_tz.get(offset_hours, 'UTC')
+            
+        except Exception as e:
+            logger.debug(f"Python timezone detection failed: {e}")
+    
+    except Exception as e:
+        logger.debug(f"Could not detect system timezone: {e}")
+    
+    # Ultimate fallback - use Europe/London for UK systems
+    return 'Europe/London'
+
+
+def get_effective_timezone() -> zoneinfo.ZoneInfo:
+    """
+    Get the effective timezone based on user settings.
+    
+    Returns:
+        zoneinfo.ZoneInfo: Timezone object to use for time display
+    """
+    user_tz = get_user_timezone()
+    
+    if user_tz == 'auto':
+        # Use system timezone
+        system_tz = get_system_timezone()
+        try:
+            return zoneinfo.ZoneInfo(system_tz)
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to load system timezone {system_tz}: {e}")
+            # Fallback to UTC
+            return zoneinfo.ZoneInfo('UTC')
+    else:
+        # Use user-specified timezone
+        try:
+            return zoneinfo.ZoneInfo(user_tz)
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to load user timezone {user_tz}: {e}")
+            # Fallback to system timezone
+            system_tz = get_system_timezone()
+            try:
+                return zoneinfo.ZoneInfo(system_tz)
+            except Exception:
+                return zoneinfo.ZoneInfo('UTC')
+
+
 @dataclass
 class NTPResult:
-    """🌐 NTP synchronization result."""
+    """🌐 NTP synchronization result with locale-aware timezone."""
     success: bool
     server: Optional[str] = None
     offset: float = 0.0
     delay: float = 0.0
     timestamp: Optional[datetime] = None
     error: Optional[str] = None
+    locale_timezone: Optional[str] = None
     
     def get_status_emoji(self) -> str:
         """📊 Get status emoji for result."""
@@ -32,6 +205,19 @@ class NTPResult:
             return STATUS_EMOJIS["ntp_connected"]
         else:
             return STATUS_EMOJIS["ntp_disconnected"]
+    
+    def get_localized_timestamp(self) -> Optional[datetime]:
+        """🌍 Get timestamp in user's preferred timezone."""
+        if not self.timestamp:
+            return None
+            
+        try:
+            # Convert UTC timestamp to user's timezone
+            user_tz = get_effective_timezone()
+            return self.timestamp.replace(tzinfo=timezone.utc).astimezone(user_tz)
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to convert timestamp to user timezone: {e}")
+            return self.timestamp
 
 
 class NTPClient:
@@ -72,7 +258,7 @@ class NTPClient:
         return NTPResult(
             success=False,
             error=error_msg,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now()
         )
     
     async def sync_time_async(self) -> NTPResult:
@@ -101,7 +287,7 @@ class NTPClient:
         return NTPResult(
             success=False,
             error=error_msg,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now()
         )
     
     def _try_server_sync(self, server: str) -> NTPResult:
@@ -125,7 +311,8 @@ class NTPClient:
                 server=server,
                 offset=offset,
                 delay=delay,
-                timestamp=ntp_time
+                timestamp=ntp_time,
+                locale_timezone=get_user_timezone()
             )
             
         except ntplib.NTPException as e:
@@ -134,7 +321,7 @@ class NTPClient:
                 success=False,
                 server=server,
                 error=f"NTP error: {str(e)}",
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now()
             )
         except OSError as e:
             logger.debug(f"❌ Network error for {server}: {e}")
@@ -142,7 +329,7 @@ class NTPClient:
                 success=False,
                 server=server,
                 error=f"Network error: {str(e)}",
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now()
             )
         except Exception as e:
             logger.debug(f"❌ Unexpected error for {server}: {e}")
@@ -150,7 +337,7 @@ class NTPClient:
                 success=False,
                 server=server,
                 error=f"Unexpected error: {str(e)}",
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now()
             )
 
     async def _try_server(self, server: str) -> NTPResult:
@@ -178,7 +365,8 @@ class NTPClient:
                 server=server,
                 offset=offset,
                 delay=delay,
-                timestamp=ntp_time
+                timestamp=ntp_time,
+                locale_timezone=get_user_timezone()
             )
             
         except ntplib.NTPException as e:
@@ -187,7 +375,7 @@ class NTPClient:
                 success=False,
                 server=server,
                 error=f"NTP error: {str(e)}",
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now()
             )
         except OSError as e:
             logger.debug(f"❌ Network error for {server}: {e}")
@@ -217,18 +405,34 @@ class NTPClient:
         return ntp_result.success
     
     def get_adjusted_time(self, ntp_result: Optional[NTPResult] = None) -> datetime:
-        """🕐 Get current time adjusted for NTP offset."""
-        if ntp_result and ntp_result.success:
-            # Apply NTP offset to current time
-            current_time = datetime.now(timezone.utc)
-            adjusted_time = datetime.fromtimestamp(
-                current_time.timestamp() + ntp_result.offset,
-                timezone.utc
-            )
-            return adjusted_time
-        else:
-            # Fallback to system time
-            return datetime.now(timezone.utc)
+        """🕐 Get current time adjusted for NTP offset in user's preferred timezone."""
+        try:
+            # Get user's effective timezone
+            user_tz = get_effective_timezone()
+            user_tz_setting = get_user_timezone()
+            
+            if ntp_result and ntp_result.success:
+                # Apply NTP offset to current time and convert to user timezone
+                current_utc = datetime.now(timezone.utc)
+                adjusted_utc = datetime.fromtimestamp(
+                    current_utc.timestamp() + ntp_result.offset,
+                    tz=timezone.utc
+                )
+                # Convert to user timezone
+                adjusted_local = adjusted_utc.astimezone(user_tz)
+                
+                logger.debug(f"🌍 NTP adjusted time for timezone {user_tz_setting}: {adjusted_local}")
+                return adjusted_local
+            else:
+                # Fallback to current time in user timezone
+                current_local = datetime.now(user_tz)
+                logger.debug(f"🌍 System time for timezone {user_tz_setting}: {current_local}")
+                return current_local
+                
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to get timezone-aware time: {e}")
+            # Ultimate fallback to system local time
+            return datetime.now()
     
     def add_server(self, server: str):
         """➕ Add NTP server to the list."""
@@ -319,7 +523,7 @@ class TimeManager:
         return result
     
     def get_current_time(self) -> datetime:
-        """🕐 Get current time (NTP adjusted or system fallback)."""
+        """🕐 Get current time (NTP adjusted or system fallback) in locale-aware timezone."""
         return self.ntp_client.get_adjusted_time(self._last_ntp_result)
     
     def is_ntp_synced(self) -> bool:
@@ -367,3 +571,13 @@ class TimeManager:
     def remove_ntp_server(self, server: str):
         """➖ Remove NTP server."""
         self.ntp_client.remove_server(server)
+    
+    def refresh_timezone(self):
+        """🌍 Refresh timezone settings when timezone setting changes."""
+        user_timezone = get_user_timezone()
+        effective_tz = get_effective_timezone()
+        logger.info(f"🌍 Refreshed timezone setting: {user_timezone} (effective: {effective_tz})")
+        
+        # Force a new NTP sync to update with correct timezone
+        if self._is_running:
+            asyncio.create_task(self.force_sync())

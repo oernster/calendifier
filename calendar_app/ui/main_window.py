@@ -90,11 +90,11 @@ class MainWindow(QMainWindow):
     def _setup_window(self):
         """🖥️ Setup main window properties."""
         self.setWindowTitle(_("main_window_title", version=get_version_string().split('v')[1]))
-        # Set window size to ensure entire calendar is always fully visible
-        # Left panel: 400px + Right panel: 743px + Main layout margins: 16px = 1159px width
+        # Set window size to ensure entire calendar is always fully visible (with week numbers)
+        # Left panel: 400px + Right panel: 773px (with week numbers) + Main layout margins: 16px = 1189px width
         # Calendar height: 490px + header: 50px + event panel: 250px + margins: 150px = 940px minimum height
-        self.setMinimumSize(1159, 940)
-        self.setMaximumSize(1159, 16777215)  # Fixed width, flexible height
+        self.setMinimumSize(1189, 940)
+        self.setMaximumSize(1189, 16777215)  # Fixed width, flexible height
         
         # Create app icon from emoji
         self._create_app_icon()
@@ -567,7 +567,6 @@ class MainWindow(QMainWindow):
             import traceback
             logger.error(traceback.format_exc())
 
-
     def _create_central_widget(self):
         """️ Create central widget with layout."""
         central_widget = QWidget()
@@ -622,9 +621,9 @@ class MainWindow(QMainWindow):
         """📅 Create right panel with calendar and events."""
         right_panel = QWidget()
         
-        # Set maximum width to align with Sunday column
-        # Calendar width: 707px + margins: 16px + some padding: 20px = 743px
-        right_panel.setMaximumWidth(743)
+        # Set maximum width to accommodate week numbers when enabled
+        # Calendar width: 737px (with week numbers) + margins: 16px + some padding: 20px = 773px
+        right_panel.setMaximumWidth(773)
         
         layout = QVBoxLayout(right_panel)
         layout.setSpacing(8)
@@ -644,9 +643,11 @@ class MainWindow(QMainWindow):
         """🔗 Setup signal connections between components."""
         if self.calendar_widget and self.event_panel:
             # Connect calendar date selection to event panel
-            self.calendar_widget.date_selected.connect(
-                self.event_panel.show_events_for_date
-            )
+            def debug_date_selected(selected_date):
+                logger.debug(f"📅 DEBUG: Main window received date_selected signal for: {selected_date}")
+                self.event_panel.show_events_for_date(selected_date)
+            
+            self.calendar_widget.date_selected.connect(debug_date_selected)
             
             # Connect event panel changes to calendar refresh
             self.event_panel.event_created.connect(
@@ -859,6 +860,11 @@ class MainWindow(QMainWindow):
             # Update first day of week
             self.calendar_widget.set_first_day_of_week(calendar_settings['first_day_of_week'])
             
+            # Update show week numbers setting
+            show_week_numbers = calendar_settings['show_week_numbers']
+            # Week numbers are always enabled - no need to set
+            logger.debug(f"📊 Week numbers are always enabled")
+            
             # Update holiday country
             holiday_country = calendar_settings.get('holiday_country', 'GB')
             self.calendar_widget.set_holiday_country(holiday_country)
@@ -939,6 +945,25 @@ class MainWindow(QMainWindow):
         """🌍 Set holiday provider for locale-aware holiday translations."""
         self.holiday_provider = holiday_provider
         logger.debug("✅ Holiday provider injected into main window")
+    
+    def set_calendar_manager(self, calendar_manager):
+        """📅 Set calendar manager and apply initial settings."""
+        if self.calendar_widget:
+            self.calendar_widget.set_calendar_manager(calendar_manager)
+            
+            # Apply initial calendar settings
+            calendar_settings = self.settings_manager.get_calendar_settings()
+            logger.debug(f"📊 Initial calendar settings: {calendar_settings}")
+            
+            self.calendar_widget.set_first_day_of_week(calendar_settings['first_day_of_week'])
+            
+            show_week_numbers = calendar_settings['show_week_numbers']
+            # Week numbers are always enabled - no need to set
+            logger.debug(f"📊 Week numbers are always enabled")
+            
+            self.calendar_widget.set_holiday_country(calendar_settings.get('holiday_country', 'GB'))
+            
+            logger.debug("✅ Calendar manager injected and initial settings applied")
     
 
     def _force_initial_localization(self):

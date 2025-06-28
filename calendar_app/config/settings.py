@@ -285,6 +285,25 @@ class SettingsManager:
             logger.warning(f"⚠️ Invalid locale code: {locale_code}")
             return False
     
+    def get_timezone(self) -> str:
+        """🌍 Get current timezone setting."""
+        return getattr(self._settings, 'timezone', 'auto')
+    
+    def set_timezone(self, timezone: str) -> bool:
+        """🌍 Set timezone ('auto' for system timezone or specific timezone like 'Europe/London')."""
+        # Basic validation - check if it's 'auto' or a valid timezone
+        if timezone == 'auto':
+            return self.set_setting('timezone', timezone)
+        
+        # Try to validate timezone
+        try:
+            import zoneinfo
+            zoneinfo.ZoneInfo(timezone)
+            return self.set_setting('timezone', timezone)
+        except Exception as e:
+            logger.warning(f"⚠️ Invalid timezone: {timezone} - {e}")
+            return False
+    
     def set_holiday_country(self, country_code: str) -> bool:
         """🌍 Set holiday country code."""
         # Validate country code

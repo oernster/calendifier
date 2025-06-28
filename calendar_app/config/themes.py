@@ -595,6 +595,16 @@ QWidget[class="calendar-day-selected"] {{
     border: {borders['width_thick']}px solid {colors['selected']};
 }}
 
+/* Week Number Styles */
+QLabel[class="week-number"] {{
+    background-color: {colors['surface_variant']};
+    color: {colors['text_secondary']};
+    border: {borders['width']}px solid {colors['border_light']};
+    font-size: {fonts['size_small']}px;
+    font-weight: {fonts['weight_bold']};
+    text-align: center;
+}}
+
 /* Clock Widget Specific Styles */
 QWidget[class="clock-widget"] {{
     background-color: {colors['clock_face']};

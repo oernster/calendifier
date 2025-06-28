@@ -433,49 +433,55 @@ class CalendarApplication(QApplication):
     
     def _inject_component_dependencies(self):
         """Inject dependencies into main window components."""
+        if not self.main_window:
+            return
+            
+        # Get component references
         try:
-            if not self.main_window:
-                return
-                
-            # Get component references
             clock_widget = self.main_window.get_clock_widget()
             calendar_widget = self.main_window.get_calendar_widget()
             event_panel = self.main_window.get_event_panel()
-            
-            # Inject calendar manager into calendar widget
-            if calendar_widget and self.calendar_manager:
-                calendar_widget.set_calendar_manager(self.calendar_manager)
-                
-                # Apply calendar settings from settings manager
-                if self.settings_manager:
-                    calendar_settings = self.settings_manager.get_calendar_settings()
-                    calendar_widget.set_first_day_of_week(calendar_settings['first_day_of_week'])
-                    calendar_widget.set_holiday_country(calendar_settings.get('holiday_country', 'GB'))
-                
-                logging.debug("✅ Injected calendar manager and applied settings to calendar widget")
-            
-            # Inject event manager into event panel via main window
+        except Exception as e:
+            logging.error(f"Failed to get component references: {e}")
+            return
+        
+        # Inject calendar manager into calendar widget via main window
+        try:
+            if self.main_window and self.calendar_manager:
+                if hasattr(self.main_window, 'set_calendar_manager'):
+                    self.main_window.set_calendar_manager(self.calendar_manager)
+                    logging.debug("✅ Injected calendar manager and applied all settings via main window")
+        except Exception as e:
+            logging.warning(f"⚠️ Failed to inject calendar manager: {e}")
+        
+        # Inject event manager into event panel via main window
+        try:
             if self.main_window and self.event_manager:
                 if hasattr(self.main_window, 'set_event_manager'):
                     self.main_window.set_event_manager(self.event_manager)
-                    logging.debug("✅ Injected event manager into main window and event panel")
-            
-            # Inject holiday provider into main window for locale-aware translations
+                    logging.debug("✅ Injected event manager into event panel via main window")
+        except Exception as e:
+            logging.warning(f"⚠️ Failed to inject event manager: {e}")
+        
+        # Inject holiday provider into main window for locale-aware translations
+        try:
             if self.main_window and self.holiday_provider:
                 if hasattr(self.main_window, 'set_holiday_provider'):
                     self.main_window.set_holiday_provider(self.holiday_provider)
                     logging.debug("✅ Injected holiday provider into main window")
-            
-            # Inject NTP client into clock widget with TimeManager
+        except Exception as e:
+            logging.warning(f"⚠️ Failed to inject holiday provider: {e}")
+        
+        # Inject NTP client into clock widget with TimeManager
+        try:
             if clock_widget and self.ntp_client:
                 from calendar_app.utils.ntp_client import TimeManager
                 time_manager = TimeManager()
                 clock_widget.set_time_manager(time_manager)
                 clock_widget.set_ntp_client(self.ntp_client)
                 logging.debug("✅ Injected NTP client and time manager into clock widget")
-                
         except Exception as e:
-            logging.warning(f"⚠️ Failed to inject some dependencies: {e}")
+            logging.warning(f"⚠️ Failed to inject NTP client: {e}")
     
     def _start_periodic_updates(self):
         """Start periodic background updates."""

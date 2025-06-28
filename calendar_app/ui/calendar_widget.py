@@ -100,10 +100,42 @@ class CalendarDayWidget(QLabel):
         # Add holiday indicator
         if day.is_holiday and day.holiday:
             holiday_name = day.holiday.name if hasattr(day.holiday, 'name') else str(day.holiday)
-            # Truncate long holiday names to fit
-            if len(holiday_name) > 12:
-                holiday_name = holiday_name[:10] + "..."
-            html_parts.append(f'<div style="font-size: 8px; color: #d13438; margin-top: 1px;">{holiday_name}</div>')
+            
+            # Ensure ENTIRE holiday name is always visible - no truncation
+            lines = []
+            remaining_text = holiday_name
+            
+            while remaining_text:
+                if len(remaining_text) <= 12:
+                    # Fits on one line
+                    lines.append(remaining_text)
+                    break
+                else:
+                    # Need to break the line
+                    break_point = -1
+                    # Look for space between characters 8-12
+                    for i in range(8, min(12, len(remaining_text))):
+                        if remaining_text[i] == ' ':
+                            break_point = i
+                            break
+                    
+                    if break_point > 0:
+                        # Break at space
+                        lines.append(remaining_text[:break_point])
+                        remaining_text = remaining_text[break_point + 1:]
+                    else:
+                        # Break with hyphen at character 10
+                        lines.append(remaining_text[:10] + "-")
+                        remaining_text = remaining_text[10:]
+            
+            # Join lines with <br> tags
+            holiday_display = "<br>".join(lines)
+            
+            # Use smaller font for longer text to ensure it fits
+            font_size = "8px" if len(lines) > 2 else "9px" if len(lines) > 1 else "10px"
+            
+            # Use theme-aware colors: inherit from parent (white in dark mode, black in light mode)
+            html_parts.append(f'<div style="font-size: {font_size}; margin-top: 1px; text-align: left; line-height: 0.9; font-weight: bold; overflow: hidden;">{holiday_display}</div>')
         
         # Set HTML content
         self.setText("".join(html_parts))
@@ -149,6 +181,7 @@ class CalendarDayWidget(QLabel):
     def mousePressEvent(self, event):
         """🖱️ Handle mouse press."""
         if event.button() == Qt.MouseButton.LeftButton:
+            logger.debug(f"🖱️ DEBUG: Day widget clicked for date: {self.calendar_day.date}")
             self.clicked.emit(self.calendar_day.date)
         super().mousePressEvent(event)
     
@@ -302,6 +335,8 @@ class CalendarGridWidget(QWidget):
         self.calendar_month: Optional[CalendarMonth] = None
         self.day_widgets: List[List[CalendarDayWidget]] = []
         self.selected_date: Optional[date] = None
+        self.show_week_numbers: bool = True  # Always show week numbers
+        self.week_number_widgets: List[QLabel] = []
         
         self._setup_ui()
         
@@ -321,20 +356,25 @@ class CalendarGridWidget(QWidget):
         self.grid_layout.setSpacing(1)
         
         # Set fixed size for the grid widget to ensure consistent layout
-        # Width: 7 widgets * 100px + 6 spacings * 1px + 1px margin = 707px
+        # Width: 7 widgets * 100px + 6 spacings * 1px + week numbers column (30px) + 1px margin = 737px (when week numbers shown)
         # Height: 6 widgets * 80px + 5 spacings * 1px + extra margin = 490px
-        self.grid_widget.setFixedSize(707, 490)
+        self._update_grid_size()
         
         layout.addWidget(self.grid_widget)
         
         # Initialize empty grid
         self._create_empty_grid()
     
+    def _update_grid_size(self):
+        """📏 Update grid size - always includes week numbers."""
+        # Width: week numbers column (30px) + 7 widgets * 100px + 7 spacings * 1px = 737px
+        self.grid_widget.setFixedSize(737, 490)
+    
     def _create_day_headers(self, layout: QVBoxLayout):
         """📅 Create day name headers."""
-        # Create header widget with exact same width as grid widget
+        # Create header widget with width matching grid widget
         header_widget = QWidget()
-        header_widget.setFixedSize(707, 30)  # Same width as grid widget
+        self._update_header_size(header_widget)
         
         # Use QGridLayout to match the grid layout below exactly
         header_layout = QGridLayout(header_widget)
@@ -356,6 +396,10 @@ class CalendarGridWidget(QWidget):
         
         layout.addWidget(header_widget)
     
+    def _update_header_size(self, header_widget):
+        """📏 Update header size - always includes week numbers."""
+        header_widget.setFixedSize(737, 30)  # Same width as grid widget with week numbers
+    
     def _update_day_headers(self, day_names: List[str] = None):
         """📅 Update day name headers."""
         # Clear existing labels
@@ -373,19 +417,48 @@ class CalendarGridWidget(QWidget):
                 _("calendar.days_short.sun", default="Sun")
             ]
         
-        # Add new labels using grid layout to match calendar grid exactly
+        # Always add week number header
+        week_header = QLabel(_("calendar.week_short", default="Wk"))
+        week_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        week_header.setProperty("class", "secondary")
+        week_header.setFixedSize(30, 30)
+        week_header.setToolTip(_("calendar.week_number", default="Week Number"))
+        self.header_layout.addWidget(week_header, 0, 0)
+        col_offset = 1
+        
+        # Add day name labels using grid layout to match calendar grid exactly
         for col, day_name in enumerate(day_names):
             label = QLabel(day_name)
             label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             label.setProperty("class", "secondary")
             label.setFixedSize(100, 30)
-            self.header_layout.addWidget(label, 0, col)  # Row 0, column col
+            self.header_layout.addWidget(label, 0, col + col_offset)  # Row 0, column col + offset
     
     def _create_empty_grid(self):
-        """📅 Create empty calendar grid."""
-        self.day_widgets = []
+        """📅 Create empty calendar grid - always with week numbers."""
+        # Initialize lists if they don't exist
+        if not hasattr(self, 'day_widgets'):
+            self.day_widgets = []
+        if not hasattr(self, 'week_number_widgets'):
+            self.week_number_widgets = []
+        
+        # Always use column offset of 1 for week numbers
+        col_offset = 1
+        logger.debug(f"📅 Creating grid with week numbers: always enabled, col_offset: {col_offset}")
         
         for week in range(6):  # 6 weeks maximum
+            # Create week number widget
+            week_number_widget = QLabel()
+            week_number_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            week_number_widget.setProperty("class", "week-number")
+            week_number_widget.setFixedSize(30, 80)
+            
+            # Always add week number widget to grid
+            self.grid_layout.addWidget(week_number_widget, week, 0)
+            week_number_widget.hide()  # Hide until we have real data
+            
+            self.week_number_widgets.append(week_number_widget)
+            
             week_widgets = []
             for day in range(7):  # 7 days per week
                 # Create placeholder day
@@ -394,12 +467,21 @@ class CalendarGridWidget(QWidget):
                 day_widget.clicked.connect(self._day_clicked)
                 day_widget.hide()  # Hide until we have real data
                 
-                # Add widget to grid with consistent positioning
-                self.grid_layout.addWidget(day_widget, week, day)
+                # Add widget to grid with week number column offset
+                self.grid_layout.addWidget(day_widget, week, day + col_offset)
                 
                 week_widgets.append(day_widget)
             
             self.day_widgets.append(week_widgets)
+        
+        # Set row and column stretch factors to maintain proper sizing
+        for row in range(6):
+            self.grid_layout.setRowStretch(row, 1)
+        
+        # Set column stretch factors - always with week numbers
+        self.grid_layout.setColumnStretch(0, 0)  # Week number column - no stretch
+        for col in range(1, 8):  # Day columns
+            self.grid_layout.setColumnStretch(col, 1)
     
     def update_calendar(self, calendar_month: CalendarMonth):
         """📆 Update calendar with new month data."""
@@ -407,6 +489,18 @@ class CalendarGridWidget(QWidget):
         
         # Update day widgets
         for week_idx, week in enumerate(calendar_month.weeks):
+            # Always update week numbers
+            if week_idx < len(self.week_number_widgets):
+                week_number_widget = self.week_number_widgets[week_idx]
+                if week:  # If week has days
+                    # Get week number from first day of the week
+                    first_day = week[0].date
+                    week_number = first_day.isocalendar()[1]  # ISO week number
+                    week_number_widget.setText(str(week_number))
+                    week_number_widget.show()
+                else:
+                    week_number_widget.hide()
+            
             for day_idx, calendar_day in enumerate(week):
                 if week_idx < len(self.day_widgets) and day_idx < len(self.day_widgets[week_idx]):
                     day_widget = self.day_widgets[week_idx][day_idx]
@@ -415,6 +509,10 @@ class CalendarGridWidget(QWidget):
         
         # Hide unused widgets
         for week_idx in range(len(calendar_month.weeks), 6):
+            # Hide unused week number widgets
+            if week_idx < len(self.week_number_widgets):
+                self.week_number_widgets[week_idx].hide()
+            
             for day_idx in range(7):
                 if week_idx < len(self.day_widgets) and day_idx < len(self.day_widgets[week_idx]):
                     self.day_widgets[week_idx][day_idx].hide()
@@ -424,8 +522,10 @@ class CalendarGridWidget(QWidget):
     
     def _day_clicked(self, clicked_date: date):
         """📅 Handle day click."""
+        logger.debug(f"📅 DEBUG: Grid received day click for date: {clicked_date}")
         self.selected_date = clicked_date
         self._update_selection()
+        logger.debug(f"📅 DEBUG: Grid emitting date_selected signal for: {clicked_date}")
         self.date_selected.emit(clicked_date)
     
     def _update_selection(self):
@@ -444,6 +544,8 @@ class CalendarGridWidget(QWidget):
     def get_selected_date(self) -> Optional[date]:
         """📅 Get currently selected date."""
         return self.selected_date
+    
+    # Week numbers are always enabled - no toggle method needed
 
 
 class CalendarWidget(QWidget):
@@ -484,8 +586,9 @@ class CalendarWidget(QWidget):
         
         # Set size policy and fixed size for consistent layout
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        # Calculate exact size needed: 6 rows * 80px height + 7 days * 100px width + margins
-        self.setMinimumSize(714, 540)  # 7*100 + 14 margins, 6*80 + 60 margins + header
+        # Set minimum size to accommodate week numbers (largest possible size)
+        # With week numbers: 7*100 + 30 (week numbers) + 14 margins = 744px width
+        self.setMinimumSize(744, 540)
     
     def _setup_connections(self):
         """🔗 Setup signal connections."""
@@ -665,6 +768,8 @@ class CalendarWidget(QWidget):
             # Refresh calendar to show new holidays
             self.refresh_calendar()
     
+    # Week numbers are always enabled - no toggle method needed
+    
     def get_selected_date(self) -> Optional[date]:
         """📅 Get currently selected date."""
         return self.grid.get_selected_date()
@@ -733,13 +838,16 @@ class CalendarWidget(QWidget):
             if hasattr(self.header, 'refresh_ui_text'):
                 self.header.refresh_ui_text()
             
-            # Update day headers with localized day names
+            # Update day headers with localized day names AND week header
             if self.calendar_manager:
                 day_names = self.calendar_manager.get_day_names()
                 self.grid._update_day_headers(day_names)
                 
                 # Refresh holiday translations for new locale
                 self.calendar_manager.refresh_holiday_translations()
+            else:
+                # Even without calendar manager, update day headers to refresh week header text
+                self.grid._update_day_headers()
             
             # Force complete calendar refresh to update month names and holiday content
             self.refresh_calendar()

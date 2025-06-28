@@ -248,6 +248,7 @@ class AppSettings:
     
     theme: str = "dark"
     locale: str = "en_GB"  # Default to UK English
+    timezone: str = "auto"  # "auto" for system timezone, or specific timezone like "Europe/London"
     ntp_interval_minutes: int = 5
     ntp_servers: List[str] = field(default_factory=lambda: [
         "pool.ntp.org", "time.google.com", "time.cloudflare.com"
@@ -266,6 +267,7 @@ class AppSettings:
         return {
             'theme': self.theme,
             'locale': self.locale,
+            'timezone': self.timezone,
             'ntp_interval_minutes': self.ntp_interval_minutes,
             'ntp_servers': self.ntp_servers,
             'window_width': self.window_width,
@@ -284,6 +286,7 @@ class AppSettings:
         return cls(
             theme=data.get('theme', 'dark'),
             locale=data.get('locale', 'en_GB'),
+            timezone=data.get('timezone', 'auto'),
             ntp_interval_minutes=data.get('ntp_interval_minutes', 5),
             ntp_servers=data.get('ntp_servers', ["pool.ntp.org", "time.google.com", "time.cloudflare.com"]),
             window_width=data.get('window_width', 1200),

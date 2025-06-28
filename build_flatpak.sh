@@ -488,7 +488,7 @@ cat > com.calendifier.Calendar.metainfo.xml << 'EOL'
   <developer_name>Oliver Ernster</developer_name>
   <update_contact>oliver.ernster@example.com</update_contact>
   <releases>
-    <release version="1.0.0" date="2025-06-28">
+    <release version="1.0.1" date="2025-06-28">
       <description>
         <p>Initial release of Calendifier with comprehensive internationalization support.</p>
       </description>

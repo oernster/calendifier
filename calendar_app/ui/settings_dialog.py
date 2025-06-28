@@ -99,15 +99,7 @@ class GeneralSettingsWidget(QWidget):
         first_day_row.addStretch()
         calendar_layout.addLayout(first_day_row)
         
-        # Display options row
-        display_row = QHBoxLayout()
-        display_label = QLabel(f"{_('label_display_options')}")
-        display_label.setStyleSheet("border: none; padding: 0; margin: 0;")
-        self.show_week_numbers = QCheckBox(_("label_show_week_numbers"))
-        display_row.addWidget(display_label)
-        display_row.addWidget(self.show_week_numbers)
-        display_row.addStretch()
-        calendar_layout.addLayout(display_row)
+        # Display options row - removed week numbers toggle (always enabled)
         
         # Default duration row
         duration_row = QHBoxLayout()
@@ -143,7 +135,6 @@ class GeneralSettingsWidget(QWidget):
         if first_day_index >= 0:
             self.first_day_combo.setCurrentIndex(first_day_index)
         
-        self.show_week_numbers.setChecked(calendar_settings['show_week_numbers'])
         self.default_duration.setValue(calendar_settings['default_event_duration'])
     
     def save_settings(self):
@@ -159,7 +150,6 @@ class GeneralSettingsWidget(QWidget):
             if first_day_data is not None:
                 self.settings_manager.set_first_day_of_week(first_day_data)
             
-            self.settings_manager.set_show_week_numbers(self.show_week_numbers.isChecked())
             self.settings_manager.set_default_event_duration(self.default_duration.value())
             
             return True
@@ -217,9 +207,7 @@ class GeneralSettingsWidget(QWidget):
                     if index >= 0:
                         self.first_day_combo.setCurrentIndex(index)
             
-            # Update checkbox text
-            if hasattr(self, 'show_week_numbers'):
-                self.show_week_numbers.setText(_("label_show_week_numbers"))
+            # Week numbers checkbox removed - always enabled
             
             # Update spinbox suffix
             if hasattr(self, 'default_duration'):
@@ -270,6 +258,34 @@ class NTPSettingsWidget(QWidget):
         
         layout.addWidget(sync_group)
         
+        # Timezone settings
+        timezone_group = QGroupBox(f"🌍 {_('settings_timezone', default='Timezone Settings')}")
+        timezone_group.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 10px; border: none; }")
+        timezone_layout = QVBoxLayout(timezone_group)
+        timezone_layout.setSpacing(10)
+        
+        # Timezone row
+        timezone_row = QHBoxLayout()
+        timezone_label = QLabel(f"{_('label_timezone', default='Timezone')}")
+        timezone_label.setStyleSheet("border: none; padding: 0; margin: 0;")
+        self.timezone_combo = QComboBox()
+        self.timezone_combo.setMinimumWidth(200)
+        
+        # Populate timezone options
+        self._populate_timezone_combo()
+        
+        timezone_row.addWidget(timezone_label)
+        timezone_row.addWidget(self.timezone_combo)
+        timezone_row.addStretch()
+        timezone_layout.addLayout(timezone_row)
+        
+        # Timezone info label
+        timezone_info = QLabel(_("info_timezone_setting", default="Select 'Auto' to use system timezone, or choose a specific timezone"))
+        timezone_info.setStyleSheet("font-size: 10px; color: #cccccc; margin-top: 5px;")
+        timezone_layout.addWidget(timezone_info)
+        
+        layout.addWidget(timezone_group)
+        
         # NTP servers
         servers_group = QGroupBox(f"🌐 {_('settings_ntp_servers')}")
         servers_group.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 10px; border: none; }")
@@ -311,11 +327,63 @@ class NTPSettingsWidget(QWidget):
         # Add stretch
         layout.addStretch()
     
+    def _populate_timezone_combo(self):
+        """🌍 Populate timezone combo box with common timezones."""
+        # Add auto option first
+        self.timezone_combo.addItem(f"🌍 {_('timezone_auto', default='Auto (System Timezone)')}", "auto")
+        
+        # Add separator
+        self.timezone_combo.insertSeparator(1)
+        
+        # Common timezones organized by region
+        common_timezones = [
+            # Europe
+            ("🇬🇧 London (GMT/BST)", "Europe/London"),
+            ("🇫🇷 Paris (CET/CEST)", "Europe/Paris"),
+            ("🇩🇪 Berlin (CET/CEST)", "Europe/Berlin"),
+            ("🇮🇹 Rome (CET/CEST)", "Europe/Rome"),
+            ("🇪🇸 Madrid (CET/CEST)", "Europe/Madrid"),
+            ("🇷🇺 Moscow (MSK)", "Europe/Moscow"),
+            
+            # Americas
+            ("🇺🇸 New York (EST/EDT)", "America/New_York"),
+            ("🇺🇸 Chicago (CST/CDT)", "America/Chicago"),
+            ("🇺🇸 Denver (MST/MDT)", "America/Denver"),
+            ("🇺🇸 Los Angeles (PST/PDT)", "America/Los_Angeles"),
+            ("🇧🇷 São Paulo (BRT/BRST)", "America/Sao_Paulo"),
+            
+            # Asia
+            ("🇯🇵 Tokyo (JST)", "Asia/Tokyo"),
+            ("🇨🇳 Shanghai (CST)", "Asia/Shanghai"),
+            ("🇹🇼 Taipei (CST)", "Asia/Taipei"),
+            ("🇰🇷 Seoul (KST)", "Asia/Seoul"),
+            ("🇮🇳 Kolkata (IST)", "Asia/Kolkata"),
+            ("🇸🇦 Riyadh (AST)", "Asia/Riyadh"),
+            
+            # Others
+            ("🇦🇺 Sydney (AEST/AEDT)", "Australia/Sydney"),
+            ("🌍 UTC", "UTC"),
+        ]
+        
+        for display_name, timezone_id in common_timezones:
+            self.timezone_combo.addItem(display_name, timezone_id)
+    
     def _load_settings(self):
         """📥 Load current NTP settings."""
         ntp_settings = self.settings_manager.get_ntp_settings()
         
         self.sync_interval.setValue(ntp_settings['interval_minutes'])
+        
+        # Load timezone setting
+        current_timezone = self.settings_manager.get_timezone()
+        timezone_index = self.timezone_combo.findData(current_timezone)
+        if timezone_index >= 0:
+            self.timezone_combo.setCurrentIndex(timezone_index)
+        else:
+            # If timezone not found, default to auto
+            auto_index = self.timezone_combo.findData("auto")
+            if auto_index >= 0:
+                self.timezone_combo.setCurrentIndex(auto_index)
         
         # Load servers
         self.servers_list.clear()
@@ -405,6 +473,21 @@ class NTPSettingsWidget(QWidget):
         """💾 Save NTP settings."""
         try:
             self.settings_manager.set_ntp_interval(self.sync_interval.value())
+            
+            # Save timezone setting
+            timezone_data = self.timezone_combo.currentData()
+            if timezone_data:
+                self.settings_manager.set_timezone(timezone_data)
+                
+                # Refresh timezone in time manager if it exists
+                try:
+                    from calendar_app.utils.ntp_client import get_effective_timezone
+                    # Force refresh of timezone
+                    get_effective_timezone()
+                    logger.debug(f"🌍 Timezone setting saved: {timezone_data}")
+                except Exception as tz_error:
+                    logger.warning(f"⚠️ Failed to refresh timezone: {tz_error}")
+            
             return True
             
         except Exception as e:
@@ -419,6 +502,8 @@ class NTPSettingsWidget(QWidget):
                 text = widget.title()
                 if "🌐" in text and ("sync" in text.lower() or "time" in text.lower()):
                     widget.setTitle(f"🌐 {_('settings_time_synchronization')}")
+                elif "🌍" in text and "timezone" in text.lower():
+                    widget.setTitle(f"🌍 {_('settings_timezone', default='Timezone Settings')}")
                 elif "🌐" in text and "server" in text.lower():
                     widget.setTitle(f"🌐 {_('settings_ntp_servers')}")
             
@@ -427,6 +512,10 @@ class NTPSettingsWidget(QWidget):
                 text = widget.text()
                 if "sync" in text.lower() and "interval" in text.lower():
                     widget.setText(_('label_sync_interval'))
+                elif "timezone" in text.lower() and "auto" not in text.lower():
+                    widget.setText(_('label_timezone', default='Timezone'))
+                elif "auto" in text.lower() and "system" in text.lower():
+                    widget.setText(_("info_timezone_setting", default="Select 'Auto' to use system timezone, or choose a specific timezone"))
                 elif "configure" in text.lower() or "ntp" in text.lower():
                     widget.setText(_('info_configure_ntp_servers'))
             
@@ -441,6 +530,16 @@ class NTPSettingsWidget(QWidget):
                 self.remove_server_btn.setText(f"➖ {_('button_remove_server')}")
             if hasattr(self, 'reset_servers_btn'):
                 self.reset_servers_btn.setText(f"🔄 {_('button_reset_servers')}")
+            
+            # Update timezone combo box
+            if hasattr(self, 'timezone_combo'):
+                current_data = self.timezone_combo.currentData()
+                self.timezone_combo.clear()
+                self._populate_timezone_combo()
+                if current_data:
+                    index = self.timezone_combo.findData(current_data)
+                    if index >= 0:
+                        self.timezone_combo.setCurrentIndex(index)
             
             logger.debug("🔄 NTP settings UI text refreshed")
         except Exception as e:
