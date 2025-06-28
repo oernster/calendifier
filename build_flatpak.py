@@ -257,9 +257,6 @@ class FlatpakBuilder:
             "runtime": f"org.freedesktop.Platform",
             "runtime-version": RUNTIME_VERSION,
             "sdk": f"org.freedesktop.Sdk",
-            "sdk-extensions": [
-                "org.freedesktop.Sdk.Extension.python3"
-            ],
             "command": "calendifier",
             "finish-args": [
                 "--share=ipc",
