@@ -257,6 +257,9 @@ class FlatpakBuilder:
             "runtime": f"org.freedesktop.Platform",
             "runtime-version": RUNTIME_VERSION,
             "sdk": f"org.freedesktop.Sdk",
+            "sdk-extensions": [
+                "org.freedesktop.Sdk.Extension.python3"
+            ],
             "command": "calendifier",
             "finish-args": [
                 "--share=ipc",
@@ -273,15 +276,33 @@ class FlatpakBuilder:
             ],
             "build-options": {
                 "env": {
-                    "PIP_CACHE_DIR": "/run/build/calendifier/pip-cache"
-                }
+                    "PIP_CACHE_DIR": "/run/build/calendifier/pip-cache",
+                    "PATH": "/app/bin:/usr/bin",
+                    "PYTHONPATH": "/app/lib/python3.11/site-packages"
+                },
+                "build-args": [
+                    "--share=network"
+                ]
             },
             "modules": [
                 {
                     "name": "python3-pip",
                     "buildsystem": "simple",
                     "build-commands": [
-                        "python3 -m ensurepip"
+                        "python3 -m ensurepip --upgrade"
+                    ]
+                },
+                {
+                    "name": "python-dependencies",
+                    "buildsystem": "simple",
+                    "build-commands": [
+                        "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} PySide6>=6.5.0",
+                        "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} ntplib>=0.4.0",
+                        "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} python-dateutil>=2.8.0",
+                        "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} holidays>=0.34",
+                        "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} icalendar>=5.0.0",
+                        "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} tzdata>=2025.2",
+                        "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} psutil>=5.9.0"
                     ]
                 },
                 {
@@ -290,11 +311,23 @@ class FlatpakBuilder:
                     "build-commands": [
                         "echo 'Current directory contents:'",
                         "ls -la",
-                        "echo 'Checking for packaging files:'",
-                        "ls -la setup.py pyproject.toml || echo 'Packaging files not found'",
-                        "echo 'Creating minimal setup.py if missing:'",
-                        "if [ ! -f setup.py ] && [ ! -f pyproject.toml ]; then echo 'from setuptools import setup, find_packages; setup(name=\"calendifier\", version=\"1.0.0\", packages=find_packages(), install_requires=[\"PySide6>=6.5.0\", \"ntplib>=0.4.0\", \"python-dateutil>=2.8.0\", \"holidays>=0.34\", \"icalendar>=5.0.0\", \"tzdata>=2025.2\", \"psutil>=5.9.0\"], entry_points={\"console_scripts\": [\"calendifier=main:main\"]})' > setup.py; fi",
-                        "pip3 install --verbose --prefix=${FLATPAK_DEST} --no-build-isolation .",
+                        "echo 'Creating setup.py:'",
+                        "cat > setup.py << 'EOF'",
+                        "from setuptools import setup, find_packages",
+                        "setup(",
+                        "    name='calendifier',",
+                        "    version='1.0.0',",
+                        "    packages=find_packages(),",
+                        "    include_package_data=True,",
+                        "    package_data={",
+                        "        'calendar_app': ['localization/translations/*.json', 'localization/locale_holiday_translations/*.json'],",
+                        "        '': ['assets/*', 'LICENSE', 'README.md']",
+                        "    },",
+                        "    entry_points={'console_scripts': ['calendifier=main:main']},",
+                        "    install_requires=[]",
+                        ")",
+                        "EOF",
+                        "python3 setup.py install --prefix=${FLATPAK_DEST}",
                         "install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg",
                         "install -Dm644 assets/calendar_icon_128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png",
                         "install -Dm644 assets/calendar_icon_64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/${FLATPAK_ID}.png",
