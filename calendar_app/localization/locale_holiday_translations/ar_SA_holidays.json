@@ -1,0 +1,23 @@
+{
+  "locale": "ar_SA",
+  "language": "Arabic (Saudi Arabia)",
+  "holiday_translations": {
+    "New Year's Day": "رأس السنة الميلادية",
+    "Labor Day": "عيد العمال",
+    "National Day": "اليوم الوطني",
+    "Eid al-Fitr": "عيد الفطر",
+    "Eid al-Adha": "عيد الأضحى",
+    "Prophet's Birthday": "المولد النبوي",
+    "Prophet's Birthday (estimated)": "المولد النبوي (تقديري)",
+    "Eid al-Adha (estimated)": "عيد الأضحى (تقديري)",
+    "Eid al-Fitr (estimated)": "عيد الفطر (تقديري)",
+    "Arafat Day": "يوم عرفة",
+    "Arafat Day (estimated)": "يوم عرفة (تقديري)",
+    "Day off": "يوم عطلة",
+    "observed": "ملاحظ",
+    "substituted from": "بديل من",
+    "Day off (observed)": "يوم عطلة (ملاحظ)",
+    "National Day (observed)": "اليوم الوطني (ملاحظ)",
+    "Labor Day (observed)": "عيد العمال (ملاحظ)"
+  }
+}

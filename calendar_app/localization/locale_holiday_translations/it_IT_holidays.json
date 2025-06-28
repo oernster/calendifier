@@ -1,0 +1,26 @@
+{
+  "locale": "it_IT",
+  "language": "Italian (Italy)",
+  "holiday_translations": {
+    "New Year's Day": "Capodanno",
+    "Labor Day": "Festa del Lavoro",
+    "Christmas Day": "Natale",
+    "Christmas Eve": "Vigilia di Natale",
+    "Good Friday": "Venerdì Santo",
+    "Easter Monday": "Lunedì dell'Angelo",
+    "Republic Day": "Festa della Repubblica",
+    "Assumption of Mary": "Assunzione di Maria",
+    "All Saints' Day": "Ognissanti",
+    "Immaculate Conception": "Immacolata Concezione",
+    "Epiphany": "Epifania",
+    "Liberation Day": "Festa della Liberazione",
+    "Saint Stephen's Day": "Santo Stefano",
+    "Day off": "Giorno libero",
+    "observed": "osservato",
+    "substituted from": "sostituito da",
+    "Day off (observed)": "Giorno libero (osservato)",
+    "Christmas Day (observed)": "Natale (osservato)",
+    "Labor Day (observed)": "Festa del Lavoro (osservato)",
+    "Republic Day (observed)": "Festa della Repubblica (osservato)"
+  }
+}

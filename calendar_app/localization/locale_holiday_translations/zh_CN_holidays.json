@@ -1,0 +1,27 @@
+{
+  "locale": "zh_CN",
+  "language": "Chinese (Simplified)",
+  "holiday_translations": {
+    "New Year's Day": "元旦",
+    "Labor Day": "劳动节",
+    "Christmas Day": "圣诞节",
+    "National Day": "国庆节",
+    "Spring Festival": "春节",
+    "Qingming Festival": "清明节",
+    "Dragon Boat Festival": "端午节",
+    "Mid-Autumn Festival": "中秋节",
+    "National Day Holiday": "国庆节假期",
+    "Tomb-Sweeping Day": "清明节",
+    "Chinese New Year": "春节",
+    "Chinese New Year's Eve": "除夕",
+    "The second day of Chinese New Year": "春节第二天",
+    "The third day of Chinese New Year": "春节第三天",
+    "Day off": "休息日",
+    "observed": "调休",
+    "substituted from": "从调休",
+    "Day off (observed)": "休息日 (调休)",
+    "National Day (observed)": "国庆节 (调休)",
+    "Labor Day (observed)": "劳动节 (调休)",
+    "Spring Festival (observed)": "春节 (调休)"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "locale": "es_ES",
+  "language": "Spanish (Spain)",
+  "holiday_translations": {
+    "New Year's Day": "Año Nuevo",
+    "Labor Day": "Día del Trabajo",
+    "Christmas Day": "Navidad",
+    "Christmas Eve": "Nochebuena",
+    "Good Friday": "Viernes Santo",
+    "Easter Monday": "Lunes de Pascua",
+    "National Day": "Fiesta Nacional",
+    "Constitution Day": "Día de la Constitución",
+    "Immaculate Conception": "Inmaculada Concepción",
+    "Epiphany": "Día de Reyes",
+    "Assumption of Mary": "Asunción de la Virgen",
+    "All Saints' Day": "Día de Todos los Santos",
+    "Maundy Thursday": "Jueves Santo",
+    "Independence Day": "Día de la Independencia",
+    "Columbus Day": "Día de la Hispanidad",
+    "Day off": "Día libre",
+    "observed": "observado",
+    "substituted from": "sustituido desde",
+    "Day off (observed)": "Día libre (observado)",
+    "Christmas Day (observed)": "Navidad (observado)",
+    "Labor Day (observed)": "Día del Trabajo (observado)",
+    "National Day (observed)": "Fiesta Nacional (observado)"
+  }
+}

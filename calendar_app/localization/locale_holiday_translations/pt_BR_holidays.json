@@ -1,0 +1,26 @@
+{
+  "locale": "pt_BR",
+  "language": "Portuguese (Brazil)",
+  "holiday_translations": {
+    "New Year's Day": "Ano Novo",
+    "Labor Day": "Dia do Trabalhador",
+    "Christmas Day": "Natal",
+    "Christmas Eve": "Véspera de Natal",
+    "Good Friday": "Sexta-feira Santa",
+    "Independence Day": "Dia da Independência",
+    "Our Lady of Aparecida": "Nossa Senhora Aparecida",
+    "All Souls' Day": "Finados",
+    "Proclamation of the Republic": "Proclamação da República",
+    "Tiradentes' Day": "Tiradentes",
+    "Carnival": "Carnaval",
+    "Corpus Christi": "Corpus Christi",
+    "Universal Fraternization Day": "Confraternização Universal",
+    "Day off": "Dia de folga",
+    "observed": "observado",
+    "substituted from": "substituído de",
+    "Day off (observed)": "Dia de folga (observado)",
+    "Christmas Day (observed)": "Natal (observado)",
+    "Labor Day (observed)": "Dia do Trabalhador (observado)",
+    "Independence Day (observed)": "Dia da Independência (observado)"
+  }
+}
