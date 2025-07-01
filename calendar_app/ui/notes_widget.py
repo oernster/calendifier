@@ -92,8 +92,8 @@ class NotesWidget(QWidget):
         button_layout.addStretch()
         layout.addLayout(button_layout)
         
-        # Set appropriate height for the notes widget to fit without overlapping
-        self.setFixedHeight(380)
+        # Set reduced height for the notes widget to give more space to clock above
+        self.setFixedHeight(280)
     
     def _apply_styling(self):
         """🎨 Apply post-it note styling."""

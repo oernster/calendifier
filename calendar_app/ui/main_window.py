@@ -608,13 +608,13 @@ class MainWindow(QMainWindow):
         layout.setSpacing(16)
         layout.setContentsMargins(8, 8, 8, 8)
         
-        # Clock widget (now centered within itself)
+        # Clock widget - give it more space to ensure buttons are visible
         self.clock_widget = ClockWidget()
-        layout.addWidget(self.clock_widget)
+        layout.addWidget(self.clock_widget, 3)
         
-        # Notes widget
+        # Notes widget - reduce its vertical space at the top only
         self.notes_widget = NotesWidget()
-        layout.addWidget(self.notes_widget)
+        layout.addWidget(self.notes_widget, 2)
         
         return left_panel
     

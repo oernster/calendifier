@@ -435,26 +435,30 @@ class ClockWidget(QWidget):
     def _setup_ui(self):
         """🏗️ Setup clock widget UI."""
         layout = QVBoxLayout(self)
-        layout.setSpacing(16)
+        layout.setSpacing(8)
         layout.setContentsMargins(8, 8, 8, 8)
         
-        # Analog clock with minimal weight
+        # Analog clock - force it to take up proper space
         self.analog_clock = AnalogClockWidget()
-        layout.addWidget(self.analog_clock, 1, Qt.AlignmentFlag.AlignCenter)
+        self.analog_clock.setMinimumHeight(320)  # Force minimum height to prevent overlap
+        layout.addWidget(self.analog_clock, 0, Qt.AlignmentFlag.AlignCenter)
         
-        # Add massive stretch to force digital components way down
-        layout.addStretch(10)
+        # Add significant spacing to force separation
+        layout.addSpacing(40)
         
-        # Digital display with no weight - stays at bottom
+        # Digital display - ensure it's below the analog clock
         self.digital_display = DigitalDisplayWidget()
         layout.addWidget(self.digital_display, 0, Qt.AlignmentFlag.AlignCenter)
         
-        # Add extra spacing between digital display and theme controls
-        layout.addSpacing(12)
+        # Add spacing between digital display and theme controls
+        layout.addSpacing(16)
         
-        # Theme controls with no weight - stays at bottom
+        # Theme controls - ensure they're at the bottom
         self.theme_controls = ThemeControlWidget(self.theme_manager)
         layout.addWidget(self.theme_controls, 0, Qt.AlignmentFlag.AlignCenter)
+        
+        # Add stretch to fill remaining space
+        layout.addStretch(1)
     
     def _setup_timer(self):
         """⏰ Setup update timer."""
