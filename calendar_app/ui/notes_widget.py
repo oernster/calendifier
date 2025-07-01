@@ -92,8 +92,14 @@ class NotesWidget(QWidget):
         button_layout.addStretch()
         layout.addLayout(button_layout)
         
-        # Set reduced height for the notes widget to give more space to clock above
-        self.setFixedHeight(280)
+        # Set platform-specific height for the notes widget
+        import platform
+        if platform.system() == "Linux":
+            # Smaller height for Linux to ensure buttons are visible on smaller screens
+            self.setFixedHeight(220)
+        else:
+            # Standard height for Windows/macOS
+            self.setFixedHeight(280)
     
     def _apply_styling(self):
         """🎨 Apply post-it note styling."""
