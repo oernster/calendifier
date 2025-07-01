@@ -226,15 +226,6 @@ chmod +x build_flatpak.sh
 ./build_flatpak.sh
 ```
 
-**Alternative Python Script** (legacy, may have compatibility issues):
-```bash
-# Auto-install dependencies and build
-python build_flatpak.py --install-deps
-
-# Build with clean environment
-python build_flatpak.py --clean
-```
-
 **Output**: `.flatpak` bundle and repository in project directory
 
 **Supported Distributions**:
