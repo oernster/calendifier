@@ -89,7 +89,7 @@ The application automatically detects and displays holidays for 14 countries wit
 | 🇸🇦 Saudi Arabia | الأعياد الوطنية | ✅ |
 
 ## Screen shot
-![image](https://github.com/user-attachments/assets/ce8ae063-33a0-475f-8e54-e718ec1205ac)
+![image](https://github.com/user-attachments/assets/7ccf4a75-472e-429d-be05-195aaccb8411)
 
 ## 🚀 Quick Start
 
