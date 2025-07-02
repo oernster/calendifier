@@ -1,0 +1,14 @@
+# Build configuration for Calendifier Home Assistant Add-on
+build_from:
+  aarch64: "ghcr.io/home-assistant/aarch64-base:3.18"
+  amd64: "ghcr.io/home-assistant/amd64-base:3.18"
+  armhf: "ghcr.io/home-assistant/armhf-base:3.18"
+  armv7: "ghcr.io/home-assistant/armv7-base:3.18"
+  i386: "ghcr.io/home-assistant/i386-base:3.18"
+labels:
+  org.opencontainers.image.title: "Calendifier"
+  org.opencontainers.image.description: "Comprehensive calendar application with multi-language support"
+  org.opencontainers.image.source: "https://github.com/oernster/calendifier"
+  org.opencontainers.image.licenses: "MIT"
+args:
+  CALENDIFIER_VERSION: "1.0.0"

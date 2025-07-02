@@ -1,0 +1,299 @@
+create_event:
+  name: Create Event
+  description: Create a new calendar event
+  fields:
+    title:
+      name: Title
+      description: Event title
+      required: true
+      selector:
+        text:
+    description:
+      name: Description
+      description: Event description
+      required: false
+      selector:
+        text:
+          multiline: true
+    start_date:
+      name: Start Date
+      description: Event start date
+      required: true
+      selector:
+        date:
+    start_time:
+      name: Start Time
+      description: Event start time
+      required: false
+      selector:
+        time:
+    end_date:
+      name: End Date
+      description: Event end date
+      required: false
+      selector:
+        date:
+    end_time:
+      name: End Time
+      description: Event end time
+      required: false
+      selector:
+        time:
+    is_all_day:
+      name: All Day
+      description: Whether this is an all-day event
+      required: false
+      default: false
+      selector:
+        boolean:
+    category:
+      name: Category
+      description: Event category
+      required: false
+      default: "default"
+      selector:
+        select:
+          options:
+            - "default"
+            - "work"
+            - "personal"
+            - "holiday"
+            - "meeting"
+            - "meal"
+            - "travel"
+            - "health"
+            - "education"
+            - "celebration"
+            - "reminder"
+    color:
+      name: Color
+      description: Event color
+      required: false
+      default: "#0078d4"
+      selector:
+        color_rgb:
+
+update_event:
+  name: Update Event
+  description: Update an existing calendar event
+  fields:
+    event_id:
+      name: Event ID
+      description: ID of the event to update
+      required: true
+      selector:
+        number:
+          min: 1
+    title:
+      name: Title
+      description: Event title
+      required: true
+      selector:
+        text:
+    description:
+      name: Description
+      description: Event description
+      required: false
+      selector:
+        text:
+          multiline: true
+    start_date:
+      name: Start Date
+      description: Event start date
+      required: true
+      selector:
+        date:
+    start_time:
+      name: Start Time
+      description: Event start time
+      required: false
+      selector:
+        time:
+    end_date:
+      name: End Date
+      description: Event end date
+      required: false
+      selector:
+        date:
+    end_time:
+      name: End Time
+      description: Event end time
+      required: false
+      selector:
+        time:
+    is_all_day:
+      name: All Day
+      description: Whether this is an all-day event
+      required: false
+      default: false
+      selector:
+        boolean:
+    category:
+      name: Category
+      description: Event category
+      required: false
+      default: "default"
+      selector:
+        select:
+          options:
+            - "default"
+            - "work"
+            - "personal"
+            - "holiday"
+            - "meeting"
+            - "meal"
+            - "travel"
+            - "health"
+            - "education"
+            - "celebration"
+            - "reminder"
+    color:
+      name: Color
+      description: Event color
+      required: false
+      default: "#0078d4"
+      selector:
+        color_rgb:
+
+delete_event:
+  name: Delete Event
+  description: Delete a calendar event
+  fields:
+    event_id:
+      name: Event ID
+      description: ID of the event to delete
+      required: true
+      selector:
+        number:
+          min: 1
+
+sync_ntp:
+  name: Sync NTP
+  description: Force NTP time synchronization
+  fields: {}
+
+import_calendar:
+  name: Import Calendar
+  description: Import calendar data from file
+  fields:
+    file_path:
+      name: File Path
+      description: Path to the calendar file to import
+      required: true
+      selector:
+        text:
+    format:
+      name: Format
+      description: File format
+      required: false
+      default: "ics"
+      selector:
+        select:
+          options:
+            - "ics"
+            - "csv"
+            - "json"
+
+export_calendar:
+  name: Export Calendar
+  description: Export calendar data to file
+  fields:
+    file_path:
+      name: File Path
+      description: Path where to save the exported file
+      required: true
+      selector:
+        text:
+    format:
+      name: Format
+      description: Export format
+      required: false
+      default: "ics"
+      selector:
+        select:
+          options:
+            - "ics"
+            - "csv"
+            - "json"
+    start_date:
+      name: Start Date
+      description: Start date for export range
+      required: false
+      selector:
+        date:
+    end_date:
+      name: End Date
+      description: End date for export range
+      required: false
+      selector:
+        date:
+
+update_settings:
+  name: Update Settings
+  description: Update Calendifier settings
+  fields:
+    locale:
+      name: Locale
+      description: Language/locale setting
+      required: false
+      selector:
+        select:
+          options:
+            - "en_US"
+            - "en_GB"
+            - "es_ES"
+            - "fr_FR"
+            - "de_DE"
+            - "it_IT"
+            - "pt_BR"
+            - "ru_RU"
+            - "zh_CN"
+            - "zh_TW"
+            - "ja_JP"
+            - "ko_KR"
+            - "hi_IN"
+            - "ar_SA"
+    theme:
+      name: Theme
+      description: UI theme
+      required: false
+      selector:
+        select:
+          options:
+            - "dark"
+            - "light"
+    holiday_country:
+      name: Holiday Country
+      description: Country for holiday display
+      required: false
+      selector:
+        select:
+          options:
+            - "US"
+            - "GB"
+            - "ES"
+            - "FR"
+            - "DE"
+            - "IT"
+            - "BR"
+            - "RU"
+            - "CN"
+            - "TW"
+            - "JP"
+            - "KR"
+            - "IN"
+            - "SA"
+    first_day_of_week:
+      name: First Day of Week
+      description: First day of the week (0=Monday, 6=Sunday)
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 6
+    show_week_numbers:
+      name: Show Week Numbers
+      description: Whether to show week numbers in calendar
+      required: false
+      selector:
+        boolean:

@@ -1,0 +1,65 @@
+name: Calendifier
+version: "1.0.0"
+slug: calendifier
+description: "Comprehensive calendar application with multi-language support and locale-aware holidays"
+url: "https://github.com/oernster/calendifier"
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+startup: services
+boot: auto
+init: false
+hassio_api: true
+hassio_role: default
+homeassistant_api: true
+host_network: false
+privileged:
+  - SYS_TIME
+ports:
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: "Calendifier Web Interface"
+webui: "http://[HOST]:[PORT:8099]"
+panel_icon: mdi:calendar
+panel_title: Calendifier
+panel_admin: false
+map:
+  - addon_config:rw
+  - share:rw
+  - ssl:ro
+options:
+  log_level: info
+  locale: auto
+  timezone: auto
+  holiday_country: auto
+  theme: dark
+  ntp_servers:
+    - pool.ntp.org
+    - time.google.com
+    - time.cloudflare.com
+  ntp_interval: 5
+  first_day_of_week: 0
+  show_week_numbers: true
+  default_event_duration: 60
+  ssl: false
+  certfile: fullchain.pem
+  keyfile: privkey.pem
+schema:
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  locale: str?
+  timezone: str?
+  holiday_country: str?
+  theme: list(dark|light)
+  ntp_servers:
+    - str
+  ntp_interval: int(1,1440)
+  first_day_of_week: int(0,6)
+  show_week_numbers: bool
+  default_event_duration: int(15,1440)
+  ssl: bool
+  certfile: str
+  keyfile: str
+image: "ghcr.io/oernster/calendifier-addon-{arch}"

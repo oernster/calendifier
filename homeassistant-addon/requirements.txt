@@ -1,0 +1,19 @@
+# FastAPI and web server dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+websockets>=12.0
+python-multipart>=0.0.6
+
+# Existing Calendifier dependencies
+PySide6>=6.5.0
+ntplib>=0.4.0
+python-dateutil>=2.8.0
+holidays>=0.34
+icalendar>=5.0.0
+tzdata>=2025.2
+psutil>=5.9.0
+
+# Additional dependencies for Home Assistant integration
+pydantic>=2.5.0
+aiofiles>=23.2.1
+jinja2>=3.1.2
