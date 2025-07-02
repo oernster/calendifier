@@ -89,7 +89,7 @@ The application automatically detects and displays holidays for 14 countries wit
 | 🇸🇦 Saudi Arabia | الأعياد الوطنية | ✅ |
 
 ## Screen shot
-![image](https://github.com/user-attachments/assets/cf719f46-9f10-418c-bff7-5145aa4ac762)
+![image](https://github.com/user-attachments/assets/7ccf4a75-472e-429d-be05-195aaccb8411)
 
 ## 🚀 Quick Start
 
@@ -224,15 +224,6 @@ chmod +x build_flatpak.sh
 
 # Run the build script with automatic dependency installation
 ./build_flatpak.sh
-```
-
-**Alternative Python Script** (legacy, may have compatibility issues):
-```bash
-# Auto-install dependencies and build
-python build_flatpak.py --install-deps
-
-# Build with clean environment
-python build_flatpak.py --clean
 ```
 
 **Output**: `.flatpak` bundle and repository in project directory
