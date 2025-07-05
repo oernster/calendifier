@@ -30,7 +30,7 @@ class I18nManager:
     and runtime language switching.
     """
     
-    def __init__(self, locale: str = "en_US", strict_mode: bool = False, translations_dir: Optional[Union[str, Path]] = None):
+    def __init__(self, locale: str = "en_GB", strict_mode: bool = False, translations_dir: Optional[Union[str, Path]] = None):
         """
         Initialize the I18n Manager.
         
@@ -41,7 +41,7 @@ class I18nManager:
         """
         self.default_locale = locale
         self.current_locale = locale
-        self.fallback_locale = "en_US"
+        self.fallback_locale = "en_GB"
         self.strict_mode = strict_mode
         
         # Set translations directory

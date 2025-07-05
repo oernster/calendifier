@@ -70,7 +70,7 @@ def _initialize_startup_locale():
         
     except Exception as e:
         print(f"⚠️ Early locale initialization failed: {e}")
-        set_locale('en_US')  # Use en_US as fallback instead of en_GB
+        set_locale('en_GB')  # Use en_GB as fallback to match our default settings
 
 # Initialize locale immediately
 _initialize_startup_locale()

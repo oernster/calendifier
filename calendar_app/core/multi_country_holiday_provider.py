@@ -330,8 +330,8 @@ class MultiCountryHolidayProvider:
             country_code: ISO 3166-1 alpha-2 country code (defaults to GB for United Kingdom)
         """
         self.country_code = country_code.upper()
-        self._holiday_cache: Dict[int, holidays.HolidayBase] = {}
-        self._fallback_cache: Dict[int, Dict[date, str]] = {}
+        self._holiday_cache: Dict[str, holidays.HolidayBase] = {}
+        self._fallback_cache: Dict[str, Dict[date, str]] = {}
         
         # Validate country code
         if self.country_code not in self.SUPPORTED_COUNTRIES:
@@ -355,8 +355,8 @@ class MultiCountryHolidayProvider:
             except Exception as i18n_error:
                 logger.debug(f"🌍 I18n manager not available: {i18n_error}")
             
-            # If I18n manager failed or returned default, try to get from settings manager
-            if not current_locale or current_locale in ['en_US', 'en_GB']:
+            # If I18n manager failed, try to get from settings manager
+            if not current_locale:
                 try:
                     from calendar_app.config.settings import SettingsManager
                     from pathlib import Path
@@ -364,37 +364,37 @@ class MultiCountryHolidayProvider:
                     settings_file = app_data_dir / "settings.json"
                     settings_manager = SettingsManager(settings_file)
                     settings_locale = settings_manager.get_locale()
-                    if settings_locale and settings_locale not in ['en_US', 'en_GB']:
+                    if settings_locale:
                         current_locale = settings_locale
                         logger.debug(f"🌍 Holiday provider using locale from settings: {current_locale}")
                 except Exception as settings_error:
                     logger.debug(f"🌍 Settings manager not available: {settings_error}")
             
-            # If still no valid locale, try system locale detection
-            if not current_locale or current_locale in ['en_US', 'en_GB']:
+            # If still no locale, try system locale detection
+            if not current_locale:
                 try:
                     from calendar_app.localization.locale_detector import LocaleDetector
                     detector = LocaleDetector()
                     detected_locale = detector.detect_system_locale()
-                    if detected_locale and detected_locale not in ['en_US', 'en_GB']:
+                    if detected_locale:
                         current_locale = detected_locale
                         logger.debug(f"🌍 Holiday provider using detected system locale: {current_locale}")
                 except Exception as detect_error:
                     logger.debug(f"🌍 System locale detection failed: {detect_error}")
             
-            # Final fallback
+            # Final fallback - use GB instead of US to match our default settings
             if not current_locale:
-                current_locale = 'en_US'
-                logger.debug(f"🌍 Holiday provider falling back to en_US locale")
+                current_locale = 'en_GB'
+                logger.debug(f"🌍 Holiday provider falling back to en_GB locale")
             
-            # AUTOMATIC COUNTRY MATCHING: Update country to match current locale
-            self._auto_update_country_from_locale(current_locale)
+            # Note: Removed automatic country updating to prevent overriding explicit country settings
+            # The country should be set explicitly via set_country() method
             
             return current_locale
         except Exception as e:
-            # Ultimate fallback to English if everything fails
-            logger.debug(f"🌍 Holiday provider falling back to en_US locale due to error: {e}")
-            return 'en_US'
+            # Ultimate fallback to English if everything fails - use GB to match our default settings
+            logger.debug(f"🌍 Holiday provider falling back to en_GB locale due to error: {e}")
+            return 'en_GB'
     
     def _auto_update_country_from_locale(self, locale: str) -> None:
         """Automatically update country to match the current locale."""
@@ -476,10 +476,15 @@ class MultiCountryHolidayProvider:
             return
         
         if new_code != self.country_code:
+            old_country = self.country_code
             self.country_code = new_code
             self._holiday_cache.clear()
             self._fallback_cache.clear()
-            logger.debug(f"🌍 Changed country to {self.get_country_display_name()}")
+            logger.debug(f"🌍 Changed country from {old_country} to {self.get_country_display_name()}")
+            
+            # Force refresh locale detection after country change
+            current_locale = self._get_current_locale()
+            logger.debug(f"🌍 Refreshed locale after country change: {current_locale}")
     
     def _filter_holidays(self, holiday_dict: Dict[date, str]) -> Dict[date, str]:
         """Filter out holidays that shouldn't appear in this country."""
@@ -593,7 +598,8 @@ class MultiCountryHolidayProvider:
     
     def _get_holidays_for_year(self, year: int) -> holidays.HolidayBase:
         """Get holidays for a specific year with caching."""
-        if year not in self._holiday_cache:
+        cache_key = f"{self.country_code}_{year}"
+        if cache_key not in self._holiday_cache:
             try:
                 country_info = self.SUPPORTED_COUNTRIES[self.country_code]
                 holiday_code = country_info['code']
@@ -615,18 +621,19 @@ class MultiCountryHolidayProvider:
                 for holiday_date, holiday_name in filtered_holidays_dict.items():
                     filtered_holidays[holiday_date] = holiday_name
                 
-                self._holiday_cache[year] = filtered_holidays
+                self._holiday_cache[cache_key] = filtered_holidays
                 
             except Exception as e:
                 logger.warning(f"⚠️ Failed to load holidays for {self.country_code} ({year}): {e}")
                 # Create empty holidays instance as fallback
-                self._holiday_cache[year] = holidays.HolidayBase()
+                self._holiday_cache[cache_key] = holidays.HolidayBase()
         
-        return self._holiday_cache[year]
+        return self._holiday_cache[cache_key]
     
     def _get_fallback_holidays_for_year(self, year: int) -> Dict[date, str]:
         """Get fallback holidays for a specific year."""
-        if year not in self._fallback_cache:
+        cache_key = f"{self.country_code}_{year}"
+        if cache_key not in self._fallback_cache:
             fallback_holidays = {}
             for name, date_str in self.FALLBACK_HOLIDAYS.items():
                 try:
@@ -638,9 +645,9 @@ class MultiCountryHolidayProvider:
             
             # Filter out unwanted holidays from fallback as well
             filtered_fallback = self._filter_holidays(fallback_holidays)
-            self._fallback_cache[year] = filtered_fallback
+            self._fallback_cache[cache_key] = filtered_fallback
         
-        return self._fallback_cache[year]
+        return self._fallback_cache[cache_key]
     
     def is_holiday(self, check_date: date) -> bool:
         """

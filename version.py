@@ -4,11 +4,11 @@
 This module contains version information and emoji constants used throughout the application.
 """
 
-__version__ = "1.1.0"
-__version_info__ = (1, 1, 0)
-__app_name__ = "📅 Calendar Application"
+__version__ = "1.3.0"
+__version_info__ = (1, 3, 0)
+__app_name__ = "📅 Calendifier"
 __author__ = "Oliver Ernster"
-__description__ = "Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays"
+__description__ = "Cross-platform calendar system with Home Assistant integration, analog clock, event handling, note taking, and holidays"
 __copyright__ = "© 2025 Oliver Ernster"
 __license__ = "MIT"
 
@@ -130,9 +130,13 @@ def get_about_text() -> str:
 Version: {__version__}
 {__description__}
 
+🏠 Home Assistant Integration Available
+🖥️ Desktop Application Mode
+🌐 14 Languages & 14 Countries Supported
+
 {__copyright__}
 License: {__license__}
 
-Built with PySide6 and Python
-Cross-platform desktop calendar application
+Built with FastAPI, Home Assistant & Python
+Deploy as web dashboard or desktop application
 """

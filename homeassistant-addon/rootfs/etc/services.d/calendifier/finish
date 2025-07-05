@@ -1,9 +1,0 @@
-#!/usr/bin/with-contenv bashio
-# ==============================================================================
-# Calendifier service finish script
-# ==============================================================================
-
-bashio::log.info "Calendifier service stopped"
-
-# Clean shutdown
-exit 0

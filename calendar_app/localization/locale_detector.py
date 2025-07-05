@@ -23,7 +23,7 @@ class LocaleDetector:
     """
     
     # Default locale
-    DEFAULT_LOCALE = 'en_US'
+    DEFAULT_LOCALE = 'en_GB'
     
     # Major International Languages - 14 core languages including UK English
     SUPPORTED_LOCALES = {
@@ -86,7 +86,7 @@ class LocaleDetector:
                     windll = ctypes.windll.kernel32
                     windll.GetUserDefaultUILanguage()
                     # This is a simplified approach - in practice you'd map the language ID
-                    detected = 'en_US'
+                    detected = 'en_GB'
                 except Exception:
                     pass
             
@@ -94,11 +94,11 @@ class LocaleDetector:
             if detected and self.is_supported(detected):
                 self._system_locale = detected
             else:
-                self._system_locale = 'en_US'  # Safe fallback
+                self._system_locale = 'en_GB'  # Safe fallback
                 
         except Exception as e:
             logger.warning(f"Failed to detect system locale: {e}")
-            self._system_locale = 'en_US'
+            self._system_locale = 'en_GB'
         
         return self._system_locale
     
@@ -113,7 +113,7 @@ class LocaleDetector:
             str: Normalized locale code
         """
         if not locale_str:
-            return 'en_US'
+            return 'en_GB'
         
         # Remove encoding and other suffixes
         locale_str = locale_str.split('.')[0].split('@')[0]
@@ -152,7 +152,7 @@ class LocaleDetector:
             if supported.startswith(f"{lang}_"):
                 return supported
         
-        return 'en_US'
+        return 'en_GB'
     
     def is_supported(self, locale_code: str) -> bool:
         """
@@ -276,14 +276,14 @@ class LocaleDetector:
             preferred_locales: List of preferred locale codes
             
         Returns:
-            str: Best matching supported locale or 'en_US' as fallback
+            str: Best matching supported locale or 'en_GB' as fallback
         """
         for preferred in preferred_locales:
             normalized = self._normalize_locale(preferred)
             if self.is_supported(normalized):
                 return normalized
         
-        return 'en_US'
+        return 'en_GB'
     
     def get_language_variants(self, language_code: str) -> List[str]:
         """
@@ -357,4 +357,4 @@ class LocaleDetector:
         """
         if '_' in locale_code:
             return locale_code.split('_')[1]
-        return 'US'  # Default fallback
+        return 'GB'  # Default fallback

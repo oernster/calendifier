@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Holiday Debug</title>
+</head>
+<body>
+    <h1>Frontend Holiday Debug</h1>
+    <div id="debug-output"></div>
+    
+    <script>
+        async function debugHolidaySystem() {
+            const output = document.getElementById('debug-output');
+            
+            function log(message) {
+                output.innerHTML += `<p>${message}</p>`;
+                console.log(message);
+            }
+            
+            log('🔍 Starting frontend holiday debug...');
+            
+            // Test locale detection
+            const browserLocale = navigator.language || navigator.userLanguage;
+            log(`Browser locale: ${browserLocale}`);
+            
+            // Test locale-to-country mapping
+            const localeToCountry = {
+                'en_US': 'US',
+                'en_GB': 'GB',
+                'es_ES': 'ES',
+                'fr_FR': 'FR',
+                'de_DE': 'DE',
+                'it_IT': 'IT',
+                'pt_BR': 'BR',
+                'ru_RU': 'RU',
+                'zh_CN': 'CN',
+                'zh_TW': 'TW',
+                'ja_JP': 'JP',
+                'ko_KR': 'KR',
+                'hi_IN': 'IN',
+                'ar_SA': 'SA'
+            };
+            
+            // Test different locales
+            const testLocales = ['en_US', 'en_GB', 'hi_IN', 'de_DE', 'it_IT'];
+            
+            log('<br><strong>Locale to Country Mapping:</strong>');
+            testLocales.forEach(locale => {
+                const country = localeToCountry[locale];
+                log(`${locale} -> ${country || 'undefined'}`);
+            });
+            
+            // Test API settings
+            try {
+                log('<br><strong>Testing API settings...</strong>');
+                const response = await fetch('http://192.168.0.172:8000/api/v1/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+                    log(`API settings locale: ${settings.locale}`);
+                    log(`API settings holiday_country: ${settings.holiday_country}`);
+                    
+                    // Test what country would be determined
+                    const currentLocale = settings.locale;
+                    const settingsCountry = settings.holiday_country;
+                    const mappedCountry = localeToCountry[currentLocale];
+                    const finalCountry = settingsCountry || mappedCountry;
+                    
+                    log(`Current locale: ${currentLocale}`);
+                    log(`Settings country: ${settingsCountry}`);
+                    log(`Mapped country: ${mappedCountry}`);
+                    log(`Final country: ${finalCountry}`);
+                    
+                    // Test holiday API call
+                    if (finalCountry) {
+                        log(`<br><strong>Testing holiday API call for ${finalCountry}...</strong>`);
+                        const holidayResponse = await fetch(`http://192.168.0.172:8000/api/v1/holidays/${finalCountry}/2025/7`);
+                        if (holidayResponse.ok) {
+                            const holidays = await holidayResponse.json();
+                            log(`July holidays for ${finalCountry}: ${JSON.stringify(holidays.holidays, null, 2)}`);
+                        } else {
+                            log(`Holiday API failed: ${holidayResponse.status}`);
+                        }
+                    }
+                } else {
+                    log(`Settings API failed: ${response.status}`);
+                }
+            } catch (error) {
+                log(`API test error: ${error.message}`);
+            }
+        }
+        
+        // Run debug when page loads
+        window.addEventListener('load', debugHolidaySystem);
+    </script>
+</body>
+</html>

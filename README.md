@@ -5,39 +5,44 @@
 ### If you like it please buy me a coffee: [Donation link](https://www.paypal.com/ncp/payment/UNU78VKKJ49SY)
 
 <!-- Multi-language summary -->
-**🇺🇸 English (US):** A sophisticated cross-platform desktop calendar application with comprehensive internationalization, multi-country holiday support, and real-time features.
+**🇺🇸 English (US):** Cross-platform desktop calendar and Home Assistant integration with analog clock, event handling, note taking, and holidays
 
-**🇬🇧 English (UK):** A sophisticated cross-platform desktop calendar application with comprehensive internationalisation, multi-country holiday support, and real-time features.
+**🇬🇧 English (UK):** Cross-platform desktop calendar and Home Assistant integration with analogue clock, event handling, note taking, and holidays
 
-**🇪🇸 Español:** Una sofisticada aplicación de calendario de escritorio multiplataforma con internacionalización integral, soporte de días festivos multinacionales y características en tiempo real.
+**🇪🇸 Español:** Calendario de escritorio multiplataforma e integración Asistente del Hogar con reloj analógico, gestión de eventos, toma de notas y días festivos
 
-**🇫🇷 Français:** Une application de calendrier de bureau multiplateforme sophistiquée avec une internationalisation complète, un support des jours fériés multinationaux et des fonctionnalités en temps réel.
+**🇫🇷 Français:** Calendrier de bureau multiplateforme et intégration Assistant Domestique avec horloge analogique, gestion d'événements, prise de notes et jours fériés
 
-**🇩🇪 Deutsch:** Eine ausgeklügelte plattformübergreifende Desktop-Kalenderanwendung mit umfassender Internationalisierung, Multi-Country-Feiertagsunterstützung und Echtzeit-Funktionen.
+**🇩🇪 Deutsch:** Plattformübergreifender Desktop-Kalender und Heim-Assistent-Integration mit analoger Uhr, Ereignisbehandlung, Notizen und Feiertagen
 
-**🇮🇹 Italiano:** Un'applicazione calendario desktop multipiattaforma sofisticata con internazionalizzazione completa, supporto festività multinazionali e funzionalità in tempo reale.
+**🇮🇹 Italiano:** Calendario desktop multipiattaforma e integrazione Assistente Domestico con orologio analogico, gestione eventi, presa di note e festività
 
-**🇧🇷 Português:** Uma aplicação de calendário de desktop multiplataforma sofisticada com internacionalização abrangente, suporte a feriados multinacionais e recursos em tempo real.
+**🇧🇷 Português:** Calendário de desktop multiplataforma e integração Assistente Doméstico com relógio analógico, manipulação de eventos, anotações e feriados
 
-**🇷🇺 Русский:** Сложное кроссплатформенное настольное календарное приложение с комплексной интернационализацией, поддержкой многонациональных праздников и функциями реального времени.
+**🇷🇺 Русский:** Кроссплатформенный настольный календарь и интеграция Домашний Помощник с аналоговыми часами, обработкой событий, заметками и праздниками
 
-**🇨🇳 简体中文:** 一个复杂的跨平台桌面日历应用程序，具有全面的国际化、多国假期支持和实时功能。
+**🇨🇳 简体中文:** 具有模拟时钟、事件处理、记笔记和节假日功能的跨平台桌面日历和家庭助手集成
 
-**🇹🇼 繁體中文:** 一個複雜的跨平台桌面日曆應用程式，具有全面的國際化、多國假期支援和即時功能。
+**🇹🇼 繁體中文:** 具有類比時鐘、事件處理、記筆記和節假日功能的跨平台桌面日曆和家庭助理整合
 
-**🇯🇵 日本語:** 包括的な国際化、多国間の祝日サポート、リアルタイム機能を備えた洗練されたクロスプラットフォームデスクトップカレンダーアプリケーション。
+**🇯🇵 日本語:** アナログ時計、イベント処理、ノート取り、祝日機能を備えたクロスプラットフォームデスクトップカレンダーとホームアシスタント統合
 
-**🇰🇷 한국어:** 포괄적인 국제화, 다국가 휴일 지원 및 실시간 기능을 갖춘 정교한 크로스 플랫폼 데스크톱 캘린더 애플리케이션.
+**🇰🇷 한국어:** 아날로그 시계, 이벤트 처리, 메모 작성 및 휴일 기능을 갖춘 크로스 플랫폼 데스크톱 캘린더 및 홈 어시스턴트 통합
 
-**🇮🇳 हिन्दी:** व्यापक अंतर्राष्ट्रीयकरण, बहु-देशीय छुट्टी समर्थन और वास्तविक समय सुविधाओं के साथ एक परिष्कृत क्रॉस-प्लेटफॉर्म डेस्कटॉप कैलेंडर एप्लिकेशन।
+**🇮🇳 हिन्दी:** एनालॉग घड़ी, इवेंट हैंडलिंग, नोट लेने और छुट्टियों के साथ क्रॉस-प्लेटफॉर्म डेस्कटॉप कैलेंडर और होम असिस्टेंट एकीकरण
 
-**🇸🇦 العربية:** تطبيق تقويم سطح مكتب متطور متعدد المنصات مع تدويل شامل ودعم العطل متعددة البلدان وميزات الوقت الفعلي.
+**🇸🇦 العربية:** تقويم سطح المكتب متعدد المنصات وتكامل المساعد المنزلي مع ساعة تناظرية ومعالجة الأحداث وتدوين الملاحظات والعطلات
 
 ---
 
 ## 🌟 Overview
 
-The **Calendar Application** is a feature-rich, cross-platform desktop calendar built with Python and PySide6, designed to serve users worldwide with native-quality localization and intelligent holiday management. This application stands out through its sophisticated internationalization system supporting **14 languages** and **14 countries**, making it a truly global calendar solution.
+**Calendifier** is a sophisticated calendar system available in two deployment modes:
+
+1. **🖥️ Desktop Application** - Cross-platform desktop calendar built with Python and PySide6
+2. **🏠 Home Assistant Integration** - Web-based dashboard cards for Home Assistant with beautiful UI
+
+Both versions feature comprehensive internationalization supporting **14 languages** and **14 countries**, making it a truly global calendar solution.
 
 ### ✨ Key Features
 
@@ -93,13 +98,64 @@ The application automatically detects and displays holidays for 14 countries wit
 
 ## 🚀 Quick Start
 
+Choose your preferred deployment method:
+
+## 🏠 Home Assistant Deployment (Recommended)
+
+Deploy Calendifier as beautiful dashboard cards in Home Assistant for web-based access.
+
+### 📋 Prerequisites
+- **Raspberry Pi** or **Linux server** with Docker
+- **SSH access** to your server
+- **Windows PC** for deployment script
+
+### 🔧 Home Assistant Installation
+
+1. **Clone the repository on Windows:**
+   ```powershell
+   git clone https://github.com/oernster/calendifier.git
+   cd calendifier
+   ```
+
+2. **Deploy to your Pi/Server:**
+   ```powershell
+   .\deploy-ha.ps1
+   ```
+   Enter your Pi's IP address when prompted.
+
+3. **SSH to your Pi and run setup:**
+   ```bash
+   ssh pi@your-pi-ip
+   cd calendifier
+   ./setup-pi.sh
+   ```
+
+4. **Access your calendar:**
+   - Open Home Assistant: `http://your-pi-ip:8123`
+   - Complete Home Assistant setup wizard
+   - Click **"Calendifier"** in the left sidebar
+   - Enjoy your beautiful calendar dashboard!
+
+### ✨ Home Assistant Features
+- 🎨 **Beautiful Dashboard Cards** - Clock, Calendar, Events, Notes, Settings, Data Management
+- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
+- 🌐 **Web Access** - Access from anywhere on your network
+- 🔄 **Auto-Updates** - Cards refresh automatically
+- 🎯 **Optimized Layout** - No overlapping, proper spacing
+
+---
+
+## 🖥️ Desktop Application
+
+Traditional desktop application for local use.
+
 ### 📋 Prerequisites
 
 - **Python 3.8+**
 - **PySide6** (Qt6 for Python)
 - **Windows 10+**, **macOS 10.14+**, or **Linux** (Ubuntu 18.04+)
 
-### 🔧 Installation
+### 🔧 Desktop Installation
 
 1. **Clone the repository:**
    ```bash

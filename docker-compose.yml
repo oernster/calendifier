@@ -1,0 +1,48 @@
+services:
+  calendifier-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: calendifier-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - calendifier_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    privileged: true
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+    volumes:
+      - ha_config:/config
+      - /run/dbus:/run/dbus:ro
+    ports:
+      - "8123:8123"
+    depends_on:
+      - calendifier-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  calendifier_data:
+    driver: local
+  ha_config:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

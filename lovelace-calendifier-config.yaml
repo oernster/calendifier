@@ -1,0 +1,53 @@
+# Beautiful Calendifier Dashboard Configuration
+# This preserves the original beautiful layout that was working perfectly
+#
+# IMPORTANT: This config is automatically applied by setup-pi.sh
+# The script creates the proper Home Assistant configuration with:
+#
+# frontend:
+#   extra_module_url:
+#     - /local/calendifier-loader.js
+#
+# lovelace:
+#   dashboards:
+#     calendifier-dashboard:
+#       mode: yaml
+#       title: Calendifier
+#       icon: mdi:calendar
+#       show_in_sidebar: true
+#       filename: calendifier.yaml
+
+# Beautiful Calendifier Dashboard Layout - Wide Cards
+title: 📅 Calendar System
+views:
+  - title: Calendar System
+    path: calendifier
+    icon: mdi:calendar
+    cards:
+      # Row 1: Clock Card (Full Width)
+      - type: custom:calendifier-clock-card
+        title: "🕐 Time"
+      
+      # Row 2: Calendar View (Full Width) - Extra Wide
+      - type: custom:calendifier-calendar-card
+        title: "📅 Calendar View"
+      
+      # Row 3: Events and Notes (Side by Side) - Below Calendar
+      - type: horizontal-stack
+        cards:
+          - type: custom:calendifier-events-card
+            title: "📋 Events"
+            max_events: 5
+          - type: custom:calendifier-notes-card
+            title: "📝 Notes"
+      
+      # Row 4: About/Help Card (Full Width)
+      - type: custom:calendifier-help-card
+        title: "ℹ️ Settings"
+      
+      # Row 5: Data Management (Full Width) - Extra Wide
+      - type: custom:calendifier-data-card
+        title: "📤📥 Data Management"
+
+# Resources are automatically loaded via frontend.extra_module_url
+# No manual resource registration needed!

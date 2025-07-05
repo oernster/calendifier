@@ -69,7 +69,7 @@ _batch_implementation: Optional[ComprehensiveBatchImplementation] = None
 def initialize_localization_system(
     translations_dir: Optional[Path] = None,
     ui_dir: Optional[Path] = None,
-    locale: str = "en_US",
+    locale: str = "en_GB",
     strict_mode: bool = True
 ) -> I18nManager:
     """
