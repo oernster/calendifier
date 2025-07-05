@@ -954,5 +954,15 @@
   "loading_help": "تحميل معلومات المساعدة...",
   "select_date": "اختر التاريخ",
   "optional": "اختياري",
-  "invalid_date": "تاريخ غير صالح"
+  "invalid_date": "تاريخ غير صالح",
+  "note.created_success": "تم إنشاء الملاحظة بنجاح",
+  "note.deleted_success": "تم حذف الملاحظة بنجاح",
+  "note.create_failed": "فشل في إنشاء الملاحظة",
+  "note.delete_failed": "فشل في حذف الملاحظة",
+  "note.network_error_create": "خطأ في الشبكة أثناء إنشاء الملاحظة",
+  "note.network_error_delete": "خطأ في الشبكة أثناء حذف الملاحظة",
+  "note.missing_title": "العنوان مطلوب",
+  "note.missing_description": "الوصف مطلوب",
+  "note.no_notes": "لا توجد ملاحظات متاحة",
+  "note.no_notes_category": "لا توجد ملاحظات في هذه الفئة"
 }

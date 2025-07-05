@@ -979,5 +979,15 @@
   "author_name": "奧利弗·恩斯特",
   "lib_fastapi": "現代Python Web框架",
   "lib_sqlite": "輕量級資料庫引擎",
-  "loading_help": "正在載入說明資訊..."
+  "loading_help": "正在載入說明資訊...",
+  "note.created_success": "筆記建立成功",
+  "note.deleted_success": "筆記刪除成功",
+  "note.create_failed": "筆記建立失敗",
+  "note.delete_failed": "筆記刪除失敗",
+  "note.network_error_create": "網路錯誤：無法建立筆記",
+  "note.network_error_delete": "網路錯誤：無法刪除筆記",
+  "note.missing_title": "標題為必填項目",
+  "note.missing_description": "描述為必填項目",
+  "note.no_notes": "找不到筆記",
+  "note.no_notes_category": "此類別中找不到筆記"
 }

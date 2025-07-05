@@ -956,5 +956,15 @@
   "author_name": "オリバー・エルンスター",
   "lib_fastapi": "モダンなPython Webフレームワーク",
   "lib_sqlite": "軽量データベースエンジン",
-  "loading_help": "ヘルプ情報を読み込んでいます..."
+  "loading_help": "ヘルプ情報を読み込んでいます...",
+  "note.created_success": "ノートが正常に作成されました",
+  "note.deleted_success": "ノートが正常に削除されました",
+  "note.create_failed": "ノートの作成に失敗しました",
+  "note.delete_failed": "ノートの削除に失敗しました",
+  "note.network_error_create": "ノート作成中にネットワークエラーが発生しました",
+  "note.network_error_delete": "ノート削除中にネットワークエラーが発生しました",
+  "note.missing_title": "タイトルは必須です",
+  "note.missing_description": "説明は必須です",
+  "note.no_notes": "利用可能なノートがありません",
+  "note.no_notes_category": "このカテゴリにはノートがありません"
 }

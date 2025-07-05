@@ -683,5 +683,15 @@
   "author_name": "Oliver Ernster",
   "lib_fastapi": "Modern Python web framework",
   "lib_sqlite": "Lightweight database engine",
-  "loading_help": "Loading help information..."
+  "loading_help": "Loading help information...",
+  "note.created_success": "Note created successfully",
+  "note.deleted_success": "Note deleted successfully",
+  "note.create_failed": "Failed to create note",
+  "note.delete_failed": "Failed to delete note",
+  "note.network_error_create": "Network error: unable to create note",
+  "note.network_error_delete": "Network error: unable to delete note",
+  "note.missing_title": "Title is required",
+  "note.missing_description": "Description is required",
+  "note.no_notes": "No notes found",
+  "note.no_notes_category": "No notes found in this category"
 }

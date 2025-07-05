@@ -195,32 +195,8 @@ class CalendifierAPI:
                 (key, json.dumps(value))
             )
         
-        # Insert sample data if tables are empty
-        cursor.execute("SELECT COUNT(*) FROM events")
-        if cursor.fetchone()[0] == 0:
-            sample_events = [
-                ("Welcome to Calendifier", datetime.now().strftime("%Y-%m-%d"), "10:00", None, None, "Your calendar integration is working!", "default", 0),
-                ("Sample Meeting", (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"), "14:00", None, "15:00", "This is a sample meeting event", "work", 0),
-                ("Weekend Plans", (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d"), None, None, None, "All day weekend event", "personal", 1),
-                ("Monthly Review", (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"), "09:00", None, None, "Review monthly progress", "work", 0),
-                ("Doctor Appointment", (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d"), "15:30", None, None, "Annual checkup", "health", 0),
-            ]
-            cursor.executemany(
-                "INSERT INTO events (title, start_date, start_time, end_date, end_time, description, category, is_all_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                sample_events
-            )
-        
-        cursor.execute("SELECT COUNT(*) FROM notes")
-        if cursor.fetchone()[0] == 0:
-            sample_notes = [
-                ("Welcome Note", "Welcome to Calendifier! This is your notes section.", "general", datetime.now().strftime("%Y-%m-%d"), "welcome,calendifier"),
-                ("Meeting Ideas", "Ideas for the upcoming team meeting:\n- Project updates\n- Budget review\n- Team building", "work", datetime.now().strftime("%Y-%m-%d"), "meeting,work"),
-                ("Shopping List", "Groceries to buy:\n- Milk\n- Bread\n- Eggs\n- Fruits", "personal", datetime.now().strftime("%Y-%m-%d"), "shopping,personal"),
-            ]
-            cursor.executemany(
-                "INSERT INTO notes (title, content, category, date, tags) VALUES (?, ?, ?, ?, ?)",
-                sample_notes
-            )
+        # Database tables created - no sample data inserted
+        # Users can add their own events and notes through the interface
         
         conn.commit()
         conn.close()

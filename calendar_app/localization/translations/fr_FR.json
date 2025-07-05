@@ -934,5 +934,15 @@
   "loading_help": "Chargement des informations d'aide...",
   "select_date": "Sélectionner la date",
   "optional": "optionnel",
-  "invalid_date": "Date invalide"
+  "invalid_date": "Date invalide",
+  "note.created_success": "Note créée avec succès",
+  "note.deleted_success": "Note supprimée avec succès",
+  "note.create_failed": "Échec de la création de la note",
+  "note.delete_failed": "Échec de la suppression de la note",
+  "note.network_error_create": "Erreur réseau lors de la création de la note",
+  "note.network_error_delete": "Erreur réseau lors de la suppression de la note",
+  "note.missing_title": "Le titre est requis",
+  "note.missing_description": "La description est requise",
+  "note.no_notes": "Aucune note trouvée",
+  "note.no_notes_category": "Aucune note dans la catégorie \"{category}\""
 }

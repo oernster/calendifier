@@ -81,6 +81,8 @@
 
       async createNote(noteData) {
         try {
+          console.log('Creating note with data:', noteData); // Debug log
+          
           const response = await fetch(`${this.getApiBaseUrl()}/api/v1/notes`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -89,21 +91,24 @@
           
           if (response.ok) {
             this.showNotification(this.t('note.created_success', 'Note created successfully'), 'success');
-            this.loadNotes();
+            await this.loadNotes();
+            this.render();
             return true;
           } else {
-            this.showNotification(this.t('note.create_failed', 'Failed to create note'), 'error');
+            const errorText = await response.text();
+            console.error('Server error creating note:', response.status, errorText);
+            this.showNotification(`${this.t('note.create_failed', 'Failed to create note')} (${response.status})`, 'error');
             return false;
           }
         } catch (error) {
           console.error('Error creating note:', error);
-          this.showNotification(this.t('note.create_error', 'Network error creating note'), 'error');
+          this.showNotification(this.t('note.network_error_create', 'Network error creating note'), 'error');
           return false;
         }
       }
 
       async deleteNote(noteId) {
-        if (!confirm(this.t('note.delete_confirm', 'Are you sure you want to delete this note?'))) {
+        if (!confirm(this.t('are_you_sure_you_want_to_delete_this_note', 'Are you sure you want to delete this note?'))) {
           return;
         }
 
@@ -114,13 +119,14 @@
           
           if (response.ok) {
             this.showNotification(this.t('note.deleted_success', 'Note deleted successfully'), 'success');
-            this.loadNotes();
+            await this.loadNotes();
+            this.render();
           } else {
             this.showNotification(this.t('note.delete_failed', 'Failed to delete note'), 'error');
           }
         } catch (error) {
           console.error('Error deleting note:', error);
-          this.showNotification(this.t('note.delete_error', 'Network error deleting note'), 'error');
+          this.showNotification(this.t('note.network_error_delete', 'Network error deleting note'), 'error');
         }
       }
 
@@ -179,8 +185,15 @@
         const category = this.shadowRoot.querySelector('#noteCategory').value;
         const content = this.shadowRoot.querySelector('#noteContent').value.trim();
 
-        if (!title || !content) {
-          this.showNotification(this.t('note.title_content_required', 'Please enter both title and content'), 'error');
+        console.log('Note data:', { title, category, content }); // Debug log
+
+        if (!title) {
+          this.showNotification(`${this.t('error', 'Error')}: ${this.t('note.missing_title', 'Title is required')}`, 'error');
+          return;
+        }
+
+        if (!content) {
+          this.showNotification(`${this.t('error', 'Error')}: ${this.t('note.missing_description', 'Description is required')}`, 'error');
           return;
         }
 
@@ -518,6 +531,11 @@
               background: var(--card-background-color);
               color: var(--primary-text-color);
               font-size: 0.9em;
+              min-width: 120px;
+              max-width: 100%;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
             
             .form-actions {
@@ -714,6 +732,8 @@
             <div class="quick-add-form" id="quickAddForm">
               <div class="form-row">
                 <input type="text" class="form-input" id="noteTitle" placeholder="📝 ${this.t('title', 'Title')}..." />
+              </div>
+              <div class="form-row">
                 <select class="form-select" id="noteCategory">
                   <option value="general">📝 ${this.t('general', 'General')}</option>
                   <option value="important">⭐ ${this.t('category_important', 'Important')}</option>

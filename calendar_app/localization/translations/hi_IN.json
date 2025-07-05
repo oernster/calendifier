@@ -978,5 +978,15 @@
   "author_name": "ओलिवर अर्न्स्टर",
   "lib_fastapi": "आधुनिक Python वेब फ्रेमवर्क",
   "lib_sqlite": "हल्का डेटाबेस इंजन",
-  "loading_help": "सहायता जानकारी लोड हो रही है..."
+  "loading_help": "सहायता जानकारी लोड हो रही है...",
+  "note.created_success": "नोट सफलतापूर्वक बनाया गया",
+  "note.deleted_success": "नोट सफलतापूर्वक हटाया गया",
+  "note.create_failed": "नोट बनाने में विफल",
+  "note.delete_failed": "नोट हटाने में विफल",
+  "note.network_error_create": "नेटवर्क त्रुटि: नोट बनाने में असमर्थ",
+  "note.network_error_delete": "नेटवर्क त्रुटि: नोट हटाने में असमर्थ",
+  "note.missing_title": "शीर्षक आवश्यक है",
+  "note.missing_description": "विवरण आवश्यक है",
+  "note.no_notes": "कोई नोट नहीं मिला",
+  "note.no_notes_category": "इस श्रेणी में कोई नोट नहीं मिला"
 }

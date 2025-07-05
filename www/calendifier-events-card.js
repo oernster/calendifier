@@ -749,6 +749,7 @@
               display: flex;
               gap: 8px;
               margin-bottom: 8px;
+              align-items: stretch;
             }
             
             .form-input {
@@ -781,6 +782,13 @@
               background: var(--card-background-color);
               color: var(--primary-text-color);
               font-size: 0.9em;
+              box-sizing: border-box;
+            }
+            
+            .form-select option {
+              padding: 4px 8px;
+              background: var(--card-background-color);
+              color: var(--primary-text-color);
             }
             
             .form-actions {
@@ -943,6 +951,8 @@
             <div class="quick-add-form" id="quickAddEventForm">
               <div class="form-row">
                 <input type="text" class="form-input" id="eventTitle" placeholder="📅 ${this.t('title', 'Title')}..." />
+              </div>
+              <div class="form-row">
                 <select class="form-select" id="eventCategory">
                   <option value="general">📅 ${this.t('general', 'General')}</option>
                   <option value="work">💼 ${this.t('category_work', 'Work')}</option>
@@ -959,6 +969,8 @@
               </div>
               <div class="form-row">
                 <input type="date" class="form-input" id="eventDate" value="${today}" />
+              </div>
+              <div class="form-row">
                 <input type="time" class="form-input" id="eventTime" placeholder="${this.t('time', 'Time')} (${this.t('optional', 'optional')})" />
               </div>
               <div class="form-row">
@@ -975,6 +987,8 @@
               <input type="hidden" id="editEventId" />
               <div class="form-row">
                 <input type="text" class="form-input" id="editEventTitle" placeholder="📅 ${this.t('title', 'Title')}..." />
+              </div>
+              <div class="form-row">
                 <select class="form-select" id="editEventCategory">
                   <option value="general">📅 ${this.t('general', 'General')}</option>
                   <option value="work">💼 ${this.t('category_work', 'Work')}</option>
@@ -991,6 +1005,8 @@
               </div>
               <div class="form-row">
                 <input type="date" class="form-input" id="editEventDate" />
+              </div>
+              <div class="form-row">
                 <input type="time" class="form-input" id="editEventTime" placeholder="${this.t('time', 'Time')} (${this.t('optional', 'optional')})" />
               </div>
               <div class="form-row">

@@ -954,5 +954,15 @@
   "author_name": "Oliver Ernster",
   "lib_fastapi": "Modernes Python-Web-Framework",
   "lib_sqlite": "Leichtgewichtige Datenbank-Engine",
-  "loading_help": "Hilfeinformationen werden geladen..."
+  "loading_help": "Hilfeinformationen werden geladen...",
+  "note.created_success": "Notiz erfolgreich erstellt",
+  "note.deleted_success": "Notiz erfolgreich gelöscht",
+  "note.create_failed": "Notiz konnte nicht erstellt werden",
+  "note.delete_failed": "Notiz konnte nicht gelöscht werden",
+  "note.network_error_create": "Netzwerkfehler beim Erstellen der Notiz",
+  "note.network_error_delete": "Netzwerkfehler beim Löschen der Notiz",
+  "note.missing_title": "Titel ist erforderlich",
+  "note.missing_description": "Beschreibung ist erforderlich",
+  "note.no_notes": "Keine Notizen gefunden",
+  "note.no_notes_category": "Keine Notizen in der Kategorie \"{category}\""
 }

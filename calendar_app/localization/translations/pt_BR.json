@@ -952,5 +952,15 @@
   "author_name": "Oliver Ernster",
   "lib_fastapi": "Framework web Python moderno",
   "lib_sqlite": "Mecanismo de banco de dados leve",
-  "loading_help": "Carregando informações de ajuda..."
+  "loading_help": "Carregando informações de ajuda...",
+  "note.created_success": "Nota criada com sucesso",
+  "note.deleted_success": "Nota excluída com sucesso",
+  "note.create_failed": "Falha ao criar nota",
+  "note.delete_failed": "Falha ao excluir nota",
+  "note.network_error_create": "Erro de rede: não foi possível criar a nota",
+  "note.network_error_delete": "Erro de rede: não foi possível excluir a nota",
+  "note.missing_title": "Título é obrigatório",
+  "note.missing_description": "Descrição é obrigatória",
+  "note.no_notes": "Nenhuma nota encontrada",
+  "note.no_notes_category": "Nenhuma nota encontrada nesta categoria"
 }

@@ -958,5 +958,15 @@
   "author_name": "Оливер Эрнстер",
   "lib_fastapi": "Современный веб-фреймворк Python",
   "lib_sqlite": "Легкий движок базы данных",
-  "loading_help": "Загрузка справочной информации..."
+  "loading_help": "Загрузка справочной информации...",
+  "note.created_success": "Заметка успешно создана",
+  "note.deleted_success": "Заметка успешно удалена",
+  "note.create_failed": "Не удалось создать заметку",
+  "note.delete_failed": "Не удалось удалить заметку",
+  "note.network_error_create": "Сетевая ошибка при создании заметки",
+  "note.network_error_delete": "Сетевая ошибка при удалении заметки",
+  "note.missing_title": "Заголовок обязателен",
+  "note.missing_description": "Описание обязательно",
+  "note.no_notes": "Нет доступных заметок",
+  "note.no_notes_category": "В этой категории нет заметок"
 }
