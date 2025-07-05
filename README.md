@@ -107,12 +107,12 @@ Deploy Calendifier as beautiful dashboard cards in Home Assistant for web-based 
 ### 📋 Prerequisites
 - **Raspberry Pi** or **Linux server** with Docker
 - **SSH access** to your server
-- **Windows PC** for deployment script
+- **Windows PC or Mac or Linux box** for deployment script
 
 ### 🔧 Home Assistant Installation
 
-1. **Clone the repository on Windows:**
-   ```powershell
+1. **Clone the repository:**
+   ```
    git clone https://github.com/oernster/calendifier.git
    cd calendifier
    ```
@@ -121,16 +121,20 @@ Deploy Calendifier as beautiful dashboard cards in Home Assistant for web-based 
    ```powershell
    .\deploy-ha.ps1
    ```
+   **or for linux/mac:**
+   ```sh
+   ./deploy-ha.sh
+   ```
    Enter your Pi's IP address when prompted.
 
-3. **SSH to your Pi and run setup:**
+4. **SSH to your Pi and run setup:**
    ```bash
    ssh pi@your-pi-ip
    cd calendifier
    ./setup-pi.sh
    ```
 
-4. **Access your calendar:**
+5. **Access your calendar:**
    - Open Home Assistant: `http://your-pi-ip:8123`
    - Complete Home Assistant setup wizard
    - Click **"Calendifier"** in the left sidebar
