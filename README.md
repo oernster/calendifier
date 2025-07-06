@@ -199,7 +199,7 @@ The application automatically detects and displays holidays for 40 countries wit
 ![image](https://github.com/user-attachments/assets/7ccf4a75-472e-429d-be05-195aaccb8411)
 
 # Home Assistant
-![image](https://github.com/user-attachments/assets/db767911-5a02-49dd-aee1-cb6f90a1b074)
+![image](https://github.com/user-attachments/assets/24efc9e5-2f1b-4d92-90f9-cf28838d4a9c)
 
 ## 🚀 Quick Start
 
