@@ -210,12 +210,12 @@ create_lovelace_config() {
     if [ -f "$CALENDIFIER_DIR/lovelace-calendifier-config.yaml" ]; then
         # Copy the existing beautiful configuration
         cp "$CALENDIFIER_DIR/lovelace-calendifier-config.yaml" "$HA_CONFIG_DIR/calendifier.yaml"
-        print_color $GREEN "✓ Copied existing beautiful Calendifier dashboard configuration"
+        print_color $GREEN "âœ“ Copied existing beautiful Calendifier dashboard configuration"
     else
         # Fallback: Create the beautiful Calendifier dashboard with wide cards
         cat > "$HA_CONFIG_DIR/calendifier.yaml" << 'EOF'
 # Beautiful Calendifier Dashboard - Wide Cards Layout
-title: 📅 Calendar System
+title: ðŸ“… Calendar System
 views:
   - title: Calendar System
     path: calendifier
@@ -229,28 +229,28 @@ views:
       - type: horizontal-stack
         cards:
           - type: custom:calendifier-clock-card
-            title: "🕐 Time"
+            title: "ðŸ• Time"
           - type: custom:calendifier-help-card
-            title: "ℹ️ Settings"
+            title: "â„¹ï¸ Settings"
       
       # Row 2: Calendar View (Full Width) - Extra Wide
       - type: custom:calendifier-calendar-card
-        title: "📅 Calendar View"
+        title: "ðŸ“… Calendar View"
       
       # Row 3: Events and Notes (Side by Side) - Wide Layout
       - type: horizontal-stack
         cards:
           - type: custom:calendifier-events-card
-            title: "📋 Events"
+            title: "ðŸ“‹ Events"
             max_events: 5
           - type: custom:calendifier-notes-card
-            title: "📝 Notes"
+            title: "ðŸ“ Notes"
       
       # Row 4: Data Management (Full Width) - Extra Wide
       - type: custom:calendifier-data-card
-        title: "📤📥 Data Management"
+        title: "ðŸ“¤ðŸ“¥ Data Management"
 EOF
-        print_color $YELLOW "⚠ Created fallback dashboard configuration"
+        print_color $YELLOW "âš  Created fallback dashboard configuration"
     fi
     
     # Ensure proper file permissions
@@ -258,11 +258,11 @@ EOF
     
     # Verify the dashboard file was created correctly
     if [ -f "$HA_CONFIG_DIR/calendifier.yaml" ]; then
-        print_color $GREEN "✓ Dashboard file created: $HA_CONFIG_DIR/calendifier.yaml"
+        print_color $GREEN "âœ“ Dashboard file created: $HA_CONFIG_DIR/calendifier.yaml"
         print_color $BLUE "Dashboard preview:"
         head -10 "$HA_CONFIG_DIR/calendifier.yaml" | sed 's/^/  /'
     else
-        print_color $RED "✗ Dashboard file was not created!"
+        print_color $RED "âœ— Dashboard file was not created!"
         exit 1
     fi
     
@@ -318,7 +318,7 @@ verify_web_components() {
     
     # Verify the www files are accessible
     if [ -d "$HA_CONFIG_DIR/www" ] && [ "$(ls -A $HA_CONFIG_DIR/www 2>/dev/null)" ]; then
-        print_color $GREEN "✓ Web assets are available in Home Assistant www directory"
+        print_color $GREEN "âœ“ Web assets are available in Home Assistant www directory"
         print_color $BLUE "Available JavaScript files:"
         ls -la "$HA_CONFIG_DIR/www/"*.js 2>/dev/null | head -10 || print_color $YELLOW "No .js files found"
         
@@ -333,12 +333,12 @@ verify_web_components() {
         done
         
         if [ ${#missing_files[@]} -eq 0 ]; then
-            print_color $GREEN "✓ All essential Calendifier files are present"
+            print_color $GREEN "âœ“ All essential Calendifier files are present"
         else
-            print_color $YELLOW "⚠ Missing files: ${missing_files[*]}"
+            print_color $YELLOW "âš  Missing files: ${missing_files[*]}"
         fi
     else
-        print_color $YELLOW "⚠ Warning: No JavaScript files found in Home Assistant www directory"
+        print_color $YELLOW "âš  Warning: No JavaScript files found in Home Assistant www directory"
     fi
     
     print_color $GREEN "Web component verification complete"
@@ -354,31 +354,31 @@ verify_container_file_access() {
     print_color $YELLOW "Testing file access from Home Assistant container..."
     
     if $COMPOSE_CMD exec homeassistant ls -la /config/www/ 2>/dev/null; then
-        print_color $GREEN "✓ Home Assistant container can access /config/www/"
+        print_color $GREEN "âœ“ Home Assistant container can access /config/www/"
         
         # Check for specific Calendifier files
         if $COMPOSE_CMD exec homeassistant ls /config/www/calendifier-loader.js 2>/dev/null; then
-            print_color $GREEN "✓ calendifier-loader.js is accessible"
+            print_color $GREEN "âœ“ calendifier-loader.js is accessible"
         else
-            print_color $RED "✗ calendifier-loader.js is NOT accessible"
+            print_color $RED "âœ— calendifier-loader.js is NOT accessible"
         fi
         
         if $COMPOSE_CMD exec homeassistant ls /config/www/local/calendifier-loader.js 2>/dev/null; then
-            print_color $GREEN "✓ calendifier-loader.js is accessible in /local/"
+            print_color $GREEN "âœ“ calendifier-loader.js is accessible in /local/"
         else
-            print_color $YELLOW "⚠ calendifier-loader.js is NOT in /local/ (may be OK)"
+            print_color $YELLOW "âš  calendifier-loader.js is NOT in /local/ (may be OK)"
         fi
     else
-        print_color $RED "✗ Home Assistant container cannot access /config/www/"
+        print_color $RED "âœ— Home Assistant container cannot access /config/www/"
         print_color $YELLOW "This may cause 404 errors for JavaScript files"
     fi
     
     # Test API connectivity from within containers
     print_color $YELLOW "Testing API connectivity between containers..."
     if $COMPOSE_CMD exec homeassistant curl -s http://calendifier-api:8000/api/v1/about 2>/dev/null | grep -q "Calendifier"; then
-        print_color $GREEN "✓ Home Assistant can reach Calendifier API"
+        print_color $GREEN "âœ“ Home Assistant can reach Calendifier API"
     else
-        print_color $YELLOW "⚠ Home Assistant cannot reach Calendifier API (may still be starting)"
+        print_color $YELLOW "âš  Home Assistant cannot reach Calendifier API (may still be starting)"
     fi
     
     print_color $GREEN "Container file access verification complete"
@@ -606,25 +606,25 @@ verify_installation() {
     
     # Check if containers are running
     if $COMPOSE_CMD ps | grep -q "Up"; then
-        print_color $GREEN "✓ Containers are running"
+        print_color $GREEN "âœ“ Containers are running"
     else
-        print_color $RED "✗ Containers are not running properly"
+        print_color $RED "âœ— Containers are not running properly"
         return 1
     fi
     
     # Check API endpoint
     sleep 5
     if curl -s "http://localhost:$CALENDIFIER_API_PORT/api/status" > /dev/null; then
-        print_color $GREEN "✓ Calendifier API is responding"
+        print_color $GREEN "âœ“ Calendifier API is responding"
     else
-        print_color $YELLOW "⚠ Calendifier API may still be starting up"
+        print_color $YELLOW "âš  Calendifier API may still be starting up"
     fi
     
     # Check Home Assistant
     if curl -s "http://localhost:$HA_PORT" > /dev/null; then
-        print_color $GREEN "✓ Home Assistant is responding"
+        print_color $GREEN "âœ“ Home Assistant is responding"
     else
-        print_color $YELLOW "⚠ Home Assistant may still be starting up"
+        print_color $YELLOW "âš  Home Assistant may still be starting up"
     fi
     
     print_color $GREEN "Installation verification complete"
@@ -633,38 +633,38 @@ verify_installation() {
 force_wide_cards() {
     print_header "Forcing Wide Card Layout"
     
-    print_color $YELLOW "🔄 Applying wider card styling..."
+    print_color $YELLOW "ðŸ”„ Applying wider card styling..."
     
     # Stop Home Assistant container to clear cache
-    print_color $YELLOW "⏹️ Stopping Home Assistant to clear cache..."
+    print_color $YELLOW "â¹ï¸ Stopping Home Assistant to clear cache..."
     $COMPOSE_CMD stop homeassistant 2>/dev/null || true
     
     # Wait a moment for clean shutdown
     sleep 3
     
     # Start Home Assistant container
-    print_color $YELLOW "▶️ Starting Home Assistant with updated styling..."
+    print_color $YELLOW "â–¶ï¸ Starting Home Assistant with updated styling..."
     $COMPOSE_CMD start homeassistant
     
     # Wait for Home Assistant to be ready
-    print_color $YELLOW "⏳ Waiting for Home Assistant to start..."
+    print_color $YELLOW "â³ Waiting for Home Assistant to start..."
     sleep 15
     
     # Check if Home Assistant is running
     if $COMPOSE_CMD ps homeassistant | grep -q "Up"; then
-        print_color $GREEN "✅ Home Assistant is running with updated card styling"
+        print_color $GREEN "âœ… Home Assistant is running with updated card styling"
         echo
-        print_color $BLUE "🎯 IMPORTANT: Clear your browser cache to see the wider cards!"
+        print_color $BLUE "ðŸŽ¯ IMPORTANT: Clear your browser cache to see the wider cards!"
         print_color $NC "   - Chrome/Edge: Ctrl+Shift+R or F12 > Application > Storage > Clear site data"
         print_color $NC "   - Firefox: Ctrl+Shift+R or F12 > Storage > Clear All"
         echo
-        print_color $GREEN "📱 Then refresh your Home Assistant dashboard"
-        print_color $GREEN "🔧 The cards should now be wider and better fitted to the screen"
+        print_color $GREEN "ðŸ“± Then refresh your Home Assistant dashboard"
+        print_color $GREEN "ðŸ”§ The cards should now be wider and better fitted to the screen"
         echo
-        print_color $GREEN "✅ Wide card layout applied successfully!"
+        print_color $GREEN "âœ… Wide card layout applied successfully!"
     else
-        print_color $RED "❌ Failed to restart Home Assistant"
-        print_color $YELLOW "🔍 Check Docker status with: docker compose ps"
+        print_color $RED "âŒ Failed to restart Home Assistant"
+        print_color $YELLOW "ðŸ” Check Docker status with: docker compose ps"
         return 1
     fi
 }
@@ -673,7 +673,7 @@ print_completion_info() {
     print_header "Installation Complete!"
     
     echo
-    print_color $GREEN "🎉 Calendifier has been successfully installed with BEAUTIFUL UI!"
+    print_color $GREEN "ðŸŽ‰ Calendifier has been successfully installed with BEAUTIFUL UI!"
     echo
     print_color $BLUE "Access URLs:"
     print_color $NC "  Home Assistant: http://$(hostname -I | awk '{print $1}'):$HA_PORT"
@@ -682,35 +682,35 @@ print_completion_info() {
     print_color $YELLOW "Next Steps:"
     print_color $NC "1. Open Home Assistant in your browser: http://$(hostname -I | awk '{print $1}'):$HA_PORT"
     print_color $NC "2. Complete the initial Home Assistant setup wizard"
-    print_color $NC "3. 🔍 IMPORTANT: Look for 'Calendifier' in the LEFT SIDEBAR menu"
-    print_color $NC "4. 🎯 Click on the 'Calendifier' sidebar item (NOT the Overview tab)"
-    print_color $NC "5. ✨ You should see the BEAUTIFUL layout with:"
-    print_color $NC "   • Row 1: Full-width Clock"
-    print_color $NC "   • Row 2: Full-width Calendar"
-    print_color $NC "   • Row 3: Events + Notes side-by-side (below calendar)"
-    print_color $NC "   • Row 4: Full-width About/Settings"
-    print_color $NC "   • Row 5: Full-width Data Management"
-    print_color $NC "6. 🚨 If you see a basic grid layout, you're on the wrong dashboard!"
+    print_color $NC "3. ðŸ” IMPORTANT: Look for 'Calendifier' in the LEFT SIDEBAR menu"
+    print_color $NC "4. ðŸŽ¯ Click on the 'Calendifier' sidebar item (NOT the Overview tab)"
+    print_color $NC "5. âœ¨ You should see the BEAUTIFUL layout with:"
+    print_color $NC "   â€¢ Row 1: Full-width Clock"
+    print_color $NC "   â€¢ Row 2: Full-width Calendar"
+    print_color $NC "   â€¢ Row 3: Events + Notes side-by-side (below calendar)"
+    print_color $NC "   â€¢ Row 4: Full-width About/Settings"
+    print_color $NC "   â€¢ Row 5: Full-width Data Management"
+    print_color $NC "6. ðŸš¨ If you see a basic grid layout, you're on the wrong dashboard!"
     echo
-    print_color $GREEN "✅ BEAUTIFUL UI RESTORED:"
-    print_color $GREEN "✓ Calendifier appears as separate sidebar dashboard"
-    print_color $GREEN "✓ Beautiful vertical layout with no overlapping"
-    print_color $GREEN "✓ Full-width Clock (Row 1)"
-    print_color $GREEN "✓ Full-width Calendar view (Row 2)"
-    print_color $GREEN "✓ Events + Notes cards side-by-side below calendar (Row 3)"
-    print_color $GREEN "✓ Full-width About/Settings (Row 4)"
-    print_color $GREEN "✓ Full-width Data Management (Row 5)"
-    print_color $GREEN "✓ Wide card styling automatically applied"
-    print_color $GREEN "✓ All JavaScript resources loaded via frontend.extra_module_url"
-    print_color $GREEN "✓ API requirements properly installed in Docker container"
+    print_color $GREEN "âœ… BEAUTIFUL UI RESTORED:"
+    print_color $GREEN "âœ“ Calendifier appears as separate sidebar dashboard"
+    print_color $GREEN "âœ“ Beautiful vertical layout with no overlapping"
+    print_color $GREEN "âœ“ Full-width Clock (Row 1)"
+    print_color $GREEN "âœ“ Full-width Calendar view (Row 2)"
+    print_color $GREEN "âœ“ Events + Notes cards side-by-side below calendar (Row 3)"
+    print_color $GREEN "âœ“ Full-width About/Settings (Row 4)"
+    print_color $GREEN "âœ“ Full-width Data Management (Row 5)"
+    print_color $GREEN "âœ“ Wide card styling automatically applied"
+    print_color $GREEN "âœ“ All JavaScript resources loaded via frontend.extra_module_url"
+    print_color $GREEN "âœ“ API requirements properly installed in Docker container"
     echo
     print_color $BLUE "Technical Details:"
-    print_color $NC "  • Dashboard Type: lovelace.dashboards (proper sidebar integration)"
-    print_color $NC "  • Layout: Optimized mix of full-width and side-by-side cards"
-    print_color $NC "  • Resources: Auto-loaded via frontend.extra_module_url"
-    print_color $NC "  • Volume Mounts: $CALENDIFIER_DIR/www → /config/www"
-    print_color $NC "  • API Container: All requirements installed via pip"
-    print_color $NC "  • Cards: Clock, Calendar, About/Settings, Events, Notes, Data"
+    print_color $NC "  â€¢ Dashboard Type: lovelace.dashboards (proper sidebar integration)"
+    print_color $NC "  â€¢ Layout: Optimized mix of full-width and side-by-side cards"
+    print_color $NC "  â€¢ Resources: Auto-loaded via frontend.extra_module_url"
+    print_color $NC "  â€¢ Volume Mounts: $CALENDIFIER_DIR/www â†’ /config/www"
+    print_color $NC "  â€¢ API Container: All requirements installed via pip"
+    print_color $NC "  â€¢ Cards: Clock, Calendar, About/Settings, Events, Notes, Data"
     echo
     print_color $BLUE "Useful Commands:"
     print_color $NC "  View logs: cd $CALENDIFIER_DIR && docker compose logs"
