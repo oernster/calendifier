@@ -76,6 +76,44 @@ class EventManager:
             logger.error(f"❌ Failed to get events for {year}-{month:02d}: {e}")
             return []
     
+    def get_events_for_date_range(self, start_date: date, end_date: date) -> List[Event]:
+        """📅 Get all events for specific date range."""
+        try:
+            # Get events for each month in the range
+            all_events = []
+            current_date = start_date.replace(day=1)  # Start of first month
+            
+            while current_date <= end_date:
+                month_events = self.db_manager.get_events_for_month(current_date.year, current_date.month)
+                all_events.extend(month_events)
+                
+                # Move to next month
+                if current_date.month == 12:
+                    current_date = current_date.replace(year=current_date.year + 1, month=1)
+                else:
+                    current_date = current_date.replace(month=current_date.month + 1)
+            
+            # Filter events to only include those that actually fall within the date range
+            filtered_events = []
+            for event in all_events:
+                if event.start_date and start_date <= event.start_date <= end_date:
+                    filtered_events.append(event)
+            
+            # Remove duplicates (same event might be returned from multiple months)
+            unique_events = []
+            seen_ids = set()
+            for event in filtered_events:
+                event_key = (event.id, event.start_date) if event.id else (id(event), event.start_date)
+                if event_key not in seen_ids:
+                    unique_events.append(event)
+                    seen_ids.add(event_key)
+            
+            logger.debug(f"📅 Found {len(unique_events)} events for range {start_date} to {end_date}")
+            return unique_events
+        except Exception as e:
+            logger.error(f"❌ Failed to get events for range {start_date} to {end_date}: {e}")
+            return []
+    
     def update_event(self, event: Event) -> bool:
         """✏️ Update existing event."""
         try:

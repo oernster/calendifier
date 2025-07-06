@@ -13,6 +13,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Union
 from functools import lru_cache
+from .number_formatter import NumberFormatter
 
 logger = logging.getLogger(__name__)
 
@@ -30,17 +31,36 @@ class I18nManager:
     and runtime language switching.
     """
     
-    def __init__(self, locale: str = "en_GB", strict_mode: bool = False, translations_dir: Optional[Union[str, Path]] = None):
+    def _detect_system_locale(self) -> str:
+        """Detect system locale automatically"""
+        try:
+            import locale as system_locale
+            # Get system locale
+            loc = system_locale.getdefaultlocale()[0]
+            if loc:
+                # Convert from locale format (en_US) to our format
+                return loc.replace('-', '_')
+        except Exception as e:
+            logger.warning(f"Failed to detect system locale: {e}")
+        
+        # Fallback to English
+        return "en_GB"
+    
+    def __init__(self, locale: Optional[str] = None, strict_mode: bool = False, translations_dir: Optional[Union[str, Path]] = None):
         """
         Initialize the I18n Manager.
         
         Args:
-            locale: Initial locale to use
+            locale: Initial locale to use (auto-detected if None)
             strict_mode: Whether to use strict mode (no fallbacks)
             translations_dir: Path to translations directory
         """
+        # Auto-detect locale if not provided
+        if locale is None:
+            locale = self._detect_system_locale()
+            
         self.default_locale = locale
-        self.current_locale = locale
+        self._current_locale = locale
         self.fallback_locale = "en_GB"
         self.strict_mode = strict_mode
         
@@ -55,6 +75,9 @@ class I18nManager:
         self._translations_cache: Dict[str, Dict[str, Any]] = {}
         self._available_locales: Optional[List[str]] = None
         
+        # Initialize number formatter
+        self.number_formatter = NumberFormatter()
+        
         # Load default locale
         self._load_locale(self.default_locale)
         
@@ -66,7 +89,17 @@ class I18nManager:
     @property
     def translations(self) -> Dict[str, Dict[str, Any]]:
         """Get the translations cache for debugging."""
-        return self._translations_cache
+        return self._translations_cache    
+    @property
+    def current_locale(self) -> str:
+        """Get the current locale."""
+        return self._current_locale
+    
+    @current_locale.setter
+    def current_locale(self, value: str):
+        """Set the current locale."""
+        self._current_locale = value
+    
     
     def get_available_locales(self) -> List[str]:
         """
@@ -126,7 +159,7 @@ class I18nManager:
             
         if self._load_locale(locale_code):
             old_locale = self.current_locale
-            self.current_locale = locale_code
+            self._current_locale = locale_code
             logger.info(f"Locale changed from {old_locale} to {locale_code}")
             return True
         
@@ -326,6 +359,26 @@ class I18nManager:
         except Exception as e:
             logger.warning(f"Failed to set system locale: {e}")
 
+
+    def format_number(self, number: int, use_native: bool = True) -> str:
+        """Format number using locale-appropriate number system"""
+        try:
+            if self.number_formatter and use_native:
+                return self.number_formatter.format_number(number, self.current_locale, use_native)
+            return str(number)
+        except Exception as e:
+            logger.warning(f"Failed to format number {number}: {e}")
+            return str(number)
+    
+    def format_ordinal(self, number: int) -> str:
+        """Format ordinal number using locale-appropriate system"""
+        try:
+            if self.number_formatter:
+                return self.number_formatter.format_ordinal(number, self.current_locale)
+            return str(number)
+        except Exception as e:
+            logger.warning(f"Failed to format ordinal {number}: {e}")
+            return str(number)
 
 # Global instance
 _i18n_manager: Optional[I18nManager] = None

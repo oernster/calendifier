@@ -31,12 +31,40 @@ class CalendarManager:
     def get_month_data(self, year: int, month: int) -> CalendarMonth:
         """📆 Get calendar data for specified month."""
         try:
-            # Get holidays for the month
-            holidays = self.holiday_provider.get_holidays_for_month(year, month)
-            holiday_dict = {h.date: h for h in holidays}
+            # Get the actual calendar grid date range (includes previous/next month days)
+            cal = calendar.Calendar(firstweekday=self.first_day_of_week)
+            month_calendar = cal.monthdatescalendar(year, month)
             
-            # Get events for the month
-            events = self.event_manager.get_events_for_month(year, month)
+            # Get the full date range shown in the calendar grid
+            grid_start_date = month_calendar[0][0]  # First day of first week
+            grid_end_date = month_calendar[-1][-1]  # Last day of last week
+            
+            logger.debug(f"📆 Calendar grid for {year}-{month:02d} spans {grid_start_date} to {grid_end_date}")
+            
+            # Get holidays for the extended range
+            holidays = []
+            current_date = grid_start_date
+            while current_date <= grid_end_date:
+                month_holidays = self.holiday_provider.get_holidays_for_month(current_date.year, current_date.month)
+                holidays.extend(month_holidays)
+                # Move to next month
+                if current_date.month == 12:
+                    current_date = current_date.replace(year=current_date.year + 1, month=1, day=1)
+                else:
+                    current_date = current_date.replace(month=current_date.month + 1, day=1)
+            
+            # Remove duplicate holidays
+            seen_dates = set()
+            unique_holidays = []
+            for holiday in holidays:
+                if holiday.date not in seen_dates:
+                    unique_holidays.append(holiday)
+                    seen_dates.add(holiday.date)
+            
+            holiday_dict = {h.date: h for h in unique_holidays}
+            
+            # Get events for the extended date range (not just the target month)
+            events = self.event_manager.get_events_for_date_range(grid_start_date, grid_end_date)
             
             # Group events by date
             events_by_date: Dict[date, List[Event]] = {}
@@ -45,9 +73,11 @@ class CalendarManager:
                     if event.start_date not in events_by_date:
                         events_by_date[event.start_date] = []
                     events_by_date[event.start_date].append(event)
+                else:
+                    logger.warning(f"⚠️ Event without start_date: {event.id} ({event.title})")
             
-            # Generate calendar weeks
-            weeks = self._generate_calendar_weeks(year, month, holiday_dict, events_by_date)
+            # Generate calendar weeks using the actual calendar grid dates
+            weeks = self._generate_calendar_weeks_with_grid(month_calendar, holiday_dict, events_by_date)
             
             calendar_month = CalendarMonth(
                 year=year,
@@ -65,10 +95,41 @@ class CalendarManager:
             # Return empty calendar month
             return CalendarMonth(year=year, month=month)
     
+    def _generate_calendar_weeks_with_grid(self, month_calendar: List[List[date]],
+                                          holiday_dict: Dict[date, Holiday],
+                                          events_by_date: Dict[date, List[Event]]) -> List[List[CalendarDay]]:
+        """📅 Generate calendar weeks with days using pre-calculated grid."""
+        weeks = []
+        today = date.today()
+        
+        for week_dates in month_calendar:
+            week = []
+            for day_date in week_dates:
+                # Determine if this day belongs to the target month
+                target_month = month_calendar[2][3].month  # Use middle day of grid as reference
+                is_other_month = (day_date.month != target_month)
+                
+                # Create calendar day
+                calendar_day = CalendarDay(
+                    date=day_date,
+                    is_today=(day_date == today),
+                    is_weekend=self.holiday_provider.is_weekend(day_date),
+                    is_other_month=is_other_month,
+                    is_holiday=day_date in holiday_dict,
+                    holiday=holiday_dict.get(day_date),
+                    events=events_by_date.get(day_date, [])
+                )
+                
+                week.append(calendar_day)
+            
+            weeks.append(week)
+        
+        return weeks
+    
     def _generate_calendar_weeks(self, year: int, month: int,
                                 holiday_dict: Dict[date, Holiday],
                                 events_by_date: Dict[date, List[Event]]) -> List[List[CalendarDay]]:
-        """📅 Generate calendar weeks with days."""
+        """📅 Generate calendar weeks with days (legacy method)."""
         weeks = []
         today = date.today()
         

@@ -10,7 +10,7 @@ from typing import List, Optional
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QScrollArea, QFrame, QListWidget, QListWidgetItem, QMessageBox,
-    QFileDialog
+    QFileDialog, QDialog
 )
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtGui import QFont
@@ -36,6 +36,69 @@ def _(key: str, **kwargs) -> str:
 from version import UI_EMOJIS, EVENT_CATEGORY_EMOJIS
 
 logger = logging.getLogger(__name__)
+
+
+class CustomDeleteDialog(QDialog):
+    """Custom dialog for delete recurring event with proper width control."""
+    
+    def __init__(self, title: str, message: str, event_title: str, parent=None):
+        super().__init__(parent)
+        self.result_action = None
+        
+        self.setWindowTitle(title)
+        self.setMinimumWidth(800)
+        self.setFixedWidth(800)  # Force exact width
+        
+        layout = QVBoxLayout(self)
+        layout.setSpacing(20)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Icon and message
+        message_layout = QHBoxLayout()
+        
+        # Question icon (using emoji since we don't have icon resources)
+        icon_label = QLabel("❓")
+        icon_label.setStyleSheet("font-size: 32px;")
+        message_layout.addWidget(icon_label)
+        
+        # Message text
+        message_label = QLabel(f"{message}\n\n{event_title}")
+        message_label.setWordWrap(True)
+        message_label.setStyleSheet("font-size: 12px; padding-left: 10px;")
+        message_layout.addWidget(message_label, 1)
+        
+        layout.addLayout(message_layout)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        button_layout.setSpacing(10)
+        
+        self.delete_this_btn = QPushButton(_("events.delete_this_occurrence", default="Delete this occurrence only"))
+        self.delete_this_btn.clicked.connect(lambda: self._set_result("delete_this"))
+        self.delete_this_btn.setMinimumWidth(200)
+        button_layout.addWidget(self.delete_this_btn)
+        
+        self.delete_all_btn = QPushButton(_("events.delete_all_occurrences", default="Delete all occurrences"))
+        self.delete_all_btn.clicked.connect(lambda: self._set_result("delete_all"))
+        self.delete_all_btn.setMinimumWidth(200)
+        button_layout.addWidget(self.delete_all_btn)
+        
+        self.cancel_btn = QPushButton(_("Cancel", default="Cancel"))
+        self.cancel_btn.clicked.connect(lambda: self._set_result("cancel"))
+        self.cancel_btn.setMinimumWidth(100)
+        button_layout.addWidget(self.cancel_btn)
+        
+        layout.addLayout(button_layout)
+        
+        # Set default button
+        self.cancel_btn.setDefault(True)
+    
+    def _set_result(self, action: str):
+        self.result_action = action
+        self.accept()
+    
+    def get_result(self) -> str:
+        return self.result_action or "cancel"
 
 
 class EventItemWidget(QFrame):
@@ -424,8 +487,33 @@ class EventPanel(QWidget):
     def _edit_event(self, event: Event):
         """✏️ Edit existing event."""
         try:
+            # Check if this is a generated recurring event occurrence
+            if event.id is None and event.recurrence_master_id:
+                # This is a generated occurrence - edit the master event instead
+                if self.event_manager:
+                    master_event = self.event_manager.get_event(event.recurrence_master_id)
+                    if master_event:
+                        event_to_edit = master_event
+                        QMessageBox.information(
+                            self,
+                            f"🔄 {_('events.edit_recurring_event', default='Edit Recurring Event')}",
+                            _("events.editing_master_event", default="You are editing the master recurring event. Changes will affect all occurrences.")
+                        )
+                    else:
+                        QMessageBox.warning(
+                            self,
+                            f"❌ {_('error_title', default='Error')}",
+                            _("events.master_event_not_found", default="Master event not found.")
+                        )
+                        return
+                else:
+                    return
+            else:
+                # Regular event
+                event_to_edit = event
+            
             # Open event dialog for editing
-            dialog = EventDialog(event_data=event, parent=self)
+            dialog = EventDialog(event_data=event_to_edit, parent=self)
             dialog.event_saved.connect(self._on_event_updated)
             
             # Refresh UI text to ensure correct language
@@ -447,13 +535,67 @@ class EventPanel(QWidget):
         if not self.event_manager:
             return
         
-        # Confirm deletion with custom Arabic buttons
+        # Check if this is a generated recurring event occurrence
+        if event.id is None and event.recurrence_master_id:
+            # This is a generated occurrence - offer options using custom dialog
+            dialog = CustomDeleteDialog(
+                title=f"{UI_EMOJIS['delete_event']} {_('events.delete_recurring_occurrence', default='Delete Recurring Event')}",
+                message=f"🔄 {_('confirm_delete_recurring_message', default='This is a recurring event occurrence. What would you like to do?')}",
+                event_title=event.get_display_title(),
+                parent=self
+            )
+            
+            dialog.exec()
+            result = dialog.get_result()
+            
+            if result == "delete_this":
+                # Add this date as an exception to the master event
+                try:
+                    # TODO: Implement add_exception_date in event_manager
+                    # For now, show a message
+                    QMessageBox.information(
+                        self,
+                        f"ℹ️ {_('info_title', default='Information')}",
+                        _("events.exception_feature_coming_soon", default="Adding exceptions to recurring events will be implemented in a future update.")
+                    )
+                except Exception as e:
+                    logger.error(f"❌ Failed to add exception date: {e}")
+                    QMessageBox.critical(
+                        self,
+                        f"❌ {_('error_title', default='Error')}",
+                        f"An error occurred while adding exception:\n{str(e)}"
+                    )
+            elif result == "delete_all":
+                # Delete the master event
+                try:
+                    if self.event_manager.delete_event(event.recurrence_master_id):
+                        self.refresh_events()  # Refresh to remove all occurrences
+                        self.event_deleted.emit(event)
+                        logger.debug(f"🗑️ Deleted recurring event series: {event.get_display_title()}")
+                    else:
+                        QMessageBox.warning(
+                            self,
+                            f"❌ {_('error_delete_failed', default='Delete Failed')}",
+                            _("error_failed_to_delete_event", default="Failed to delete the event. Please try again.")
+                        )
+                except Exception as e:
+                    logger.error(f"❌ Failed to delete recurring event: {e}")
+                    QMessageBox.critical(
+                        self,
+                        f"❌ {_('error_title', default='Error')}",
+                        f"An error occurred while deleting the event:\n{str(e)}"
+                    )
+            # If cancel was clicked, do nothing
+            return
+        
+        # Regular event deletion
+        # Confirm deletion
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle(f"{UI_EMOJIS['delete_event']} {_('events.delete_event', default='Delete Event')}")
         msg_box.setText(f"🗑️ {_('confirm_delete_event_message', default='Are you sure you want to delete this event?')}\n\n{event.get_display_title()}")
         msg_box.setIcon(QMessageBox.Icon.Question)
         
-        # Create custom buttons with Arabic text
+        # Create custom buttons
         yes_button = msg_box.addButton(_("Yes", default="Yes"), QMessageBox.ButtonRole.YesRole)
         no_button = msg_box.addButton(_("No", default="No"), QMessageBox.ButtonRole.NoRole)
         msg_box.setDefaultButton(no_button)

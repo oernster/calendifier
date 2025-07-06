@@ -19,6 +19,7 @@ from PySide6.QtGui import QFont
 from calendar_app.data.models import Event
 from calendar_app.localization import get_i18n_manager
 from calendar_app.localization.i18n_manager import convert_numbers
+from calendar_app.ui.rrule_dialog import show_rrule_dialog
 from version import UI_EMOJIS, EVENT_CATEGORY_EMOJIS
 
 logger = logging.getLogger(__name__)
@@ -68,7 +69,7 @@ class EventDialog(QDialog):
         title = f"{UI_EMOJIS['edit_event']} {_('event_dialog_edit_title')}" if self.is_editing else f"{UI_EMOJIS['add_event']} {_('event_dialog_add_title')}"
         self.setWindowTitle(title)
         self.setModal(True)
-        self.resize(400, 500)
+        self.resize(650, 500)
         
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
@@ -170,6 +171,48 @@ class EventDialog(QDialog):
         desc_row.addWidget(self.description_edit)
         form_layout.addLayout(desc_row)
         
+        # Recurring event section
+        recurring_row = QHBoxLayout()
+        recurring_label = QLabel(f"🔄 {_('recurring.title', default='Recurring Event')}")
+        recurring_label.setStyleSheet("border: none; padding: 0; margin: 0;")
+        recurring_label.setMinimumWidth(100)
+        
+        # Recurring checkbox and button container
+        recurring_container = QHBoxLayout()
+        self.recurring_check = QCheckBox(_("recurring.enable", default="Make Recurring"))
+        self.recurring_check.toggled.connect(self._on_recurring_toggled)
+        recurring_container.addWidget(self.recurring_check)
+        
+        # RRULE pattern button
+        self.rrule_button = QPushButton(_("recurring.pattern", default="Repeat Pattern"))
+        self.rrule_button.setEnabled(False)
+        self.rrule_button.setFixedWidth(150)  # Set fixed width to ensure text fits
+        
+        # Apply custom styling for enabled/disabled states
+        self._apply_repeat_button_styling()
+        
+        self.rrule_button.clicked.connect(self._open_rrule_dialog)
+        recurring_container.addWidget(self.rrule_button)
+        
+        # Pattern description label
+        self.pattern_description = QLabel(_("recurring.description.custom", default="Custom repeat pattern"))
+        self.pattern_description.setStyleSheet("color: #666; font-style: italic;")
+        self.pattern_description.setVisible(False)
+        recurring_container.addWidget(self.pattern_description)
+        
+        # Remove the stretch so button can expand to the right
+        # recurring_container.addStretch()
+        
+        recurring_widget = QWidget()
+        recurring_widget.setLayout(recurring_container)
+        
+        recurring_row.addWidget(recurring_label)
+        recurring_row.addWidget(recurring_widget, 1)  # Give stretch factor of 1 to expand
+        form_layout.addLayout(recurring_row)
+        
+        # Store RRULE data
+        self.current_rrule = None
+        
         layout.addWidget(form_widget)
         
         # Button box
@@ -190,6 +233,42 @@ class EventDialog(QDialog):
         
         # Set focus to title
         self.title_edit.setFocus()
+    
+
+    def _apply_repeat_button_styling(self):
+        """Apply custom styling to the repeat pattern button"""
+        try:
+            # Custom stylesheet for the repeat pattern button
+            button_style = """
+            QPushButton {
+                background-color: #0078d4;  /* Blue background when enabled */
+                color: white;
+                border: 1px solid #005a9e;
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-weight: bold;
+                min-height: 20px;
+            }
+            QPushButton:hover {
+                background-color: #106ebe;  /* Lighter blue on hover when enabled */
+                border-color: #004578;
+            }
+            QPushButton:pressed {
+                background-color: #005a9e;  /* Darker blue when pressed */
+                border-color: #004578;
+            }
+            QPushButton:disabled {
+                background-color: #004578;  /* Darker blue when disabled (instead of grey) */
+                color: #b3d9ff;             /* Light blue text when disabled (still readable) */
+                border-color: #003d66;
+            }
+            """
+            
+            self.rrule_button.setStyleSheet(button_style)
+            logger.debug("🎨 Applied custom styling to repeat pattern button")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to apply repeat button styling: {e}")
     
     def _load_event_data(self):
         """📥 Load event data if editing."""
@@ -224,6 +303,13 @@ class EventDialog(QDialog):
             
             self._on_all_day_toggled(self.event_data.is_all_day)
             
+            # Load recurring info
+            self.recurring_check.setChecked(self.event_data.is_recurring)
+            if self.event_data.rrule:
+                self.current_rrule = self.event_data.rrule
+                self._update_pattern_description()
+            self._on_recurring_toggled(self.event_data.is_recurring)
+            
         except Exception as e:
             logger.error(f"❌ Failed to load event data: {e}")
     
@@ -231,6 +317,82 @@ class EventDialog(QDialog):
         """🔄 Handle all day checkbox toggle."""
         self.start_time_edit.setEnabled(not checked)
         self.end_time_edit.setEnabled(not checked)
+    
+    def _on_recurring_toggled(self, checked: bool):
+        """🔄 Handle recurring checkbox toggle."""
+        self.rrule_button.setEnabled(checked)
+        self.pattern_description.setVisible(checked and self.current_rrule is not None)
+        
+        # Refresh button styling after enable/disable
+        self._apply_repeat_button_styling()
+        
+        if not checked:
+            self.current_rrule = None
+            self.pattern_description.setText("")
+    
+    def _open_rrule_dialog(self):
+        """🔄 Open RRULE pattern builder dialog."""
+        try:
+            # Get current date for RRULE dialog
+            qdate = self.date_edit.date()
+            start_date = date(qdate.year(), qdate.month(), qdate.day())
+            
+            # Show RRULE dialog
+            try:
+                from calendar_app.ui.rrule_dialog_pyside import show_rrule_dialog
+                i18n_manager = get_i18n_manager()
+                
+                result_rrule = show_rrule_dialog(
+                    parent=self,
+                    i18n=i18n_manager,
+                    initial_rrule=self.current_rrule,
+                    start_date=start_date
+                )
+            except ImportError:
+                # Fallback: Simple text input for RRULE
+                from PySide6.QtWidgets import QInputDialog
+                result_rrule, ok = QInputDialog.getText(
+                    self,
+                    _("recurring.pattern", default="Repeat Pattern"),
+                    "Enter RRULE pattern:",
+                    text=self.current_rrule or "FREQ=WEEKLY"
+                )
+                if not ok:
+                    result_rrule = None
+            
+            if result_rrule:
+                self.current_rrule = result_rrule
+                self._update_pattern_description()
+                self.pattern_description.setVisible(True)
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to open RRULE dialog: {e}")
+            QMessageBox.critical(
+                self,
+                f"❌ {_('error_title', default='Error')}",
+                f"{_('recurring.error.invalid_rrule', default='Invalid recurrence pattern')}\n{str(e)}"
+            )
+    
+    def _update_pattern_description(self):
+        """🔄 Update pattern description from RRULE."""
+        if not self.current_rrule:
+            self.pattern_description.setText("")
+            return
+        
+        try:
+            from calendar_app.core.rrule_parser import RRuleParser
+            parser = RRuleParser()
+            i18n_manager = get_i18n_manager()
+            
+            # Parse RRULE and get description
+            components = parser.parse_rrule(self.current_rrule)
+            description = parser.get_human_readable_description(components, i18n_manager)
+            
+            self.pattern_description.setText(description)
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to update pattern description: {e}")
+            self.pattern_description.setText(_("recurring.description.custom", default="Custom repeat pattern"))
     
     def _save_event(self):
         """💾 Save event data."""
@@ -277,6 +439,10 @@ class EventDialog(QDialog):
                     self.end_time_edit.setFocus()
                     return
             
+            # Get recurring data
+            is_recurring = self.recurring_check.isChecked()
+            rrule = self.current_rrule if is_recurring else None
+            
             # Create or update event
             if self.is_editing and self.event_data:
                 # Update existing event
@@ -287,6 +453,8 @@ class EventDialog(QDialog):
                 self.event_data.is_all_day = is_all_day
                 self.event_data.start_time = start_time
                 self.event_data.end_time = end_time
+                self.event_data.is_recurring = is_recurring
+                self.event_data.rrule = rrule
                 
                 saved_event = self.event_data
             else:
@@ -298,7 +466,9 @@ class EventDialog(QDialog):
                     start_date=event_date,
                     is_all_day=is_all_day,
                     start_time=start_time,
-                    end_time=end_time
+                    end_time=end_time,
+                    is_recurring=is_recurring,
+                    rrule=rrule
                 )
             
             # Emit signal and close
@@ -340,6 +510,8 @@ class EventDialog(QDialog):
                     widget.setText(f"🕐 {_('label_end_time')}")
                 elif text.startswith("📄"):
                     widget.setText(f"📄 {_('label_description')}")
+                elif text.startswith("🔄"):
+                    widget.setText(f"🔄 {_('recurring.title', default='Recurring Event')}")
             
             # Update placeholders
             if hasattr(self, 'title_edit'):
@@ -350,6 +522,14 @@ class EventDialog(QDialog):
             # Update checkbox text
             if hasattr(self, 'all_day_check'):
                 self.all_day_check.setText(_("label_all_day_event"))
+            if hasattr(self, 'recurring_check'):
+                self.recurring_check.setText(_("recurring.enable", default="Make Recurring"))
+            
+            # Update recurring button text
+            if hasattr(self, 'rrule_button'):
+                self.rrule_button.setText(_("recurring.pattern", default="Repeat Pattern"))
+                # Reapply custom styling after text update
+                self._apply_repeat_button_styling()
             
             # Update category combo box items
             if hasattr(self, 'category_combo'):

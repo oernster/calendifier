@@ -7,13 +7,15 @@ This module defines the data structures used throughout the application.
 from dataclasses import dataclass, field
 from datetime import date, time, datetime
 from typing import Optional, List, Dict, Any
+import json
 from version import EVENT_CATEGORY_EMOJIS
 
 
 @dataclass
 class Event:
-    """📝 Event data model."""
+    """📝 Enhanced Event data model with RRULE support."""
     
+    # Core event fields
     id: Optional[int] = None
     title: str = ""
     description: str = ""
@@ -24,9 +26,19 @@ class Event:
     is_all_day: bool = False
     category: str = "default"
     color: str = "#0078d4"
+    
+    # RRULE-based recurrence
     is_recurring: bool = False
-    recurrence_pattern: Optional[str] = None
-    recurrence_end_date: Optional[date] = None
+    rrule: Optional[str] = None  # Full RRULE string (RFC 5545)
+    recurrence_id: Optional[str] = None  # For identifying specific occurrences
+    exception_dates: List[date] = field(default_factory=list)  # EXDATE equivalent
+    recurrence_master_id: Optional[int] = None  # Link to master recurring event
+    
+    # Legacy recurrence (deprecated, for migration)
+    recurrence_pattern: Optional[str] = None  # Will be removed after migration
+    recurrence_end_date: Optional[date] = None  # Will be removed after migration
+    
+    # Metadata
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     
@@ -65,10 +77,57 @@ class Event:
         if self.category not in EVENT_CATEGORY_EMOJIS:
             errors.append(f"Invalid category: {self.category}")
         
-        if self.is_recurring and not self.recurrence_pattern:
-            errors.append("Recurrence pattern required for recurring events")
+        # RRULE validation
+        if self.is_recurring:
+            if not self.rrule:
+                errors.append("RRULE is required for recurring events")
+            else:
+                # Validate RRULE format
+                if not self._validate_rrule():
+                    errors.append("Invalid RRULE format")
+        
+        # Recurrence master validation
+        if self.recurrence_master_id and not self.recurrence_id:
+            errors.append("Recurrence ID required when master ID is set")
+        
+        # Legacy validation (deprecated)
+        if self.is_recurring and not self.rrule and not self.recurrence_pattern:
+            errors.append("Recurrence pattern or RRULE required for recurring events")
         
         return errors
+    
+    def _validate_rrule(self) -> bool:
+        """Validate RRULE string format"""
+        if not self.rrule:
+            return True
+        
+        try:
+            from calendar_app.core.rrule_parser import RRuleParser
+            parser = RRuleParser()
+            return parser.validate_rrule(self.rrule)
+        except ImportError:
+            # Fallback basic validation
+            return self.rrule.startswith('FREQ=')
+    
+    def is_occurrence(self) -> bool:
+        """Check if this is a recurring event occurrence"""
+        return self.recurrence_master_id is not None
+    
+    def is_master(self) -> bool:
+        """Check if this is a master recurring event"""
+        return self.is_recurring and self.recurrence_master_id is None
+    
+    def get_recurrence_description(self) -> str:
+        """Get human-readable recurrence description"""
+        if not self.is_recurring or not self.rrule:
+            return ""
+        
+        try:
+            from calendar_app.core.rrule_parser import RRuleParser
+            parser = RRuleParser()
+            return parser.get_human_readable_description(self.rrule)
+        except ImportError:
+            return "Recurring event"
     
     def to_dict(self) -> Dict[str, Any]:
         """📋 Convert event to dictionary."""
@@ -84,8 +143,14 @@ class Event:
             'category': self.category,
             'color': self.color,
             'is_recurring': self.is_recurring,
+            'rrule': self.rrule,
+            'recurrence_id': self.recurrence_id,
+            'exception_dates': [d.isoformat() for d in self.exception_dates],
+            'recurrence_master_id': self.recurrence_master_id,
+            # Legacy fields (deprecated)
             'recurrence_pattern': self.recurrence_pattern,
             'recurrence_end_date': self.recurrence_end_date.isoformat() if self.recurrence_end_date else None,
+            # Metadata
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -98,6 +163,22 @@ class Event:
         start_time = time.fromisoformat(data['start_time']) if data.get('start_time') else None
         end_date = date.fromisoformat(data['end_date']) if data.get('end_date') else None
         end_time = time.fromisoformat(data['end_time']) if data.get('end_time') else None
+        
+        # Parse exception dates
+        exception_dates = []
+        if data.get('exception_dates'):
+            if isinstance(data['exception_dates'], str):
+                # Handle JSON string
+                try:
+                    exception_list = json.loads(data['exception_dates'])
+                    exception_dates = [date.fromisoformat(d) for d in exception_list]
+                except (json.JSONDecodeError, ValueError):
+                    pass
+            elif isinstance(data['exception_dates'], list):
+                # Handle list
+                exception_dates = [date.fromisoformat(d) for d in data['exception_dates']]
+        
+        # Parse legacy fields
         recurrence_end_date = date.fromisoformat(data['recurrence_end_date']) if data.get('recurrence_end_date') else None
         created_at = datetime.fromisoformat(data['created_at']) if data.get('created_at') else None
         updated_at = datetime.fromisoformat(data['updated_at']) if data.get('updated_at') else None
@@ -114,8 +195,14 @@ class Event:
             category=data.get('category', 'default'),
             color=data.get('color', '#0078d4'),
             is_recurring=data.get('is_recurring', False),
+            rrule=data.get('rrule'),
+            recurrence_id=data.get('recurrence_id'),
+            exception_dates=exception_dates,
+            recurrence_master_id=data.get('recurrence_master_id'),
+            # Legacy fields
             recurrence_pattern=data.get('recurrence_pattern'),
             recurrence_end_date=recurrence_end_date,
+            # Metadata
             created_at=created_at,
             updated_at=updated_at
         )
@@ -125,9 +212,15 @@ class Event:
         return EVENT_CATEGORY_EMOJIS.get(self.category, EVENT_CATEGORY_EMOJIS['default'])
     
     def get_display_title(self) -> str:
-        """📝 Get title with category emoji."""
+        """📝 Get title with category emoji and recurrence indicator."""
         emoji = self.get_category_emoji()
-        return f"{emoji} {self.title}"
+        title = self.title
+        
+        # Add recurrence indicator for master events
+        if self.is_recurring and not self.is_occurrence():
+            title += " 🔄"
+        
+        return f"{emoji} {title}"
 
 
 @dataclass

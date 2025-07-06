@@ -2,6 +2,7 @@
 🗄️ Database operations for Calendar Application
 
 This module handles SQLite database operations with proper schema management.
+Enhanced with RRULE support for RFC 5545 compliant recurring events.
 """
 
 import sqlite3
@@ -12,6 +13,8 @@ from datetime import date, time, datetime
 from contextlib import contextmanager
 
 from .models import Event, AppSettings
+from ..core.recurring_event_generator import RecurringEventGenerator
+from ..core.rrule_parser import RRuleParser
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +22,7 @@ logger = logging.getLogger(__name__)
 class DatabaseManager:
     """🗄️ SQLite database manager with schema versioning."""
     
-    SCHEMA_VERSION = 1
+    SCHEMA_VERSION = 2
     
     def __init__(self, db_path: Path):
         """Initialize database manager."""
@@ -57,6 +60,10 @@ class DatabaseManager:
         if from_version < 1:
             self._create_initial_schema(conn)
             conn.execute("INSERT INTO schema_version (version) VALUES (1)")
+        
+        if from_version < 2:
+            self._migrate_to_rrule_schema(conn)
+            conn.execute("INSERT INTO schema_version (version) VALUES (2)")
         
         conn.commit()
         logger.info("✅ Database migration completed")
@@ -159,6 +166,62 @@ class DatabaseManager:
             VALUES (?, ?, ?)
         """, default_settings)
     
+    def _migrate_to_rrule_schema(self, conn: sqlite3.Connection):
+        """🔄 Migrate to RRULE schema (version 2)."""
+        logger.info("🔄 Adding RRULE support to events table")
+        
+        # Add new RRULE columns to events table
+        try:
+            conn.execute("ALTER TABLE events ADD COLUMN rrule TEXT")
+            logger.info("✅ Added rrule column")
+        except sqlite3.OperationalError:
+            logger.info("ℹ️ rrule column already exists")
+        
+        try:
+            conn.execute("ALTER TABLE events ADD COLUMN recurrence_id TEXT")
+            logger.info("✅ Added recurrence_id column")
+        except sqlite3.OperationalError:
+            logger.info("ℹ️ recurrence_id column already exists")
+        
+        try:
+            conn.execute("ALTER TABLE events ADD COLUMN exception_dates TEXT")
+            logger.info("✅ Added exception_dates column")
+        except sqlite3.OperationalError:
+            logger.info("ℹ️ exception_dates column already exists")
+        
+        try:
+            conn.execute("ALTER TABLE events ADD COLUMN recurrence_master_id INTEGER")
+            logger.info("✅ Added recurrence_master_id column")
+        except sqlite3.OperationalError:
+            logger.info("ℹ️ recurrence_master_id column already exists")
+        
+        # Create indexes for RRULE fields
+        try:
+            conn.execute("CREATE INDEX idx_events_rrule ON events(rrule)")
+            conn.execute("CREATE INDEX idx_events_recurrence_master ON events(recurrence_master_id)")
+            conn.execute("CREATE INDEX idx_events_recurrence_id ON events(recurrence_id)")
+            logger.info("✅ Created RRULE indexes")
+        except sqlite3.OperationalError:
+            logger.info("ℹ️ RRULE indexes already exist")
+        
+        # Add foreign key constraint for recurrence master
+        try:
+            conn.execute("""
+                CREATE TRIGGER fk_recurrence_master_id
+                BEFORE INSERT ON events
+                FOR EACH ROW
+                WHEN NEW.recurrence_master_id IS NOT NULL
+                BEGIN
+                    SELECT CASE
+                        WHEN (SELECT id FROM events WHERE id = NEW.recurrence_master_id) IS NULL
+                        THEN RAISE(ABORT, 'Foreign key constraint failed: recurrence_master_id')
+                    END;
+                END
+            """)
+            logger.info("✅ Created recurrence master foreign key trigger")
+        except sqlite3.OperationalError:
+            logger.info("ℹ️ Recurrence master trigger already exists")
+    
     @contextmanager
     def get_connection(self):
         """🔗 Get database connection with proper cleanup."""
@@ -182,21 +245,29 @@ class DatabaseManager:
         if errors:
             raise ValueError(f"Event validation failed: {', '.join(errors)}")
         
+        # Serialize exception_dates list to JSON string
+        exception_dates_json = None
+        if event.exception_dates:
+            import json
+            exception_dates_json = json.dumps([d.isoformat() for d in event.exception_dates])
+        
         with self.get_connection() as conn:
             cursor = conn.execute("""
                 INSERT INTO events (
                     title, description, start_date, start_time, end_date, end_time,
                     is_all_day, category, color, is_recurring, recurrence_pattern,
-                    recurrence_end_date, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    recurrence_end_date, rrule, recurrence_id, exception_dates,
+                    recurrence_master_id, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 event.title, event.description, event.start_date,
                 event.start_time.strftime('%H:%M:%S') if event.start_time else None,
                 event.end_date,
                 event.end_time.strftime('%H:%M:%S') if event.end_time else None,
-                event.is_all_day, event.category,
-                event.color, event.is_recurring, event.recurrence_pattern,
-                event.recurrence_end_date, datetime.now()
+                event.is_all_day, event.category, event.color, event.is_recurring,
+                event.recurrence_pattern, event.recurrence_end_date, event.rrule,
+                event.recurrence_id, exception_dates_json, event.recurrence_master_id,
+                datetime.now()
             ))
             
             event_id = cursor.lastrowid
@@ -219,21 +290,55 @@ class DatabaseManager:
     def get_events_for_date(self, target_date: date) -> List[Event]:
         """📅 Get all events for specific date."""
         with self.get_connection() as conn:
+            # Use the same enhanced logic as get_events_for_month for consistency
             cursor = conn.execute("""
-                SELECT * FROM events 
-                WHERE start_date <= ? AND (end_date >= ? OR end_date IS NULL)
+                SELECT * FROM events
+                WHERE (
+                    -- Non-recurring events: use original date range logic
+                    (is_recurring = 0 AND (
+                        start_date <= ? AND (end_date >= ? OR end_date IS NULL)
+                    ))
+                    -- Recurring events: include all that could potentially have occurrences on this date
+                    OR (is_recurring = 1 AND (
+                        -- Event starts before or on the date AND (no end date OR end date is after or on the date)
+                        start_date <= ? AND (recurrence_end_date IS NULL OR recurrence_end_date >= ?)
+                    ))
+                )
                 ORDER BY start_time, title
-            """, (target_date, target_date))
+            """, (target_date, target_date, target_date, target_date))
             
             events = []
             for row in cursor.fetchall():
                 event = self._row_to_event(row)
-                events.append(event)
                 
                 # Handle recurring events
                 if event.is_recurring:
+                    logger.info(f"🔄 Processing recurring event {event.id} ({event.title}) for date {target_date}")
+                    logger.info(f"🔄 Event start_date: {event.start_date}, target_date: {target_date}")
+                    
+                    # Generate recurring occurrences
                     recurring_events = self._generate_recurring_events(event, target_date)
-                    events.extend(recurring_events)
+                    logger.info(f"🔄 Generated {len(recurring_events)} recurring events")
+                    
+                    # If we're querying for the master event's original date, add the master event
+                    if target_date == event.start_date:
+                        events.append(event)
+                        logger.info(f"🔄 Added master event {event.id} (start_date {event.start_date} == target_date {target_date})")
+                    else:
+                        logger.info(f"🔄 Skipped master event {event.id} (start_date {event.start_date} != target_date {target_date})")
+                    
+                    # Add all generated occurrences (they should only be for the target date)
+                    for rec_event in recurring_events:
+                        events.append(rec_event)
+                        logger.info(f"🔄 Generated event: {rec_event.title} on {rec_event.start_date} (master_id: {getattr(rec_event, 'recurrence_master_id', None)})")
+                else:
+                    # Non-recurring event - always add
+                    events.append(event)
+                    logger.info(f"📅 Added non-recurring event {event.id} ({event.title})")
+            
+            logger.info(f"📅 Final event list for {target_date}: {len(events)} events")
+            for i, event in enumerate(events):
+                logger.info(f"📅 Event {i+1}: {event.id} - {event.title} (master_id: {getattr(event, 'recurrence_master_id', None)})")
             
             return events
     
@@ -244,19 +349,34 @@ class DatabaseManager:
         start_date = date(year, month, 1)
         end_date = date(year, month, monthrange(year, month)[1])
         
+        logger.debug(f"📆 Getting events for month {year}-{month:02d} (range: {start_date} to {end_date})")
+        
         with self.get_connection() as conn:
+            # For recurring events, we need to include ALL recurring events that could have occurrences in this month,
+            # regardless of when they started. For non-recurring events, use the original date range logic.
             cursor = conn.execute("""
-                SELECT * FROM events 
-                WHERE (start_date >= ? AND start_date <= ?) 
-                   OR (end_date >= ? AND start_date <= ?)
-                   OR (start_date <= ? AND end_date >= ?)
+                SELECT * FROM events
+                WHERE (
+                    -- Non-recurring events: use original date range logic
+                    (is_recurring = 0 AND (
+                        (start_date >= ? AND start_date <= ?)
+                        OR (end_date >= ? AND start_date <= ?)
+                        OR (start_date <= ? AND end_date >= ?)
+                    ))
+                    -- Recurring events: include all that could potentially have occurrences in this month
+                    OR (is_recurring = 1 AND (
+                        -- Event starts before or during the month AND (no end date OR end date is after month start)
+                        start_date <= ? AND (recurrence_end_date IS NULL OR recurrence_end_date >= ?)
+                    ))
+                )
                 ORDER BY start_date, start_time, title
-            """, (start_date, end_date, start_date, end_date, start_date, end_date))
+            """, (start_date, end_date, start_date, end_date, start_date, end_date, end_date, start_date))
             
             events = []
             for row in cursor.fetchall():
                 event = self._row_to_event(row)
                 events.append(event)
+                logger.debug(f"📆 Found event: {event.id} ({event.title}) - recurring: {event.is_recurring}")
                 
                 # Handle recurring events for the month
                 if event.is_recurring:
@@ -265,6 +385,7 @@ class DatabaseManager:
                     )
                     events.extend(recurring_events)
             
+            logger.info(f"📆 Total events for {year}-{month:02d}: {len(events)}")
             return events
     
     def update_event(self, event: Event) -> bool:
@@ -276,22 +397,30 @@ class DatabaseManager:
         if errors:
             raise ValueError(f"Event validation failed: {', '.join(errors)}")
         
+        # Serialize exception_dates list to JSON string
+        exception_dates_json = None
+        if event.exception_dates:
+            import json
+            exception_dates_json = json.dumps([d.isoformat() for d in event.exception_dates])
+        
         with self.get_connection() as conn:
             cursor = conn.execute("""
                 UPDATE events SET
                     title = ?, description = ?, start_date = ?, start_time = ?,
                     end_date = ?, end_time = ?, is_all_day = ?, category = ?,
                     color = ?, is_recurring = ?, recurrence_pattern = ?,
-                    recurrence_end_date = ?, updated_at = ?
+                    recurrence_end_date = ?, rrule = ?, recurrence_id = ?,
+                    exception_dates = ?, recurrence_master_id = ?, updated_at = ?
                 WHERE id = ?
             """, (
                 event.title, event.description, event.start_date,
                 event.start_time.strftime('%H:%M:%S') if event.start_time else None,
                 event.end_date,
                 event.end_time.strftime('%H:%M:%S') if event.end_time else None,
-                event.is_all_day, event.category,
-                event.color, event.is_recurring, event.recurrence_pattern,
-                event.recurrence_end_date, datetime.now(), event.id
+                event.is_all_day, event.category, event.color, event.is_recurring,
+                event.recurrence_pattern, event.recurrence_end_date, event.rrule,
+                event.recurrence_id, exception_dates_json, event.recurrence_master_id,
+                datetime.now(), event.id
             ))
             
             success = cursor.rowcount > 0
@@ -334,6 +463,29 @@ class DatabaseManager:
             except (ValueError, TypeError):
                 end_time = None
         
+        # Handle RRULE fields with backward compatibility
+        rrule = None
+        recurrence_id = None
+        exception_dates = []
+        recurrence_master_id = None
+        
+        try:
+            rrule = row['rrule']
+            recurrence_id = row['recurrence_id']
+            recurrence_master_id = row['recurrence_master_id']
+            
+            # Deserialize exception_dates from JSON string
+            if row['exception_dates']:
+                try:
+                    import json
+                    exception_dates_list = json.loads(row['exception_dates'])
+                    exception_dates = [date.fromisoformat(d) for d in exception_dates_list]
+                except (json.JSONDecodeError, ValueError, TypeError):
+                    exception_dates = []
+        except (KeyError, IndexError):
+            # Handle older database schema without RRULE fields
+            pass
+        
         return Event(
             id=row['id'],
             title=row['title'],
@@ -348,28 +500,70 @@ class DatabaseManager:
             is_recurring=bool(row['is_recurring']),
             recurrence_pattern=row['recurrence_pattern'],
             recurrence_end_date=row['recurrence_end_date'],
+            rrule=rrule,
+            recurrence_id=recurrence_id,
+            exception_dates=exception_dates,
+            recurrence_master_id=recurrence_master_id,
             created_at=row['created_at'],
             updated_at=row['updated_at']
         )
     
     def _generate_recurring_events(self, base_event: Event, target_date: date) -> List[Event]:
-        """🔄 Generate recurring event instances for specific date."""
-        if not base_event.is_recurring or not base_event.recurrence_pattern:
+        """🔄 Generate recurring event instances for specific date using RRULE."""
+        if not base_event.is_recurring:
             return []
         
-        # Simple recurring event generation
-        # This is a basic implementation - could be expanded for complex patterns
+        # Use RRULE if available, otherwise fall back to legacy pattern
+        if base_event.rrule:
+            try:
+                generator = RecurringEventGenerator()
+                occurrences = generator.generate_occurrences_for_date(base_event, target_date)
+                return occurrences
+            except Exception as e:
+                logger.error(f"❌ RRULE generation failed for event {base_event.id}: {e}")
+                # Fall back to legacy generation
+                return self._generate_legacy_recurring_events(base_event, target_date)
+        else:
+            return self._generate_legacy_recurring_events(base_event, target_date)
+    
+    def _generate_recurring_events_for_range(self, base_event: Event, start_date: date, end_date: date) -> List[Event]:
+        """🔄 Generate recurring event instances for date range using RRULE."""
+        if not base_event.is_recurring:
+            return []
+        
+        logger.info(f"🔄 Generating recurring events for {base_event.id} ({base_event.title}) from {start_date} to {end_date}")
+        logger.info(f"🔄 Base event start_date: {base_event.start_date}, rrule: {base_event.rrule}")
+        
+        # Use RRULE if available, otherwise fall back to legacy pattern
+        if base_event.rrule:
+            try:
+                generator = RecurringEventGenerator()
+                occurrences = generator.generate_occurrences_for_range(base_event, start_date, end_date)
+                logger.debug(f"🔄 Generated {len(occurrences)} recurring occurrences for event {base_event.id}")
+                return occurrences
+            except Exception as e:
+                logger.error(f"❌ RRULE generation failed for event {base_event.id}: {e}")
+                # Fall back to legacy generation
+                return self._generate_legacy_recurring_events_for_range(base_event, start_date, end_date)
+        else:
+            logger.debug(f"🔄 No RRULE found, using legacy generation for event {base_event.id}")
+            return self._generate_legacy_recurring_events_for_range(base_event, start_date, end_date)
+    
+    def _generate_legacy_recurring_events(self, base_event: Event, target_date: date) -> List[Event]:
+        """🔄 Legacy recurring event generation for backward compatibility."""
+        if not base_event.recurrence_pattern:
+            return []
+        
         recurring_events = []
         
         if base_event.recurrence_pattern == 'daily':
-            # Check if target_date matches daily recurrence
             if base_event.start_date is None:
                 return []
             days_diff = (target_date - base_event.start_date).days
             if days_diff > 0 and days_diff % 1 == 0:
                 if not base_event.recurrence_end_date or target_date <= base_event.recurrence_end_date:
                     recurring_event = Event(
-                        id=None,  # Recurring instances don't have IDs
+                        id=None,
                         title=base_event.title,
                         description=base_event.description,
                         start_date=target_date,
@@ -379,12 +573,11 @@ class DatabaseManager:
                         is_all_day=base_event.is_all_day,
                         category=base_event.category,
                         color=base_event.color,
-                        is_recurring=False  # Instances are not recurring themselves
+                        is_recurring=False
                     )
                     recurring_events.append(recurring_event)
         
         elif base_event.recurrence_pattern == 'weekly':
-            # Check if target_date matches weekly recurrence
             if base_event.start_date is None:
                 return []
             days_diff = (target_date - base_event.start_date).days
@@ -407,9 +600,9 @@ class DatabaseManager:
         
         return recurring_events
     
-    def _generate_recurring_events_for_range(self, base_event: Event, start_date: date, end_date: date) -> List[Event]:
-        """🔄 Generate recurring event instances for date range."""
-        if not base_event.is_recurring or not base_event.recurrence_pattern:
+    def _generate_legacy_recurring_events_for_range(self, base_event: Event, start_date: date, end_date: date) -> List[Event]:
+        """🔄 Legacy recurring event generation for date range."""
+        if not base_event.recurrence_pattern:
             return []
         
         recurring_events = []
@@ -447,7 +640,7 @@ class DatabaseManager:
                 else:
                     current_date = current_date.replace(month=current_date.month + 1)
             else:
-                break  # Unknown pattern
+                break
         
         return recurring_events
     
@@ -461,10 +654,105 @@ class DatabaseManager:
         """🔍 Search events by title and description."""
         with self.get_connection() as conn:
             cursor = conn.execute("""
-                SELECT * FROM events 
+                SELECT * FROM events
                 WHERE title LIKE ? OR description LIKE ?
                 ORDER BY start_date DESC, start_time
                 LIMIT ?
             """, (f"%{query}%", f"%{query}%", limit))
             
             return [self._row_to_event(row) for row in cursor.fetchall()]
+    
+    def get_recurring_master_events(self) -> List[Event]:
+        """🔄 Get all master recurring events (events with RRULE but no recurrence_master_id)."""
+        with self.get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT * FROM events
+                WHERE is_recurring = 1
+                AND (recurrence_master_id IS NULL OR recurrence_master_id = 0)
+                ORDER BY start_date, start_time
+            """)
+            
+            return [self._row_to_event(row) for row in cursor.fetchall()]
+    
+    def get_event_occurrences(self, master_event_id: int) -> List[Event]:
+        """🔄 Get all occurrence events for a master recurring event."""
+        with self.get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT * FROM events
+                WHERE recurrence_master_id = ?
+                ORDER BY start_date, start_time
+            """, (master_event_id,))
+            
+            return [self._row_to_event(row) for row in cursor.fetchall()]
+    
+    def delete_recurring_series(self, master_event_id: int) -> bool:
+        """🗑️ Delete entire recurring series (master + all occurrences)."""
+        with self.get_connection() as conn:
+            # Delete all occurrences first
+            cursor = conn.execute("DELETE FROM events WHERE recurrence_master_id = ?", (master_event_id,))
+            occurrences_deleted = cursor.rowcount
+            
+            # Delete master event
+            cursor = conn.execute("DELETE FROM events WHERE id = ?", (master_event_id,))
+            master_deleted = cursor.rowcount > 0
+            
+            if master_deleted:
+                conn.commit()
+                logger.info(f"✅ Deleted recurring series: master ID {master_event_id}, {occurrences_deleted} occurrences")
+            else:
+                logger.warning(f"⚠️ Master event not found for deletion: ID {master_event_id}")
+            
+            return master_deleted
+    
+    def add_exception_date(self, master_event_id: int, exception_date: date) -> bool:
+        """➕ Add exception date to recurring event."""
+        event = self.get_event(master_event_id)
+        if not event or not event.is_recurring:
+            return False
+        
+        # Parse existing exception dates
+        exception_dates = []
+        if event.exception_dates:
+            try:
+                import json
+                exception_dates = json.loads(event.exception_dates)
+            except (json.JSONDecodeError, TypeError):
+                exception_dates = []
+        
+        # Add new exception date if not already present
+        exception_date_str = exception_date.isoformat()
+        if exception_date_str not in exception_dates:
+            exception_dates.append(exception_date_str)
+            exception_dates.sort()
+            
+            # Update event with new exception dates
+            event.exception_dates = json.dumps(exception_dates)
+            return self.update_event(event)
+        
+        return True  # Already exists
+    
+    def remove_exception_date(self, master_event_id: int, exception_date: date) -> bool:
+        """➖ Remove exception date from recurring event."""
+        event = self.get_event(master_event_id)
+        if not event or not event.is_recurring:
+            return False
+        
+        # Parse existing exception dates
+        exception_dates = []
+        if event.exception_dates:
+            try:
+                import json
+                exception_dates = json.loads(event.exception_dates)
+            except (json.JSONDecodeError, TypeError):
+                exception_dates = []
+        
+        # Remove exception date if present
+        exception_date_str = exception_date.isoformat()
+        if exception_date_str in exception_dates:
+            exception_dates.remove(exception_date_str)
+            
+            # Update event with modified exception dates
+            event.exception_dates = json.dumps(exception_dates) if exception_dates else None
+            return self.update_event(event)
+        
+        return True  # Already removed
