@@ -56,10 +56,38 @@
           const response = await fetch(`${this.getApiBaseUrl()}/api/v1/about`);
           if (response.ok) {
             this.aboutData = await response.json();
+          } else {
+            // Fallback: create basic about data with version from API
+            this.aboutData = {
+              app_name: this.t('app_name', '📅 Calendifier'),
+              version: await this.getVersionFromAPI(),
+              description: this.t('app_description', 'Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays'),
+              features: []
+            };
           }
         } catch (error) {
           console.error('[HelpCard] Error loading about data:', error);
+          // Fallback: create basic about data with version from API
+          this.aboutData = {
+            app_name: this.t('app_name', '📅 Calendifier'),
+            version: await this.getVersionFromAPI(),
+            description: this.t('app_description', 'Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays'),
+            features: []
+          };
         }
+      }
+
+      async getVersionFromAPI() {
+        try {
+          const response = await fetch(`${this.getApiBaseUrl()}/api/v1/about`);
+          if (response.ok) {
+            const data = await response.json();
+            return data.version || '1.4.0';
+          }
+        } catch (error) {
+          console.error('[HelpCard] Error getting version from API:', error);
+        }
+        return '1.4.0'; // Fallback version
       }
 
       async loadCurrentTheme() {
@@ -145,7 +173,7 @@
 
         const aboutData = this.aboutData || {
           app_name: this.t('app_name', '📅 Calendifier'),
-          version: "1.1.0",
+          version: '1.4.0',
           description: this.t('app_description', 'Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays'),
           features: []
         };

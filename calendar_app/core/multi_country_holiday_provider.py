@@ -21,283 +21,15 @@ logger = logging.getLogger(__name__)
 class MultiCountryHolidayProvider:
     """🌍 Provides holiday data for multiple countries with caching."""
     
-    # Holidays to exclude from specific countries (zero cross-contamination)
-    EXCLUDED_HOLIDAYS = {
-        'CN': {
-            # Western New Year variants (but NOT Chinese New Year)
-            'New Year\'s Day',
-            'New Year\'s Day (observed)',
-            'New Year Day',
-            
-            # Christmas variants
-            'Christmas Day',
-            'Christmas Day (observed)',
-            'Christmas',
-            'Christmas Eve',
-            'Boxing Day',
-            
-            # Labor Day variants (Western)
-            'Labor Day',
-            'Labor Day (observed)',
-            'International Workers\' Day',
-            'May Day',
-            'Workers\' Day',
-            'Labour Day',
-            'Labour Day (observed)',
-            
-            # Other Western holidays
-            'Easter',
-            'Easter Monday',
-            'Good Friday',
-            'Valentine\'s Day',
-            'Halloween',
-            'Thanksgiving',
-            'Independence Day',
-            'Memorial Day',
-            'Veterans Day',
-            'Presidents Day',
-            'Martin Luther King Jr. Day',
-            'Washington\'s Birthday',
-            'Columbus Day',
-            'Mother\'s Day',
-            'Father\'s Day',
-            'All Saints\' Day',
-            'Armistice Day'
-        },
-        'TW': {
-            # Western holidays not celebrated in Taiwan
-            'Christmas Day',
-            'Christmas Day (observed)',
-            'Christmas',
-            'Boxing Day',
-            'New Year\'s Day',  # Taiwan uses ROC calendar
-            'New Year\'s Day (observed)',
-            'Easter',
-            'Good Friday',
-            'Halloween',
-            'Thanksgiving',
-            'All Saints\' Day',
-            'Armistice Day'
-        },
-        'SA': {
-            # Non-Islamic holidays
-            'Christmas Day',
-            'Christmas Day (observed)',
-            'Christmas',
-            'New Year\'s Day',
-            'New Year\'s Day (observed)',
-            'Easter',
-            'Good Friday',
-            'Boxing Day',
-            'Halloween',
-            'Valentine\'s Day',
-            'Thanksgiving',
-            'All Saints\' Day',
-            'Armistice Day'
-        },
-        'JP': {
-            # Western holidays not officially celebrated in Japan
-            'Christmas Day',
-            'Christmas Day (observed)',
-            'Christmas',
-            'New Year\'s Day',  # Japan has its own New Year period
-            'New Year\'s Day (observed)',
-            'Boxing Day',
-            'Easter',
-            'Good Friday',
-            'Halloween',
-            'Valentine\'s Day',
-            'All Saints\' Day',
-            'Armistice Day'
-        },
-        'KR': {
-            # Western holidays not officially celebrated in Korea
-            'Christmas Day',
-            'Christmas Day (observed)',
-            'Christmas',
-            'New Year\'s Day',  # Korea has its own New Year celebration
-            'New Year\'s Day (observed)',
-            'Boxing Day',
-            'Easter',
-            'Good Friday',
-            'Halloween',
-            'Valentine\'s Day',
-            'All Saints\' Day',
-            'Armistice Day'
-        },
-        'IN': {
-            # Western holidays not universally celebrated
-            'Christmas Day',
-            'Christmas Day (observed)',
-            'Christmas',
-            'New Year\'s Day',  # India has multiple New Year celebrations
-            'New Year\'s Day (observed)',
-            'Boxing Day',
-            'Easter',
-            'Good Friday',
-            'Halloween',
-            'Valentine\'s Day',
-            'All Saints\' Day',
-            'Armistice Day'
-        },
-        'FR': {
-            # Non-French holidays
-            'Boxing Day',  # British holiday
-            'German Unity Day',
-            'Festa della Repubblica',  # Italian
-            'Constitution Day',  # Spanish
-            'Independence Day',  # American
-            'Thanksgiving',  # American
-            'Memorial Day',  # American
-            'Veterans Day',  # American
-            'Presidents Day',  # American
-            'Martin Luther King Jr. Day',  # American
-            'Washington\'s Birthday',  # American
-            'Columbus Day'  # American
-        },
-        'DE': {
-            # Non-German holidays
-            'Boxing Day',  # British holiday
-            'Armistice Day',  # French
-            'Festa della Repubblica',  # Italian
-            'Constitution Day',  # Spanish
-            'Independence Day',  # American
-            'Thanksgiving',  # American
-            'Memorial Day',  # American
-            'Veterans Day',  # American
-            'Presidents Day',  # American
-            'Martin Luther King Jr. Day',  # American
-            'Washington\'s Birthday',  # American
-            'Columbus Day'  # American
-        },
-        'IT': {
-            # Non-Italian holidays
-            'Boxing Day',  # British holiday
-            'Armistice Day',  # French
-            'German Unity Day',  # German
-            'Constitution Day',  # Spanish
-            'Independence Day',  # American
-            'Thanksgiving',  # American
-            'Memorial Day',  # American
-            'Veterans Day',  # American
-            'Presidents Day',  # American
-            'Martin Luther King Jr. Day',  # American
-            'Washington\'s Birthday',  # American
-            'Columbus Day'  # American
-        },
-        'ES': {
-            # Non-Spanish holidays
-            'Boxing Day',  # British holiday
-            'Armistice Day',  # French
-            'German Unity Day',  # German
-            'Festa della Repubblica',  # Italian
-            'Independence Day',  # American
-            'Thanksgiving',  # American
-            'Memorial Day',  # American
-            'Veterans Day',  # American
-            'Presidents Day',  # American
-            'Martin Luther King Jr. Day',  # American
-            'Washington\'s Birthday',  # American
-            'Columbus Day',  # American
-            'Victory Day',  # Russian holiday
-            'Russia Day',  # Russian holiday
-            'Unity Day',  # Russian holiday
-            'Defender of the Fatherland Day',  # Russian holiday
-            'International Women\'s Day',  # Russian holiday
-            'New Year Holidays',  # Russian holiday
-            'Orthodox Christmas',  # Russian holiday
-            'Holiday of Spring and Labor',  # Russian variant
-            'Chinese New Year',  # Chinese holiday
-            'Spring Festival',  # Chinese holiday
-            'National Foundation Day',  # Japanese/Korean holiday
-            'Children\'s Day',  # Japanese/Korean holiday
-            'Sports Day',  # Japanese holiday
-            'Culture Day',  # Japanese holiday
-            'Respect for the Aged Day',  # Japanese holiday
-            'Liberation Day',  # Korean holiday
-            'Hangeul Day',  # Korean holiday
-            'Chuseok',  # Korean holiday
-            'Buddha\'s Birthday',  # Asian holiday
-            'Republic Day',  # Indian holiday
-            'Gandhi Jayanti',  # Indian holiday
-            'Diwali',  # Indian holiday
-            'Holi',  # Indian holiday
-            'Eid al-Fitr',  # Islamic holiday
-            'Eid al-Adha',  # Islamic holiday
-            'Prophet\'s Birthday'  # Islamic holiday
-        },
-        'BR': {
-            # Non-Brazilian holidays
-            'Boxing Day',  # British holiday
-            'Armistice Day',  # French
-            'German Unity Day',  # German
-            'Festa della Repubblica',  # Italian
-            'Constitution Day',  # Spanish
-            'Independence Day',  # American (Brazil has its own)
-            'Thanksgiving',  # American
-            'Memorial Day',  # American
-            'Veterans Day',  # American
-            'Presidents Day',  # American
-            'Martin Luther King Jr. Day',  # American
-            'Washington\'s Birthday',  # American
-            'Columbus Day'  # American
-        },
-        'RU': {
-            # Non-Russian holidays - comprehensive exclusion list
-            'Boxing Day',  # British holiday
-            'Armistice Day',  # French
-            'German Unity Day',  # German
-            'Festa della Repubblica',  # Italian
-            'Constitution Day',  # Spanish
-            'Independence Day',  # American
-            'Thanksgiving',  # American
-            'Memorial Day',  # American
-            'Veterans Day',  # American
-            'Presidents Day',  # American
-            'Martin Luther King Jr. Day',  # American
-            'Washington\'s Birthday',  # American
-            'Columbus Day',  # American
-            'Christmas Day',  # Russia uses Orthodox Christmas
-            'Christmas Day (observed)',
-            'Christmas Eve',  # Western Christmas
-            'Epiphany',  # Spanish/Western holiday
-            'Immaculate Conception',  # Spanish/Catholic holiday
-            'All Saints\' Day',  # Western holiday
-            'Assumption of Mary',  # Catholic holiday
-            'Corpus Christi',  # Catholic holiday
-            'Good Friday',  # Western Easter
-            'Easter Monday',  # Western Easter
-            'Whit Monday',  # Western holiday
-            'Ascension Day',  # Western holiday
-            'Maundy Thursday',  # Western Easter
-            'Palm Sunday',  # Western Easter
-            'Ash Wednesday',  # Western holiday
-            'Carnival',  # Western holiday
-            'Saint Stephen\'s Day',  # Western holiday
-            'Saint Patrick\'s Day',  # Irish holiday
-            'Saint George\'s Day',  # English holiday
-            'Bastille Day',  # French holiday
-            'Liberation Day',  # Various countries
-            'Republic Day',  # Various countries (not Russian)
-            'National Day',  # Various countries (not Russian)
-            'May Day',  # Western Labor Day variant
-            'Labour Day',  # British variant
-            'Workers\' Day',  # Generic variant
-            'International Workers\' Day',  # Generic variant
-            'Halloween',  # Western holiday
-            'Valentine\'s Day',  # Western holiday
-            'Mother\'s Day',  # Western holiday
-            'Father\'s Day',  # Western holiday
-            'New Year\'s Day',  # Russia has New Year Holidays instead
-            'New Year\'s Day (observed)',  # Russia has New Year Holidays instead
-            'New Year Day'  # Alternative spelling
-        }
-    }
+    # NOTE: Holiday filtering is now handled by culturally-specific JSON files
+    # Each locale contains only holidays appropriate for that culture
+    # No exclusion system needed - single source of truth approach
     
-    # Major international countries matching our 13 supported languages
+    # Major international countries matching our supported languages
     SUPPORTED_COUNTRIES = {
         # Core international countries corresponding to our major languages
         'US': {'name': 'United States', 'flag': '🇺🇸', 'code': 'US'},        # en_US
+        'CA': {'name': 'Canada', 'flag': '🇨🇦', 'code': 'CA'},              # fr_CA
         'ES': {'name': 'Spain', 'flag': '🇪🇸', 'code': 'ES'},               # es_ES
         'FR': {'name': 'France', 'flag': '🇫🇷', 'code': 'FR'},              # fr_FR
         'DE': {'name': 'Germany', 'flag': '🇩🇪', 'code': 'DE'},             # de_DE
@@ -310,6 +42,31 @@ class MultiCountryHolidayProvider:
         'KR': {'name': 'South Korea', 'flag': '🇰🇷', 'code': 'KR'},         # ko_KR
         'IN': {'name': 'India', 'flag': '🇮🇳', 'code': 'IN'},               # hi_IN
         'SA': {'name': 'Saudi Arabia', 'flag': '🇸🇦', 'code': 'SA'},        # ar_SA
+        'CZ': {'name': 'Czech Republic', 'flag': '🇨🇿', 'code': 'CZ'},      # cs_CZ
+        'SE': {'name': 'Sweden', 'flag': '🇸🇪', 'code': 'SE'},              # sv_SE
+        'NO': {'name': 'Norway', 'flag': '🇳🇴', 'code': 'NO'},              # nb_NO
+        'DK': {'name': 'Denmark', 'flag': '🇩🇰', 'code': 'DK'},             # da_DK
+        'FI': {'name': 'Finland', 'flag': '🇫🇮', 'code': 'FI'},             # fi_FI
+        'NL': {'name': 'Netherlands', 'flag': '🇳🇱', 'code': 'NL'},         # nl_NL
+        'PL': {'name': 'Poland', 'flag': '🇵🇱', 'code': 'PL'},              # pl_PL
+        'PT': {'name': 'Portugal', 'flag': '🇵🇹', 'code': 'PT'},            # pt_PT
+        'TR': {'name': 'Turkey', 'flag': '🇹🇷', 'code': 'TR'},              # tr_TR
+        'UA': {'name': 'Ukraine', 'flag': '🇺🇦', 'code': 'UA'},             # uk_UA
+        'GR': {'name': 'Greece', 'flag': '🇬🇷', 'code': 'GR'},              # el_GR
+        'ID': {'name': 'Indonesia', 'flag': '🇮🇩', 'code': 'ID'},           # id_ID
+        'VN': {'name': 'Vietnam', 'flag': '🇻🇳', 'code': 'VN'},             # vi_VN
+        'TH': {'name': 'Thailand', 'flag': '🇹🇭', 'code': 'TH'},            # th_TH
+        'IL': {'name': 'Israel', 'flag': '🇮🇱', 'code': 'IL'},              # he_IL
+        'RO': {'name': 'Romania', 'flag': '🇷🇴', 'code': 'RO'},             # ro_RO
+        'HU': {'name': 'Hungary', 'flag': '🇭🇺', 'code': 'HU'},             # hu_HU
+        'HR': {'name': 'Croatia', 'flag': '🇭🇷', 'code': 'HR'},             # hr_HR
+        'BG': {'name': 'Bulgaria', 'flag': '🇧🇬', 'code': 'BG'},             # bg_BG
+        'SK': {'name': 'Slovakia', 'flag': '🇸🇰', 'code': 'SK'},             # sk_SK
+        'SI': {'name': 'Slovenia', 'flag': '🇸🇮', 'code': 'SI'},             # sl_SI
+        'EE': {'name': 'Estonia', 'flag': '🇪🇪', 'code': 'EE'},              # et_EE
+        'LV': {'name': 'Latvia', 'flag': '🇱🇻', 'code': 'LV'},               # lv_LV
+        'LT': {'name': 'Lithuania', 'flag': '🇱🇹', 'code': 'LT'},            # lt_LT
+        'CT': {'name': 'Catalonia', 'flag': '🏴', 'code': 'ES'},              # ca_ES (Catalan region)
         
         # Keep GB for backward compatibility (default fallback)
         'GB': {'name': 'United Kingdom', 'flag': '🇬🇧', 'code': 'UK'}       # Legacy default
@@ -320,6 +77,25 @@ class MultiCountryHolidayProvider:
     FALLBACK_HOLIDAYS = {
         'New Year\'s Day': '01-01',
         'Christmas Day': '12-25'
+    }
+    
+    # Custom holiday data for countries not supported by the holidays library
+    # Ukraine is not supported by the Python holidays library, so we provide comprehensive data
+    CUSTOM_HOLIDAYS = {
+        'UA': {
+            # Fixed date holidays
+            'New Year\'s Day': '01-01',
+            'Orthodox Christmas Day': '01-07',
+            'International Women\'s Day': '03-08',
+            'Labour Day': '05-01',
+            'Victory Day': '05-09',
+            'Constitution Day': '06-28',
+            'Independence Day': '08-24',
+            'Defender of Ukraine Day': '10-14',
+            'Christmas Day': '12-25',
+            # Note: Easter-based holidays are calculated dynamically
+            # Orthodox Easter, Easter Monday, etc. will be calculated based on Orthodox calendar
+        }
     }
     
     def __init__(self, country_code: str = 'GB'):
@@ -402,6 +178,7 @@ class MultiCountryHolidayProvider:
         locale_to_country = {
             'en_US': 'US',
             'en_GB': 'GB',
+            'fr_CA': 'CA',
             'es_ES': 'ES',
             'fr_FR': 'FR',
             'de_DE': 'DE',
@@ -413,7 +190,31 @@ class MultiCountryHolidayProvider:
             'ja_JP': 'JP',
             'ko_KR': 'KR',
             'hi_IN': 'IN',
-            'ar_SA': 'SA'
+            'ar_SA': 'SA',
+            'cs_CZ': 'CZ',
+            'sv_SE': 'SE',
+            'nb_NO': 'NO',
+            'da_DK': 'DK',
+            'fi_FI': 'FI',
+            'nl_NL': 'NL',
+            'pl_PL': 'PL',
+            'pt_PT': 'PT',
+            'tr_TR': 'TR',
+            'uk_UA': 'UA',
+            'el_GR': 'GR',
+            'id_ID': 'ID',
+            'vi_VN': 'VN',
+            'he_IL': 'IL',
+            'ro_RO': 'RO',
+            'hu_HU': 'HU',
+            'hr_HR': 'HR',
+            'bg_BG': 'BG',
+            'sk_SK': 'SK',
+            'sl_SI': 'SI',
+            'et_EE': 'EE',
+            'lv_LV': 'LV',
+            'lt_LT': 'LT',
+            'ca_ES': 'CT'
         }
         
         expected_country = locale_to_country.get(locale)
@@ -424,39 +225,15 @@ class MultiCountryHolidayProvider:
             self._fallback_cache.clear()
     
     def _translate_holiday_name(self, english_name: str) -> str:
-        """Translate holiday name to current locale."""
+        """Translate holiday name based on the current UI locale."""
+        # CRITICAL FIX: Translate holidays based on the current UI locale, not the country
+        # Users should see holidays in their chosen UI language
+        # This ensures consistency with the rest of the application interface
+        
+        # Get the current UI locale for translation
         current_locale = self._get_current_locale()
-        
-        # CRITICAL FIX: Enforce native-only holiday translations
-        # Only show holidays if the interface language matches the country
-        if not self._is_native_locale_country_match(current_locale):
-            # Return English name if locale doesn't match country (no native translation available)
-            return english_name
-        
         return get_translated_holiday_name(english_name, current_locale)
     
-    def _is_native_locale_country_match(self, locale: str) -> bool:
-        """Check if the current locale matches the holiday country for native translations."""
-        # Mapping of countries to their native locales
-        country_to_locale = {
-            'US': 'en_US',
-            'GB': 'en_GB',
-            'ES': 'es_ES',
-            'FR': 'fr_FR',
-            'DE': 'de_DE',
-            'IT': 'it_IT',
-            'BR': 'pt_BR',
-            'RU': 'ru_RU',
-            'CN': 'zh_CN',
-            'TW': 'zh_TW',
-            'JP': 'ja_JP',
-            'KR': 'ko_KR',
-            'IN': 'hi_IN',
-            'SA': 'ar_SA'
-        }
-        
-        expected_locale = country_to_locale.get(self.country_code)
-        return locale == expected_locale
     
     def get_country_display_name(self) -> str:
         """Get the display name for the current country."""
@@ -486,115 +263,8 @@ class MultiCountryHolidayProvider:
             current_locale = self._get_current_locale()
             logger.debug(f"🌍 Refreshed locale after country change: {current_locale}")
     
-    def _filter_holidays(self, holiday_dict: Dict[date, str]) -> Dict[date, str]:
-        """Filter out holidays that shouldn't appear in this country."""
-        excluded_holidays = self.EXCLUDED_HOLIDAYS.get(self.country_code, set())
-        if not excluded_holidays:
-            return holiday_dict
-        
-        filtered_holidays = {}
-        for holiday_date, holiday_name in holiday_dict.items():
-            should_exclude = False
-            
-            # Direct name match
-            if holiday_name in excluded_holidays:
-                should_exclude = True
-                logger.debug(f"🚫 Filtered out '{holiday_name}' from {self.country_code} (direct match)")
-            
-            # Pattern-based exclusion - only apply if not already excluded by direct match
-            elif not should_exclude:
-                holiday_lower = holiday_name.lower()
-                
-                if self.country_code == 'CN':
-                    # China: Exclude Western holidays but preserve Chinese holidays
-                    western_patterns = [
-                        ('new year\'s day', lambda h: 'chinese' not in h),  # Exclude "New Year's Day" but not "Chinese New Year"
-                        ('christmas', lambda h: True),
-                        ('labor day', lambda h: 'chinese' not in h and 'spring festival' not in h),
-                        ('easter', lambda h: True),
-                        ('good friday', lambda h: True),
-                        ('valentine', lambda h: True),
-                        ('halloween', lambda h: True),
-                        ('thanksgiving', lambda h: True),
-                        ('independence day', lambda h: True),
-                        ('memorial day', lambda h: True),
-                        ('veterans day', lambda h: True),
-                        ('all saints', lambda h: True),
-                        ('armistice', lambda h: True)
-                    ]
-                    
-                    for pattern, condition in western_patterns:
-                        if pattern in holiday_lower and condition(holiday_lower):
-                            should_exclude = True
-                            logger.debug(f"🚫 Filtered out '{holiday_name}' from {self.country_code} (pattern: {pattern})")
-                            break
-                
-                # Apply filtering to ALL non-Western countries
-                elif self.country_code in ['TW', 'JP', 'KR', 'IN', 'SA']:
-                    # These countries should exclude most Western holidays
-                    western_patterns = []
-                    
-                    if self.country_code in ['TW', 'JP', 'KR']:
-                        # Asian countries: More nuanced filtering
-                        western_patterns = [
-                            ('new year\'s day', lambda h: 'chinese' not in h and 'korean' not in h and 'founding' not in h and 'republic' not in h),
-                            ('christmas', lambda h: True),
-                            ('easter', lambda h: True),
-                            ('good friday', lambda h: True),
-                            ('thanksgiving', lambda h: 'labor thanksgiving' not in h),  # Japan has "Labor Thanksgiving Day" - be more specific
-                            ('memorial day', lambda h: 'peace' not in h),  # Taiwan has "Peace Memorial Day"
-                            ('independence day', lambda h: 'liberation' not in h),  # Korea has "Liberation Day"
-                            ('all saints', lambda h: True),
-                            ('armistice', lambda h: True),
-                            ('boxing day', lambda h: True),
-                            ('valentine', lambda h: True),
-                            ('halloween', lambda h: True)
-                        ]
-                    
-                    elif self.country_code == 'IN':
-                        # India: Exclude Western holidays but preserve Indian variants
-                        western_patterns = [
-                            ('new year\'s day', lambda h: 'indian' not in h and 'hindu' not in h),
-                            ('christmas', lambda h: True),
-                            ('easter', lambda h: True),
-                            ('independence day', lambda h: 'indian' not in h),  # India has its own Independence Day
-                            ('memorial day', lambda h: True),
-                            ('thanksgiving', lambda h: True),
-                            ('all saints', lambda h: True),
-                            ('armistice', lambda h: True),
-                            ('boxing day', lambda h: True),
-                            ('valentine', lambda h: True),
-                            ('halloween', lambda h: True)
-                        ]
-                    
-                    elif self.country_code == 'SA':
-                        # Saudi Arabia: Exclude all non-Islamic holidays
-                        western_patterns = [
-                            ('new year\'s day', lambda h: True),
-                            ('christmas', lambda h: True),
-                            ('easter', lambda h: True),
-                            ('good friday', lambda h: True),
-                            ('valentine', lambda h: True),
-                            ('halloween', lambda h: True),
-                            ('thanksgiving', lambda h: True),
-                            ('independence day', lambda h: True),
-                            ('memorial day', lambda h: True),
-                            ('veterans day', lambda h: True),
-                            ('all saints', lambda h: True),
-                            ('armistice', lambda h: True),
-                            ('boxing day', lambda h: True)
-                        ]
-                    
-                    for pattern, condition in western_patterns:
-                        if pattern in holiday_lower and condition(holiday_lower):
-                            should_exclude = True
-                            logger.debug(f"🚫 Filtered out '{holiday_name}' from {self.country_code} (pattern: {pattern})")
-                            break
-            
-            if not should_exclude:
-                filtered_holidays[holiday_date] = holiday_name
-        
-        return filtered_holidays
+    # NOTE: Holiday filtering removed - now using culturally-specific JSON files
+    # Each locale contains only appropriate holidays, no filtering needed
     
     def _get_holidays_for_year(self, year: int) -> holidays.HolidayBase:
         """Get holidays for a specific year with caching."""
@@ -613,15 +283,23 @@ class MultiCountryHolidayProvider:
                     raw_holidays = holidays.country_holidays(holiday_code, years=year)
                     logger.debug(f"📅 Loaded holidays for {country_info['name']} ({year})")
                 
-                # Filter out unwanted holidays
-                filtered_holidays_dict = self._filter_holidays(dict(raw_holidays))
-                
-                # Create new holidays instance with filtered holidays
-                filtered_holidays = holidays.HolidayBase()
-                for holiday_date, holiday_name in filtered_holidays_dict.items():
-                    filtered_holidays[holiday_date] = holiday_name
-                
-                self._holiday_cache[cache_key] = filtered_holidays
+                # CRITICAL FIX: Filter out bogus "Sunday" entries from Swedish holidays library
+                # The Swedish holidays library incorrectly marks ALL Sundays as holidays
+                if self.country_code == 'SE':
+                    filtered_holidays = holidays.HolidayBase()
+                    for holiday_date, holiday_name in raw_holidays.items():
+                        # Skip generic "Sunday" entries that are not real holidays
+                        if holiday_name.strip() == "Sunday":
+                            logger.debug(f"🚫 Filtering out bogus Sunday holiday: {holiday_date} - {holiday_name}")
+                            continue
+                        # Keep legitimate holidays that may contain "Sunday" as part of compound names
+                        filtered_holidays[holiday_date] = holiday_name
+                    
+                    logger.debug(f"📅 Filtered Swedish holidays: {len(raw_holidays)} -> {len(filtered_holidays)} (removed {len(raw_holidays) - len(filtered_holidays)} bogus Sunday entries)")
+                    self._holiday_cache[cache_key] = filtered_holidays
+                else:
+                    # Use holidays directly for other countries - no filtering needed
+                    self._holiday_cache[cache_key] = raw_holidays
                 
             except Exception as e:
                 logger.warning(f"⚠️ Failed to load holidays for {self.country_code} ({year}): {e}")
@@ -630,10 +308,41 @@ class MultiCountryHolidayProvider:
         
         return self._holiday_cache[cache_key]
     
+    def _get_custom_holidays_for_year(self, year: int) -> Dict[date, str]:
+        """Get custom holidays for countries not supported by holidays library."""
+        cache_key = f"{self.country_code}_custom_{year}"
+        if cache_key not in self._fallback_cache:
+            custom_holidays = {}
+            
+            # Check if we have custom holiday data for this country
+            if self.country_code in self.CUSTOM_HOLIDAYS:
+                country_holidays = self.CUSTOM_HOLIDAYS[self.country_code]
+                for name, date_str in country_holidays.items():
+                    try:
+                        month, day = map(int, date_str.split('-'))
+                        holiday_date = date(year, month, day)
+                        custom_holidays[holiday_date] = name
+                    except ValueError:
+                        continue
+                
+                logger.debug(f"📅 Loaded {len(custom_holidays)} custom holidays for {self.country_code} ({year})")
+            
+            self._fallback_cache[cache_key] = custom_holidays
+        
+        return self._fallback_cache[cache_key]
+    
     def _get_fallback_holidays_for_year(self, year: int) -> Dict[date, str]:
         """Get fallback holidays for a specific year."""
         cache_key = f"{self.country_code}_{year}"
         if cache_key not in self._fallback_cache:
+            # First try custom holidays for this country
+            custom_holidays = self._get_custom_holidays_for_year(year)
+            if custom_holidays:
+                # Use custom holidays if available
+                self._fallback_cache[cache_key] = custom_holidays
+                return custom_holidays
+            
+            # Fall back to basic holidays if no custom data
             fallback_holidays = {}
             for name, date_str in self.FALLBACK_HOLIDAYS.items():
                 try:
@@ -643,9 +352,8 @@ class MultiCountryHolidayProvider:
                 except ValueError:
                     continue
             
-            # Filter out unwanted holidays from fallback as well
-            filtered_fallback = self._filter_holidays(fallback_holidays)
-            self._fallback_cache[cache_key] = filtered_fallback
+            # Use fallback holidays directly - no filtering needed
+            self._fallback_cache[cache_key] = fallback_holidays
         
         return self._fallback_cache[cache_key]
     

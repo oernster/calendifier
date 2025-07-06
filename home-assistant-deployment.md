@@ -99,8 +99,8 @@ After successful deployment, you'll have:
 - 🌐 **Web Access** - Access from anywhere on your network
 - 🔄 **Auto-Updates** - Cards refresh automatically
 - 🎯 **Optimized Layout** - No overlapping, proper spacing
-- 🌍 **14-Language Support** - Complete localization with runtime language switching
-- 🏳️ **14-Country Holiday Support** - Intelligent holiday detection with native translations
+- 🌍 **40-Language Support** - Complete localization with runtime language switching
+- 🏳️ **40-Country Holiday Support** - Intelligent holiday detection with native translations
 
 ## 🔧 Troubleshooting
 

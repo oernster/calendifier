@@ -390,10 +390,16 @@ class CalendifierAPI:
             
             # STRICT locale-to-country mapping - NO DEFAULTS
             locale_to_country = {
-                'en_US': 'US', 'en_GB': 'GB', 'es_ES': 'ES', 'fr_FR': 'FR',
+                'en_US': 'US', 'en_GB': 'GB', 'fr_CA': 'CA', 'ca_ES': 'ES', 'es_ES': 'ES', 'fr_FR': 'FR',
                 'de_DE': 'DE', 'it_IT': 'IT', 'pt_BR': 'BR', 'ru_RU': 'RU',
                 'zh_CN': 'CN', 'zh_TW': 'TW', 'ja_JP': 'JP', 'ko_KR': 'KR',
-                'hi_IN': 'IN', 'ar_SA': 'SA'
+                'hi_IN': 'IN', 'ar_SA': 'SA', 'cs_CZ': 'CZ', 'sv_SE': 'SE',
+                'nb_NO': 'NO', 'da_DK': 'DK', 'fi_FI': 'FI', 'nl_NL': 'NL',
+                'pl_PL': 'PL', 'pt_PT': 'PT', 'tr_TR': 'TR', 'uk_UA': 'UA',
+                'el_GR': 'GR', 'id_ID': 'ID', 'vi_VN': 'VN', 'th_TH': 'TH',
+                'he_IL': 'IL', 'ro_RO': 'RO', 'hu_HU': 'HU', 'hr_HR': 'HR',
+                'bg_BG': 'BG', 'sk_SK': 'SK', 'sl_SI': 'SI', 'et_EE': 'EE',
+                'lv_LV': 'LV', 'lt_LT': 'LT'
             }
             
             # REQUIRE exact locale match - NO FALLBACKS
@@ -440,10 +446,16 @@ class CalendifierAPI:
             
             # Map locale to country
             locale_to_country = {
-                'en_US': 'US', 'en_GB': 'GB', 'es_ES': 'ES', 'fr_FR': 'FR',
+                'en_US': 'US', 'en_GB': 'GB', 'fr_CA': 'CA', 'ca_ES': 'ES', 'es_ES': 'ES', 'fr_FR': 'FR',
                 'de_DE': 'DE', 'it_IT': 'IT', 'pt_BR': 'BR', 'ru_RU': 'RU',
                 'zh_CN': 'CN', 'zh_TW': 'TW', 'ja_JP': 'JP', 'ko_KR': 'KR',
-                'hi_IN': 'IN', 'ar_SA': 'SA'
+                'hi_IN': 'IN', 'ar_SA': 'SA', 'cs_CZ': 'CZ', 'sv_SE': 'SE',
+                'nb_NO': 'NO', 'da_DK': 'DK', 'fi_FI': 'FI', 'nl_NL': 'NL',
+                'pl_PL': 'PL', 'pt_PT': 'PT', 'tr_TR': 'TR', 'uk_UA': 'UA',
+                'el_GR': 'GR', 'id_ID': 'ID', 'vi_VN': 'VN', 'th_TH': 'TH',
+                'he_IL': 'IL', 'ro_RO': 'RO', 'hu_HU': 'HU', 'hr_HR': 'HR',
+                'bg_BG': 'BG', 'sk_SK': 'SK', 'sl_SI': 'SI', 'et_EE': 'EE',
+                'lv_LV': 'LV', 'lt_LT': 'LT'
             }
             
             country = locale_to_country.get(current_locale, 'GB')
@@ -460,10 +472,16 @@ class CalendifierAPI:
             
             # Map locale to correct country
             locale_to_country = {
-                'en_US': 'US', 'en_GB': 'GB', 'es_ES': 'ES', 'fr_FR': 'FR',
+                'en_US': 'US', 'en_GB': 'GB', 'fr_CA': 'CA', 'ca_ES': 'ES', 'es_ES': 'ES', 'fr_FR': 'FR',
                 'de_DE': 'DE', 'it_IT': 'IT', 'pt_BR': 'BR', 'ru_RU': 'RU',
                 'zh_CN': 'CN', 'zh_TW': 'TW', 'ja_JP': 'JP', 'ko_KR': 'KR',
-                'hi_IN': 'IN', 'ar_SA': 'SA'
+                'hi_IN': 'IN', 'ar_SA': 'SA', 'cs_CZ': 'CZ', 'sv_SE': 'SE',
+                'nb_NO': 'NO', 'da_DK': 'DK', 'fi_FI': 'FI', 'nl_NL': 'NL',
+                'pl_PL': 'PL', 'pt_PT': 'PT', 'tr_TR': 'TR', 'uk_UA': 'UA',
+                'el_GR': 'GR', 'id_ID': 'ID', 'vi_VN': 'VN', 'th_TH': 'TH',
+                'he_IL': 'IL', 'ro_RO': 'RO', 'hu_HU': 'HU', 'hr_HR': 'HR',
+                'bg_BG': 'BG', 'sk_SK': 'SK', 'sl_SI': 'SI', 'et_EE': 'EE',
+                'lv_LV': 'LV', 'lt_LT': 'LT'
             }
             
             actual_country = locale_to_country.get(current_locale, country)
@@ -497,6 +515,7 @@ class CalendifierAPI:
             return {
                 "countries": [
                     {"code": "US", "name": "United States", "flag": "🇺🇸"},
+                    {"code": "CA", "name": "Canada", "flag": "🇨🇦"},
                     {"code": "GB", "name": "United Kingdom", "flag": "🇬🇧"},
                     {"code": "DE", "name": "Germany", "flag": "🇩🇪"},
                     {"code": "ES", "name": "Spain", "flag": "🇪🇸"},
@@ -509,7 +528,31 @@ class CalendifierAPI:
                     {"code": "BR", "name": "Brazil", "flag": "🇧🇷"},
                     {"code": "RU", "name": "Russia", "flag": "🇷🇺"},
                     {"code": "IN", "name": "India", "flag": "🇮🇳"},
-                    {"code": "SA", "name": "Saudi Arabia", "flag": "🇸🇦"}
+                    {"code": "SA", "name": "Saudi Arabia", "flag": "🇸🇦"},
+                    {"code": "CZ", "name": "Czech Republic", "flag": "🇨🇿"},
+                    {"code": "SE", "name": "Sweden", "flag": "🇸🇪"},
+                    {"code": "NO", "name": "Norway", "flag": "🇳🇴"},
+                    {"code": "DK", "name": "Denmark", "flag": "🇩🇰"},
+                    {"code": "FI", "name": "Finland", "flag": "🇫🇮"},
+                    {"code": "NL", "name": "Netherlands", "flag": "🇳🇱"},
+                    {"code": "PL", "name": "Poland", "flag": "🇵🇱"},
+                    {"code": "PT", "name": "Portugal", "flag": "🇵🇹"},
+                    {"code": "TR", "name": "Turkey", "flag": "🇹🇷"},
+                    {"code": "UA", "name": "Ukraine", "flag": "🇺🇦"},
+                    {"code": "GR", "name": "Greece", "flag": "🇬🇷"},
+                    {"code": "ID", "name": "Indonesia", "flag": "🇮🇩"},
+                    {"code": "VN", "name": "Vietnam", "flag": "🇻🇳"},
+                    {"code": "TH", "name": "Thailand", "flag": "🇹🇭"},
+                    {"code": "IL", "name": "Israel", "flag": "🇮🇱"},
+                    {"code": "RO", "name": "Romania", "flag": "🇷🇴"},
+                    {"code": "HU", "name": "Hungary", "flag": "🇭🇺"},
+                    {"code": "HR", "name": "Croatia", "flag": "🇭🇷"},
+                    {"code": "BG", "name": "Bulgaria", "flag": "🇧🇬"},
+                    {"code": "SK", "name": "Slovakia", "flag": "🇸🇰"},
+                    {"code": "SI", "name": "Slovenia", "flag": "🇸🇮"},
+                    {"code": "EE", "name": "Estonia", "flag": "🇪🇪"},
+                    {"code": "LV", "name": "Latvia", "flag": "🇱🇻"},
+                    {"code": "LT", "name": "Lithuania", "flag": "🇱🇹"}
                 ]
             }
         
@@ -519,20 +562,46 @@ class CalendifierAPI:
             """Get list of available translation locales"""
             return {
                 "locales": [
-                    {"code": "en_US", "name": "English (US)", "flag": "🇺🇸"},
-                    {"code": "en_GB", "name": "English (UK)", "flag": "🇬🇧"},
+                    {"code": "ar_SA", "name": "العربية", "flag": "🇸🇦"},
+                    {"code": "id_ID", "name": "Bahasa Indonesia", "flag": "🇮🇩"},
+                    {"code": "bg_BG", "name": "Български", "flag": "🇧🇬"},
+                    {"code": "ca_ES", "name": "Català", "flag": "🇪🇸"},
+                    {"code": "cs_CZ", "name": "Čeština", "flag": "🇨🇿"},
+                    {"code": "da_DK", "name": "Dansk", "flag": "🇩🇰"},
                     {"code": "de_DE", "name": "Deutsch", "flag": "🇩🇪"},
+                    {"code": "et_EE", "name": "Eesti", "flag": "🇪🇪"},
+                    {"code": "en_GB", "name": "English (UK)", "flag": "🇬🇧"},
+                    {"code": "en_US", "name": "English (US)", "flag": "🇺🇸"},
                     {"code": "es_ES", "name": "Español", "flag": "🇪🇸"},
                     {"code": "fr_FR", "name": "Français", "flag": "🇫🇷"},
+                    {"code": "fr_CA", "name": "Français (Québec)", "flag": "🇨🇦"},
+                    {"code": "hr_HR", "name": "Hrvatski", "flag": "🇭🇷"},
                     {"code": "it_IT", "name": "Italiano", "flag": "🇮🇹"},
-                    {"code": "ja_JP", "name": "日本語", "flag": "🇯🇵"},
-                    {"code": "ko_KR", "name": "한국어", "flag": "🇰🇷"},
+                    {"code": "hu_HU", "name": "Magyar", "flag": "🇭🇺"},
+                    {"code": "nl_NL", "name": "Nederlands", "flag": "🇳🇱"},
+                    {"code": "nb_NO", "name": "Norsk (bokmål)", "flag": "🇳🇴"},
+                    {"code": "pl_PL", "name": "Polski", "flag": "🇵🇱"},
+                    {"code": "pt_BR", "name": "Português (Brasil)", "flag": "🇧🇷"},
+                    {"code": "pt_PT", "name": "Português (Portugal)", "flag": "🇵🇹"},
+                    {"code": "ro_RO", "name": "Română", "flag": "🇷🇴"},
+                    {"code": "ru_RU", "name": "Русский", "flag": "🇷🇺"},
+                    {"code": "sk_SK", "name": "Slovenčina", "flag": "🇸🇰"},
+                    {"code": "sl_SI", "name": "Slovenščina", "flag": "🇸🇮"},
+                    {"code": "fi_FI", "name": "Suomi", "flag": "🇫🇮"},
+                    {"code": "sv_SE", "name": "Svenska", "flag": "🇸🇪"},
+                    {"code": "th_TH", "name": "ไทย", "flag": "🇹🇭"},
+                    {"code": "vi_VN", "name": "Tiếng Việt", "flag": "🇻🇳"},
+                    {"code": "tr_TR", "name": "Türkçe", "flag": "🇹🇷"},
+                    {"code": "uk_UA", "name": "Українська", "flag": "🇺🇦"},
+                    {"code": "he_IL", "name": "עברית", "flag": "🇮🇱"},
+                    {"code": "el_GR", "name": "Ελληνικά", "flag": "🇬🇷"},
+                    {"code": "hi_IN", "name": "हिन्दी", "flag": "🇮🇳"},
                     {"code": "zh_CN", "name": "中文 (简体)", "flag": "🇨🇳"},
                     {"code": "zh_TW", "name": "中文 (繁體)", "flag": "🇹🇼"},
-                    {"code": "pt_BR", "name": "Português (Brasil)", "flag": "🇧🇷"},
-                    {"code": "ru_RU", "name": "Русский", "flag": "🇷🇺"},
-                    {"code": "hi_IN", "name": "हिन्दी", "flag": "🇮🇳"},
-                    {"code": "ar_SA", "name": "العربية", "flag": "🇸🇦"}
+                    {"code": "ja_JP", "name": "日本語", "flag": "🇯🇵"},
+                    {"code": "ko_KR", "name": "한국어", "flag": "🇰🇷"},
+                    {"code": "lv_LV", "name": "Latviešu", "flag": "🇱🇻"},
+                    {"code": "lt_LT", "name": "Lietuvių", "flag": "🇱🇹"}
                 ]
             }
         
@@ -1083,13 +1152,13 @@ class CalendifierAPI:
                     "📋 Event management with categories",
                     "📅 Full calendar view with navigation",
                     "📝 Notes with categories and organization",
-                    "🎉 Holiday support for 14 countries",
-                    "🌍 Translation support for 14 languages",
+                    "🎉 Holiday support for 28 countries",
+                    "🌍 Translation support for 28 languages",
                     "📤📥 Import/export functionality",
                     "⚙️ Configurable settings and themes"
                 ],
-                "supported_locales": 14,
-                "supported_countries": 14,
+                "supported_locales": 28,
+                "supported_countries": 28,
                 "api_endpoints": {
                     "events": "/api/v1/events",
                     "notes": "/api/v1/notes",

@@ -4,8 +4,8 @@
 This module contains version information and emoji constants used throughout the application.
 """
 
-__version__ = "1.3.0"
-__version_info__ = (1, 3, 0)
+__version__ = "1.4.0"
+__version_info__ = (1, 4, 0)
 __app_name__ = "📅 Calendifier"
 __author__ = "Oliver Ernster"
 __description__ = "Cross-platform calendar system with Home Assistant integration, analog clock, event handling, note taking, and holidays"
@@ -132,7 +132,7 @@ Version: {__version__}
 
 🏠 Home Assistant Integration Available
 🖥️ Desktop Application Mode
-🌐 14 Languages & 14 Countries Supported
+🌐 40 Languages & 40 Countries Supported
 
 {__copyright__}
 License: {__license__}

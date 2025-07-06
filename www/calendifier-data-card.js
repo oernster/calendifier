@@ -259,31 +259,60 @@
         return 'en_US';
       }
 
-      renderLocaleOptions() {
+      async renderLocaleOptions() {
         const currentLocale = this.getCurrentLocale();
-        const locales = [
+        
+        try {
+          // Get available locales from API
+          const response = await fetch(`${this.getApiBaseUrl()}/api/v1/translations`);
+          if (response.ok) {
+            const data = await response.json();
+            const locales = data.locales || [];
+            
+            return locales.map(locale =>
+              `<option value="${locale.code}" ${locale.code === currentLocale ? 'selected' : ''}>${locale.flag} ${locale.native}</option>`
+            ).join('');
+          }
+        } catch (error) {
+          console.error('Failed to load locales:', error);
+        }
+        
+        // Fallback to basic locales if API fails
+        const fallbackLocales = [
           { code: 'en_US', name: '🇺🇸 English (US)' },
           { code: 'en_GB', name: '🇬🇧 English (UK)' },
           { code: 'de_DE', name: '🇩🇪 Deutsch' },
           { code: 'es_ES', name: '🇪🇸 Español' },
-          { code: 'fr_FR', name: '🇫🇷 Français' },
-          { code: 'it_IT', name: '🇮🇹 Italiano' },
-          { code: 'ja_JP', name: '🇯🇵 日本語' },
-          { code: 'ko_KR', name: '🇰🇷 한국어' },
-          { code: 'zh_CN', name: '🇨🇳 中文 (简体)' },
-          { code: 'zh_TW', name: '🇹🇼 中文 (繁體)' },
-          { code: 'pt_BR', name: '🇧🇷 Português' },
-          { code: 'ru_RU', name: '🇷🇺 Русский' },
-          { code: 'hi_IN', name: '🇮🇳 हिन्दी' },
-          { code: 'ar_SA', name: '🇸🇦 العربية' }
+          { code: 'fr_FR', name: '🇫🇷 Français' }
         ];
 
-        return locales.map(locale =>
+        return fallbackLocales.map(locale =>
           `<option value="${locale.code}" ${locale.code === currentLocale ? 'selected' : ''}>${locale.name}</option>`
         ).join('');
       }
 
-      render() {
+      async renderLocaleSelector() {
+        const localeOptions = await this.renderLocaleOptions();
+        return `
+          <div class="section">
+            <div class="section-title">
+              🌍 ${this.t('language', 'Language')}
+            </div>
+            <div class="section-description">
+              ${this.t('locale.description', 'Select your preferred language for the interface')}
+            </div>
+            <div class="locale-selector-container">
+              <select id="localeSelect" class="locale-selector" onchange="this.getRootNode().host.changeLocale(this.value)">
+                ${localeOptions}
+              </select>
+            </div>
+          </div>
+        `;
+      }
+
+      async render() {
+        const localeSelector = await this.renderLocaleSelector();
+        
         this.shadowRoot.innerHTML = `
           <style>
             ${this.getCommonStyles()}
@@ -389,6 +418,40 @@
               margin-top: 8px;
             }
             
+            /* Locale selector with scroll support */
+            .locale-selector-container {
+              margin-top: 8px;
+            }
+            
+            .locale-selector {
+              width: 100%;
+              padding: 8px 12px;
+              border: 1px solid var(--divider-color);
+              border-radius: 6px;
+              background: var(--card-background-color);
+              color: var(--primary-text-color);
+              font-size: 0.9em;
+              cursor: pointer;
+              max-height: 200px;
+              overflow-y: auto;
+            }
+            
+            .locale-selector:focus {
+              outline: none;
+              border-color: var(--primary-color);
+              box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+            }
+            
+            .locale-selector option {
+              padding: 8px;
+              background: var(--card-background-color);
+              color: var(--primary-text-color);
+            }
+            
+            .locale-selector option:hover {
+              background: var(--secondary-background-color);
+            }
+            
             /* Increase all emoji sizes by 130% */
             .card-header,
             .section-title,
@@ -429,6 +492,8 @@
           <div class="card-header">
             ⚙️ ${this.t('settings', 'Settings')}
           </div>
+          
+          ${localeSelector}
           
           <div class="section">
             <div class="section-title">

@@ -9,29 +9,82 @@
 
 **🇬🇧 English (UK):** Cross-platform desktop calendar and Home Assistant integration with analogue clock, event handling, note taking, and holidays
 
-**🇪🇸 Español:** Calendario de escritorio multiplataforma e integración Asistente del Hogar con reloj analógico, gestión de eventos, toma de notas y días festivos
+**🇸🇦 العربية:** تقويم سطح المكتب متعدد المنصات وتكامل مساعد المنزل مع ساعة تناظرية ومعالجة الأحداث وتدوين الملاحظات والعطلات
+
+**🇧🇬 Български:** Кроссплатформен десктоп календар и интеграция с Домашен Асистент с аналогов часовник, управление на събития, бележки и празници
+
+**🇪🇸 Català:** Calendari d'escriptori multiplataforma i integració d'Assistent Domèstic amb rellotge analògic, gestió d'esdeveniments, presa de notes i festius
+
+**🇨🇿 Čeština:** Multiplatformní desktopový kalendář a integrace Domácího Asistenta s analogovými hodinami, správou událostí, psaním poznámek a svátky
+
+**🇩🇰 Dansk:** Tværplatform skrivebordskalender og Hjemmeassistent-integration med analogt ur, begivenhedshåndtering, notetagning og helligdage
+
+**🇩🇪 Deutsch:** Plattformübergreifender Desktop-Kalender und Home Assistant-Integration mit analoger Uhr, Ereignisbehandlung, Notizen und Feiertagen
+
+**🇬🇷 Ελληνικά:** Πολυπλατφορμικό ημερολόγιο επιφάνειας εργασίας και ενσωμάτωση Οικιακού Βοηθού με αναλογικό ρολόι, διαχείριση συμβάντων, σημειώσεις και αργίες
+
+**🇪🇸 Español:** Calendario de escritorio multiplataforma e integración de Asistente del Hogar con reloj analógico, gestión de eventos, toma de notas y días festivos
+
+**🇪🇪 Eesti:** Platvormideülene töölauakalender ja Kodu Assistendi integratsioon analoogkella, sündmuste käsitlemise, märkmete tegemise ja pühade funktsioonidega
+
+**🇫🇮 Suomi:** Monialustainen työpöytäkalenteri ja Kotiavustaja-integraatio analogisella kellolla, tapahtumien käsittelyllä, muistiinpanoilla ja juhlapäivillä
 
 **🇫🇷 Français:** Calendrier de bureau multiplateforme et intégration Assistant Domestique avec horloge analogique, gestion d'événements, prise de notes et jours fériés
 
-**🇩🇪 Deutsch:** Plattformübergreifender Desktop-Kalender und Heim-Assistent-Integration mit analoger Uhr, Ereignisbehandlung, Notizen und Feiertagen
+**🇨🇦 Français (Québec):** Calendrier de bureau multiplateforme et intégration Assistant Domestique avec horloge analogique, gestion d'événements, prise de notes et jours fériés
+
+**🇮🇱 עברית:** לוח שנה שולחני חוצה פלטפורמות ואינטגרציה עם עוזר בית עם שעון אנלוגי, טיפול באירועים, רישום הערות וחגים
+
+**🇮🇳 हिन्दी:** एनालॉग घड़ी, इवेंट हैंडलिंग, नोट लेने और छुट्टियों के साथ क्रॉस-प्लेटफॉर्म डेस्कटॉप कैलेंडर और होम असिस्टेंट एकीकरण
+
+**🇭🇷 Hrvatski:** Višeplatformski desktop kalendar i integracija Kućnog Asistenta s analognim satom, upravljanjem događaja, bilježenjem i blagdanima
+
+**🇭🇺 Magyar:** Többplatformos asztali naptár és Otthoni Asszisztens integráció analóg órával, eseménykezeléssel, jegyzetelésssel és ünnepekkel
+
+**🇮🇩 Bahasa Indonesia:** Kalender desktop lintas platform dan integrasi Asisten Rumah dengan jam analog, penanganan acara, pencatatan dan hari libur
 
 **🇮🇹 Italiano:** Calendario desktop multipiattaforma e integrazione Assistente Domestico con orologio analogico, gestione eventi, presa di note e festività
-
-**🇧🇷 Português:** Calendário de desktop multiplataforma e integração Assistente Doméstico com relógio analógico, manipulação de eventos, anotações e feriados
-
-**🇷🇺 Русский:** Кроссплатформенный настольный календарь и интеграция Домашний Помощник с аналоговыми часами, обработкой событий, заметками и праздниками
-
-**🇨🇳 简体中文:** 具有模拟时钟、事件处理、记笔记和节假日功能的跨平台桌面日历和家庭助手集成
-
-**🇹🇼 繁體中文:** 具有類比時鐘、事件處理、記筆記和節假日功能的跨平台桌面日曆和家庭助理整合
 
 **🇯🇵 日本語:** アナログ時計、イベント処理、ノート取り、祝日機能を備えたクロスプラットフォームデスクトップカレンダーとホームアシスタント統合
 
 **🇰🇷 한국어:** 아날로그 시계, 이벤트 처리, 메모 작성 및 휴일 기능을 갖춘 크로스 플랫폼 데스크톱 캘린더 및 홈 어시스턴트 통합
 
-**🇮🇳 हिन्दी:** एनालॉग घड़ी, इवेंट हैंडलिंग, नोट लेने और छुट्टियों के साथ क्रॉस-प्लेटफॉर्म डेस्कटॉप कैलेंडर और होम असिस्टेंट एकीकरण
+**🇱🇹 Lietuvių:** Daugiaplatformis darbalaukio kalendorius ir Namų Asistento integracija su analoginiu laikrodžiu, įvykių tvarkymu, užrašais ir šventėmis
 
-**🇸🇦 العربية:** تقويم سطح المكتب متعدد المنصات وتكامل المساعد المنزلي مع ساعة تناظرية ومعالجة الأحداث وتدوين الملاحظات والعطلات
+**🇱🇻 Latviešu:** Daudplatformu darbvirsmas kalendārs un Mājas Asistenta integrācija ar analogu pulksteni, notikumu apstrādi, piezīmēm un svētkiem
+
+**🇳🇴 Norsk:** Kryssplattform skrivebordskalender og Hjemmeassistent-integrasjon med analog klokke, hendelseshåndtering, notater og helligdager
+
+**🇳🇱 Nederlands:** Platformonafhankelijke desktopkalender en Thuisassistent-integratie met analoge klok, gebeurtenisbeheer, notities en feestdagen
+
+**🇵🇱 Polski:** Wieloplatformowy kalendarz pulpitu i integracja Asystenta Domowego z zegarem analogowym, obsługą wydarzeń, notatkami i świętami
+
+**🇧🇷 Português (Brasil):** Calendário de desktop multiplataforma e integração Assistente Doméstico com relógio analógico, manipulação de eventos, anotações e feriados
+
+**🇵🇹 Português (Portugal):** Calendário de desktop multiplataforma e integração Assistente Doméstico com relógio analógico, gestão de eventos, notas e feriados
+
+**🇷🇴 Română:** Calendar desktop multiplatformă și integrare Asistent Casnic cu ceas analogic, gestionarea evenimentelor, luarea de notițe și sărbători
+
+**🇷🇺 Русский:** Кроссплатформенный настольный календарь и интеграция Домашнего Помощника с аналоговыми часами, обработкой событий, заметками и праздниками
+
+**🇸🇰 Slovenčina:** Multiplatformový desktopový kalendár a integrácia Domáceho Asistenta s analógovými hodinami, správou udalostí, písaním poznámok a sviatkami
+
+**🇸🇮 Slovenščina:** Večplatformni namizni koledar in integracija Domačega Pomočnika z analogno uro, upravljanjem dogodkov, zapisovanjem in prazniki
+
+**🇸🇪 Svenska:** Plattformsoberoende skrivbordskalender och Hemassistent-integration med analog klocka, händelsehantering, anteckningar och helgdagar
+
+**🇹🇭 ไทย:** ปฏิทินเดสก์ท็อปข้ามแพลตฟอร์มและการรวม Home Assistant ด้วยนาฬิกาแอนะล็อก การจัดการเหตุการณ์ การจดบันทึก และวันหยุด
+
+**🇹🇷 Türkçe:** Çapraz platform masaüstü takvimi ve analog saat, olay işleme, not alma ve tatillerle Ev Asistanı entegrasyonu
+
+**🇺🇦 Українська:** Кросплатформний настільний календар та інтеграція Домашнього Помічника з аналоговим годинником, обробкою подій, нотатками та святами
+
+**🇻🇳 Tiếng Việt:** Lịch máy tính để bàn đa nền tảng và tích hợp Trợ lý Gia đình với đồng hồ kim, xử lý sự kiện, ghi chú và ngày lễ
+
+**🇨🇳 简体中文:** 具有模拟时钟、事件处理、记笔记和节假日功能的跨平台桌面日历和家庭助手集成
+
+**🇹🇼 繁體中文:** 具有類比時鐘、事件處理、記筆記和節假日功能的跨平台桌面日曆和家庭助理整合
+
 
 ---
 
@@ -42,13 +95,13 @@
 1. **🖥️ Desktop Application** - Cross-platform desktop calendar built with Python and PySide6
 2. **🏠 Home Assistant Integration** - Web-based dashboard cards for Home Assistant with beautiful UI
 
-Both versions feature comprehensive internationalization supporting **14 languages** and **14 countries**, making it a truly global calendar solution.
+Both versions feature comprehensive internationalization supporting **40 languages** and **40 countries**, making it a truly global calendar solution.
 
 ### ✨ Key Features
 
 - 📅 **Full Calendar Management** - Monthly view with intuitive navigation
-- 🌍 **14-Language Support** - Complete localization with runtime language switching
-- 🏳️ **14-Country Holiday Support** - Intelligent holiday detection with native translations
+- 🌍 **40-Language Support** - Complete localization with runtime language switching
+- 🏳️ **40-Country Holiday Support** - Intelligent holiday detection with native translations
 - 🕐 **Real-time Analog Clock** - NTP synchronization for accurate timekeeping
 - 📝 **Comprehensive Event Management** - Create, edit, delete with categories and recurring events
 - 🎨 **Dynamic Theming** - Dark/Light mode with instant switching
@@ -60,11 +113,14 @@ Both versions feature comprehensive internationalization supporting **14 languag
 
 ### 🗣️ Supported Languages
 - **🇺🇸🇬🇧 English** (US & UK variants)
+- **🇨🇦 Français (Québec)** (Quebec French)
+- **🇪🇸 Català** (Catalan)
 - **🇪🇸 Español** (Spanish)
 - **🇫🇷 Français** (French)
 - **🇩🇪 Deutsch** (German)
 - **🇮🇹 Italiano** (Italian)
 - **🇧🇷 Português** (Brazilian Portuguese)
+- **🇵🇹 Português** (Portuguese)
 - **🇷🇺 Русский** (Russian)
 - **🇨🇳 简体中文** (Simplified Chinese)
 - **🇹🇼 繁體中文** (Traditional Chinese)
@@ -72,19 +128,44 @@ Both versions feature comprehensive internationalization supporting **14 languag
 - **🇰🇷 한국어** (Korean)
 - **🇮🇳 हिन्दी** (Hindi)
 - **🇸🇦 العربية** (Arabic)
+- **🇨🇿 Čeština** (Czech)
+- **🇸🇪 Svenska** (Swedish)
+- **🇳🇴 Norsk** (Norwegian)
+- **🇩🇰 Dansk** (Danish)
+- **🇫🇮 Suomi** (Finnish)
+- **🇳🇱 Nederlands** (Dutch)
+- **🇵🇱 Polski** (Polish)
+- **🇹🇷 Türkçe** (Turkish)
+- **🇺🇦 Українська** (Ukrainian)
+- **🇬🇷 Ελληνικά** (Greek)
+- **🇮🇩 Bahasa Indonesia** (Indonesian)
+- **🇻🇳 Tiếng Việt** (Vietnamese)
+- **🇹🇭 ไทย** (Thai)
+- **🇧🇬 Български** (Bulgarian)
+- **🇸🇰 Slovenčina** (Slovak)
+- **🇸🇮 Slovenščina** (Slovenian)
+- **🇭🇷 Hrvatski** (Croatian)
+- **🇭🇺 Magyar** (Hungarian)
+- **🇷🇴 Română** (Romanian)
+- **🇮🇱 עברית** (Hebrew)
+- **🇪🇪 Eesti** (Estonian)
+- **🇱🇻 Latviešu** (Latvian)
+- **🇱🇹 Lietuvių** (Lithuanian)
 
 ### 🏳️ Holiday Support
-The application automatically detects and displays holidays for 14 countries with intelligent cultural filtering:
+The application automatically detects and displays holidays for 40 countries with intelligent cultural filtering:
 
 | Country | Holidays | Cultural Filtering |
 |---------|----------|-------------------|
 | 🇺🇸 United States | Federal holidays | ✅ |
+| 🇨🇦 Canada | Jours fériés / Holidays | ✅ |
 | 🇬🇧 United Kingdom | Bank holidays | ✅ |
 | 🇪🇸 Spain | National holidays | ✅ |
 | 🇫🇷 France | Jours fériés | ✅ |
 | 🇩🇪 Germany | Feiertage | ✅ |
 | 🇮🇹 Italy | Giorni festivi | ✅ |
 | 🇧🇷 Brazil | Feriados nacionais | ✅ |
+| 🇵🇹 Portugal | Feriados nacionais | ✅ |
 | 🇷🇺 Russia | Праздничные дни | ✅ |
 | 🇨🇳 China | 法定节假日 | ✅ |
 | 🇹🇼 Taiwan | 國定假日 | ✅ |
@@ -92,6 +173,29 @@ The application automatically detects and displays holidays for 14 countries wit
 | 🇰🇷 South Korea | 공휴일 | ✅ |
 | 🇮🇳 India | राष्ट्रीय अवकाश | ✅ |
 | 🇸🇦 Saudi Arabia | الأعياد الوطنية | ✅ |
+| 🇨🇿 Czech Republic | Státní svátky | ✅ |
+| 🇸🇪 Sweden | Helgdagar | ✅ |
+| 🇳🇴 Norway | Helligdager | ✅ |
+| 🇩🇰 Denmark | Helligdage | ✅ |
+| 🇫🇮 Finland | Juhlapäivät | ✅ |
+| 🇳🇱 Netherlands | Feestdagen | ✅ |
+| 🇵🇱 Poland | Święta państwowe | ✅ |
+| 🇹🇷 Turkey | Resmi tatiller | ✅ |
+| 🇺🇦 Ukraine | Державні свята | ✅ |
+| 🇬🇷 Greece | Εθνικές γιορτές | ✅ |
+| 🇮🇩 Indonesia | Hari libur nasional | ✅ |
+| 🇻🇳 Vietnam | Ngày lễ quốc gia | ✅ |
+| 🇹🇭 Thailand | วันหยุดราชการ | ✅ |
+| 🇧🇬 Bulgaria | Национални празници | ✅ |
+| 🇸🇰 Slovakia | Štátne sviatky | ✅ |
+| 🇸🇮 Slovenia | Državni prazniki | ✅ |
+| 🇭🇷 Croatia | Državni blagdani | ✅ |
+| 🇭🇺 Hungary | Nemzeti ünnepek | ✅ |
+| 🇷🇴 Romania | Sărbători naționale | ✅ |
+| 🇮🇱 Israel | חגים לאומיים | ✅ |
+| 🇪🇪 Estonia | Riigipühad | ✅ |
+| 🇱🇻 Latvia | Valsts svētki | ✅ |
+| 🇱🇹 Lithuania | Valstybės šventės | ✅ |
 
 ## Screen shot
 ![image](https://github.com/user-attachments/assets/7ccf4a75-472e-429d-be05-195aaccb8411)
@@ -108,6 +212,7 @@ Choose your preferred deployment method:
 Deploy Calendifier as beautiful dashboard cards in Home Assistant for web-based access.
 
 ### 📋 Prerequisites
+- **Home Assistant** installed and running ([Setup Guide](https://www.home-assistant.io/))
 - **Raspberry Pi** or **Linux server** with Docker
 - **SSH access** to your server
 - **Windows PC or Mac or Linux box** for deployment script
@@ -463,7 +568,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for the global community**
 
-*Supporting 14 languages and 14 countries worldwide*
+*Supporting 40 languages and 40 countries worldwide*
 
 [🌍 View Architecture](docs/architecture.md) • [🚀 Quick Start](#-quick-start) • [🤝 Contributing](#-contributing)
 

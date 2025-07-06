@@ -18,14 +18,14 @@ class LocaleDetector:
     """
     Detects and manages locale information for the Calendifier application.
     
-    Supports 13 major international languages with comprehensive
+    Supports 32 major international languages with comprehensive
     locale detection, validation, and information retrieval.
     """
     
     # Default locale
     DEFAULT_LOCALE = 'en_GB'
     
-    # Major International Languages - 14 core languages including UK English
+    # Major International Languages - 32 core languages including UK English
     SUPPORTED_LOCALES = {
         # Core International Languages
         'en_US': {'name': 'English (United States)', 'native': 'English (US)', 'batch': 1},
@@ -41,7 +41,33 @@ class LocaleDetector:
         'ja_JP': {'name': 'Japanese (Japan)', 'native': '日本語', 'batch': 1},
         'ko_KR': {'name': 'Korean (South Korea)', 'native': '한국어', 'batch': 1},
         'hi_IN': {'name': 'Hindi (India)', 'native': 'हिन्दी', 'batch': 1},
-        'ar_SA': {'name': 'Arabic (Saudi Arabia)', 'native': 'العربية (السعودية)', 'batch': 1}
+        'ar_SA': {'name': 'Arabic (Saudi Arabia)', 'native': 'العربية (السعودية)', 'batch': 1},
+        'cs_CZ': {'name': 'Czech (Czech Republic)', 'native': 'Čeština', 'batch': 1},
+        'sv_SE': {'name': 'Swedish (Sweden)', 'native': 'Svenska', 'batch': 1},
+        'nb_NO': {'name': 'Norwegian (Norway)', 'native': 'Norsk (bokmål)', 'batch': 1},
+        'da_DK': {'name': 'Danish (Denmark)', 'native': 'Dansk', 'batch': 1},
+        'fi_FI': {'name': 'Finnish (Finland)', 'native': 'Suomi', 'batch': 1},
+        'nl_NL': {'name': 'Dutch (Netherlands)', 'native': 'Nederlands', 'batch': 1},
+        'pl_PL': {'name': 'Polish (Poland)', 'native': 'Polski', 'batch': 1},
+        'pt_PT': {'name': 'Portuguese (Portugal)', 'native': 'Português (Portugal)', 'batch': 1},
+        'tr_TR': {'name': 'Turkish (Turkey)', 'native': 'Türkçe', 'batch': 1},
+        'uk_UA': {'name': 'Ukrainian (Ukraine)', 'native': 'Українська', 'batch': 1},
+        'el_GR': {'name': 'Greek (Greece)', 'native': 'Ελληνικά', 'batch': 1},
+        'id_ID': {'name': 'Indonesian (Indonesia)', 'native': 'Bahasa Indonesia', 'batch': 1},
+        'vi_VN': {'name': 'Vietnamese (Vietnam)', 'native': 'Tiếng Việt', 'batch': 1},
+        'th_TH': {'name': 'Thai (Thailand)', 'native': 'ไทย', 'batch': 1},
+        'he_IL': {'name': 'Hebrew (Israel)', 'native': 'עברית', 'batch': 1},
+        'ro_RO': {'name': 'Romanian (Romania)', 'native': 'Română', 'batch': 1},
+        'hu_HU': {'name': 'Hungarian (Hungary)', 'native': 'Magyar', 'batch': 1},
+        'hr_HR': {'name': 'Croatian (Croatia)', 'native': 'Hrvatski', 'batch': 1},
+        'bg_BG': {'name': 'Bulgarian (Bulgaria)', 'native': 'Български', 'batch': 1},
+        'sk_SK': {'name': 'Slovak (Slovakia)', 'native': 'Slovenčina', 'batch': 1},
+        'sl_SI': {'name': 'Slovenian (Slovenia)', 'native': 'Slovenščina', 'batch': 1},
+        'fr_CA': {'name': 'French (Canada)', 'native': 'Français québécois', 'batch': 1},
+        'ca_ES': {'name': 'Catalan (Spain)', 'native': 'Català', 'batch': 1},
+        'et_EE': {'name': 'Estonian (Estonia)', 'native': 'Eesti', 'batch': 1},
+        'lv_LV': {'name': 'Latvian (Latvia)', 'native': 'Latviešu', 'batch': 1},
+        'lt_LT': {'name': 'Lithuanian (Lithuania)', 'native': 'Lietuvių', 'batch': 1}
     }
     
     def __init__(self):
@@ -178,10 +204,10 @@ class LocaleDetector:
     @classmethod
     def get_sorted_locales(cls) -> List[tuple]:
         """
-        Get list of all supported locales with info, sorted by name.
+        Get list of all supported locales with info, sorted alphabetically by country code.
         
         Returns:
-            List[tuple]: List of (locale_code, locale_info) tuples sorted alphabetically
+            List[tuple]: List of (locale_code, locale_info) tuples sorted alphabetically by country code
         """
         sorted_items = []
         for locale_code, locale_info in cls.SUPPORTED_LOCALES.items():
@@ -195,8 +221,9 @@ class LocaleDetector:
             
             sorted_items.append((locale_code, enhanced_info))
         
-        # Sort by locale name
-        sorted_items.sort(key=lambda x: x[1]['name'])
+        # Sort alphabetically by country code (BG, CA, CZ, DK, DE, ES, FI, FR, GB, etc.)
+        # This is what appears as text on Windows when flag emojis don't render
+        sorted_items.sort(key=lambda x: x[0].split('_')[1] if '_' in x[0] else x[0])
         return sorted_items
     
     @classmethod

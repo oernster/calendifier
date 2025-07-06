@@ -328,7 +328,7 @@ class MainWindow(QMainWindow):
         language_label.setToolTip(_("label_language", default="Language"))
         language_layout.addWidget(language_label)
         
-        # Language combo box
+        # Language combo box with scroll support for large number of locales
         self.language_combo = QComboBox()
         self.language_combo.setMinimumWidth(200)
         self.language_combo.setMaximumWidth(250)
@@ -341,6 +341,17 @@ class MainWindow(QMainWindow):
             native_name = locale_info['native']
             display_text = f"{locale_info['flag']} {native_name}"
             self.language_combo.addItem(display_text, locale_code)
+        
+        # Set maximum visible items to enable scrolling
+        self.language_combo.setMaxVisibleItems(15)  # Show max 15 items, then scroll
+        
+        # Enable scroll wheel support
+        self.language_combo.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        
+        # ONLY add vertical scroll bar on the right side - force it to show
+        list_view = self.language_combo.view()
+        list_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        list_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         
         # Set current locale
         current_locale = self.settings_manager.get_locale()
@@ -374,6 +385,11 @@ class MainWindow(QMainWindow):
                 display_text = f"{locale_info['flag']} {native_name}"
                 self.language_combo.addItem(display_text, locale_code)
             
+            # Restore simple scroll bar settings after clearing and repopulating
+            list_view = self.language_combo.view()
+            list_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+            list_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            
             # Restore selection
             if current_locale:
                 language_index = self.language_combo.findData(current_locale)
@@ -383,7 +399,7 @@ class MainWindow(QMainWindow):
             # Reconnect signal
             self.language_combo.currentIndexChanged.connect(self._on_language_changed)
             
-            logger.debug("🔄 Language selector refreshed with translated names")
+            logger.debug("🔄 Language selector refreshed with translated names and scroll settings")
             
         except Exception as e:
             logger.error(f"❌ Failed to refresh language selector: {e}")

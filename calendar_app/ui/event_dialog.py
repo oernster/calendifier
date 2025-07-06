@@ -378,24 +378,70 @@ class EventDialog(QDialog):
             i18n_manager = get_i18n_manager()
             current_locale = i18n_manager.current_locale
             
-            # Map our 13 major international locale codes to Qt locale codes
+            # Map ALL supported locale codes to Qt locale codes
             qt_locale_mapping = {
+                # Core English locales
                 'en_US': QLocale(QLocale.Language.English, QLocale.Country.UnitedStates),
-                'es_ES': QLocale(QLocale.Language.Spanish, QLocale.Country.Spain),
+                'en_GB': QLocale(QLocale.Language.English, QLocale.Country.UnitedKingdom),
+                
+                # French locales
+                'fr_CA': QLocale(QLocale.Language.French, QLocale.Country.Canada),
                 'fr_FR': QLocale(QLocale.Language.French, QLocale.Country.France),
+                
+                # Catalan locales
+                'ca_ES': QLocale(QLocale.Language.Catalan, QLocale.Country.Spain),
+                
+                # Major European languages
+                'es_ES': QLocale(QLocale.Language.Spanish, QLocale.Country.Spain),
                 'de_DE': QLocale(QLocale.Language.German, QLocale.Country.Germany),
                 'it_IT': QLocale(QLocale.Language.Italian, QLocale.Country.Italy),
                 'pt_BR': QLocale(QLocale.Language.Portuguese, QLocale.Country.Brazil),
+                'pt_PT': QLocale(QLocale.Language.Portuguese, QLocale.Country.Portugal),
                 'ru_RU': QLocale(QLocale.Language.Russian, QLocale.Country.Russia),
+                'nl_NL': QLocale(QLocale.Language.Dutch, QLocale.Country.Netherlands),
+                'pl_PL': QLocale(QLocale.Language.Polish, QLocale.Country.Poland),
+                
+                # Nordic languages
+                'sv_SE': QLocale(QLocale.Language.Swedish, QLocale.Country.Sweden),
+                'nb_NO': QLocale(QLocale.Language.NorwegianBokmal, QLocale.Country.Norway),
+                'da_DK': QLocale(QLocale.Language.Danish, QLocale.Country.Denmark),
+                'fi_FI': QLocale(QLocale.Language.Finnish, QLocale.Country.Finland),
+                
+                # Central/Eastern European languages
+                'cs_CZ': QLocale(QLocale.Language.Czech, QLocale.Country.CzechRepublic),
+                'tr_TR': QLocale(QLocale.Language.Turkish, QLocale.Country.Turkey),
+                'uk_UA': QLocale(QLocale.Language.Ukrainian, QLocale.Country.Ukraine),
+                'el_GR': QLocale(QLocale.Language.Greek, QLocale.Country.Greece),
+                
+                # Asian languages
                 'zh_CN': QLocale(QLocale.Language.Chinese, QLocale.Country.China),
                 'zh_TW': QLocale(QLocale.Language.Chinese, QLocale.Country.Taiwan),
                 'ja_JP': QLocale(QLocale.Language.Japanese, QLocale.Country.Japan),
                 'ko_KR': QLocale(QLocale.Language.Korean, QLocale.Country.SouthKorea),
                 'hi_IN': QLocale(QLocale.Language.Hindi, QLocale.Country.India),
-                'ar_SA': QLocale(QLocale.Language.Arabic, QLocale.Country.SaudiArabia)
+                'ar_SA': QLocale(QLocale.Language.Arabic, QLocale.Country.SaudiArabia),
+                
+                # Southeast Asian languages
+                'id_ID': QLocale(QLocale.Language.Indonesian, QLocale.Country.Indonesia),
+                'vi_VN': QLocale(QLocale.Language.Vietnamese, QLocale.Country.Vietnam),
+                'th_TH': QLocale(QLocale.Language.Thai, QLocale.Country.Thailand),
+                
+                # Middle Eastern languages
+                'he_IL': QLocale(QLocale.Language.Hebrew, QLocale.Country.Israel),
+                
+                # Additional European languages
+                'ro_RO': QLocale(QLocale.Language.Romanian, QLocale.Country.Romania),
+                'hu_HU': QLocale(QLocale.Language.Hungarian, QLocale.Country.Hungary),
+                'hr_HR': QLocale(QLocale.Language.Croatian, QLocale.Country.Croatia),
+                'bg_BG': QLocale(QLocale.Language.Bulgarian, QLocale.Country.Bulgaria),
+                'sk_SK': QLocale(QLocale.Language.Slovak, QLocale.Country.Slovakia),
+                'sl_SI': QLocale(QLocale.Language.Slovenian, QLocale.Country.Slovenia),
+                'et_EE': QLocale(QLocale.Language.Estonian, QLocale.Country.Estonia),
+                'lv_LV': QLocale(QLocale.Language.Latvian, QLocale.Country.Latvia),
+                'lt_LT': QLocale(QLocale.Language.Lithuanian, QLocale.Country.Lithuania)
             }
             
-            qt_locale = qt_locale_mapping.get(current_locale, QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
+            qt_locale = qt_locale_mapping.get(current_locale, QLocale(QLocale.Language.English, QLocale.Country.UnitedKingdom))
             
             # Update QDateEdit and QTimeEdit widgets
             if hasattr(self, 'date_edit'):

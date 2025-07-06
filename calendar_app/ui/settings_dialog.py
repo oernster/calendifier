@@ -788,9 +788,7 @@ class SettingsDialog(QDialog):
         self.ntp_tab = NTPSettingsWidget(self.settings_manager)
         self.tab_widget.addTab(self.ntp_tab, f"🌐 {_('settings_time_sync')}")
         
-        # Holiday settings tab
-        self.holiday_tab = HolidaySettingsWidget(self.settings_manager)
-        self.tab_widget.addTab(self.holiday_tab, f"🌍 {_('settings_holidays')}")
+        # Holiday settings tab REMOVED - was causing translation issues
         
         layout.addWidget(self.tab_widget)
         
@@ -842,9 +840,7 @@ class SettingsDialog(QDialog):
             if not self.ntp_tab.save_settings():
                 success = False
             
-            # Save holiday settings
-            if not self.holiday_tab.save_settings():
-                success = False
+            # Holiday settings tab removed
             
             if success:
                 logger.debug("✅ All settings saved successfully")
@@ -875,7 +871,6 @@ class SettingsDialog(QDialog):
             # Update tab names
             self.tab_widget.setTabText(0, f"⚙️ {_('settings_general')}")
             self.tab_widget.setTabText(1, f"🌐 {_('settings_time_sync')}")
-            self.tab_widget.setTabText(2, f"🌍 {_('settings_holidays')}")
             
             # Update button texts
             if hasattr(self, 'ok_button') and self.ok_button:
@@ -892,8 +887,7 @@ class SettingsDialog(QDialog):
                 self.general_tab.refresh_ui_text()
             if hasattr(self.ntp_tab, 'refresh_ui_text'):
                 self.ntp_tab.refresh_ui_text()
-            if hasattr(self.holiday_tab, 'refresh_ui_text'):
-                self.holiday_tab.refresh_ui_text()
+            # Holiday tab removed
             
             logger.debug("🔄 Settings dialog UI text refreshed")
             
