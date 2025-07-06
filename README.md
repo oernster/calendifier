@@ -2,8 +2,6 @@
 
 **Author: Oliver Ernster**
 
-### If you like it please buy me a coffee: [Donation link](https://www.paypal.com/ncp/payment/UNU78VKKJ49SY)
-
 <!-- Multi-language summary -->
 **🇺🇸 English (US):** Cross-platform desktop calendar and Home Assistant integration with analog clock, event handling, note taking, and holidays. If you like it please buy me a coffee: [Donation link](https://www.paypal.com/ncp/payment/UNU78VKKJ49SY)
 
