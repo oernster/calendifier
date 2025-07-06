@@ -241,7 +241,6 @@ Deploy Calendifier as beautiful dashboard cards in Home Assistant for web-based 
 4. **SSH to your Pi and run setup:**
    ```bash
    ssh pi@your-pi-ip
-   cd calendifier
    ./setup-pi.sh
    ```
 
