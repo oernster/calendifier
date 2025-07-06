@@ -69,7 +69,7 @@ Write-ColorOutput "`nNext steps:" $Yellow
 Write-ColorOutput "1. SSH to your Pi: ssh $PiUser@$PiIP" $Reset
 Write-ColorOutput "2. Extract: tar -xzf calendifier-deploy.tar.gz" $Reset
 Write-ColorOutput "3. Run: ./setup-pi.sh" $Reset
-Write-ColorOutput "4. Access: http://$PiIP:8123" $Reset
+Write-ColorOutput "4. Access: http://${PiIP}:8123" $Reset
 Write-ColorOutput "`nWide Layout:" $Blue
 Write-ColorOutput "• Wide cards are automatically applied during setup" $Reset
 Write-ColorOutput "• Clear browser cache if cards appear narrow" $Reset
