@@ -59,8 +59,8 @@ echo DEPLOYMENT_COMPLETE
 # Convert to Unix line endings and send
 $UnixScript = $RemoteScript -replace "`r`n", "`n" -replace "`r", "`n"
 
-# Send everything in one command
-cmd /c "type calendifier-deploy.tar.gz | ssh -o StrictHostKeyChecking=no $PiUser@$PiIP `"$UnixScript`""
+# Send everything in one command using binary-safe transfer
+Get-Content calendifier-deploy.tar.gz -AsByteStream | ssh -o StrictHostKeyChecking=no $PiUser@$PiIP "$UnixScript"
 
 # Clean up
 Remove-Item calendifier-deploy.tar.gz -Force
