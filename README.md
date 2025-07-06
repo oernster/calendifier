@@ -246,7 +246,7 @@ Deploy Calendifier as beautiful dashboard cards in Home Assistant for web-based 
 
 5. **Access your calendar:**
    - Open Home Assistant: `http://your-pi-ip:8123`
-   - Complete Home Assistant setup wizard
+   - Complete [Home Assistant setup wizard](https://www.home-assistant.io/)
    - Click **"Calendifier"** in the left sidebar
    - Enjoy your beautiful calendar dashboard!
 
