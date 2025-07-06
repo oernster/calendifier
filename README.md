@@ -235,6 +235,9 @@ Deploy Calendifier as beautiful dashboard cards in Home Assistant for web-based 
    ```
    Enter your Pi's IP address when prompted.
 
+3. **Note on tarball extraction:**
+   The deployment script creates a tarball that, when extracted on your Pi, will initially create numerous files in the working directory. This temporary file distribution is intentional and will be completely resolved when you execute the setup script in the following step.
+
 4. **SSH to your Pi and run setup:**
    ```bash
    ssh pi@your-pi-ip
