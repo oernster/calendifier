@@ -279,7 +279,15 @@ class CalendifierTranslationManager {
       const response = await fetch(`${this.apiBaseUrl}/api/v1/translations`);
       if (response.ok) {
         const data = await response.json();
-        return data.locales || [];
+        const locales = data.locales || [];
+        
+        // Sort locales alphabetically by country code (same logic as desktop app)
+        // Extract country code from locale (e.g., 'en_GB' -> 'GB', 'fr_FR' -> 'FR')
+        return locales.sort((a, b) => {
+          const countryA = a.code.includes('_') ? a.code.split('_')[1] : a.code;
+          const countryB = b.code.includes('_') ? b.code.split('_')[1] : b.code;
+          return countryA.localeCompare(countryB);
+        });
       }
     } catch (error) {
       this.log(`Failed to load available locales: ${error.message}`, 'error');
