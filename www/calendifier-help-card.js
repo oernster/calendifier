@@ -17,7 +17,6 @@
         super();
         this.aboutData = null;
         this.currentTheme = 'auto';
-        this.availableLocales = [];
         this.isLoading = true;
       }
 
@@ -38,8 +37,7 @@
           // Load data in parallel
           await Promise.all([
             this.loadAboutData(),
-            this.loadCurrentTheme(),
-            this.loadAvailableLocales()
+            this.loadCurrentTheme()
           ]);
           
           this.isLoading = false;
@@ -103,64 +101,6 @@
         }
       }
 
-      async loadAvailableLocales() {
-        try {
-          if (this.translationManager) {
-            this.availableLocales = await this.translationManager.getAvailableLocales();
-          } else {
-            // Fallback to direct API call
-            const response = await fetch(`${this.getApiBaseUrl()}/api/v1/translations`);
-            if (response.ok) {
-              const data = await response.json();
-              this.availableLocales = data.locales || [];
-            }
-          }
-        } catch (error) {
-          console.error('[HelpCard] Error loading locales:', error);
-        }
-      }
-
-      async setLocale(locale) {
-        try {
-          
-          // Update API settings first
-          const response = await fetch(`${this.getApiBaseUrl()}/api/v1/settings`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ locale: locale })
-          });
-          
-          if (!response.ok) {
-            throw new Error(`Failed to update API settings: ${response.status}`);
-          }
-          
-          // Update translation manager if available
-          if (this.translationManager) {
-            await this.translationManager.setLocale(locale);
-          }
-          
-          // Update current locale
-          this.currentLocale = locale;
-          
-          // Reload translations for this card
-          await this.initTranslations();
-          
-          // Broadcast locale change to other cards
-          const event = new CustomEvent('calendifier-locale-changed', {
-            detail: { locale: locale },
-            bubbles: true,
-            composed: true
-          });
-          document.dispatchEvent(event);
-          
-          this.showNotification(`Language changed to ${locale}`, 'success');
-          
-          
-        } catch (error) {
-          console.error('[HelpCard] Language change error:', error);
-          this.showNotification('Failed to change language', 'error');
-        }
-      }
 
       render() {
         if (this.isLoading) {
@@ -218,43 +158,10 @@
               border-color: var(--primary-color);
             }
             
-            .language-controls {
-              margin-bottom: 20px;
-              padding: 12px;
-              background: var(--secondary-background-color);
-              border-radius: 8px;
-              text-align: center;
-            }
-            
-            .language-label {
-              font-weight: bold;
-              color: var(--primary-text-color);
-              margin-bottom: 8px;
-            }
-            
-            .language-select {
-              width: 100%;
-              max-width: 300px;
-              padding: 8px 12px;
-              border: 1px solid var(--divider-color);
-              border-radius: 6px;
-              background: var(--card-background-color);
-              color: var(--primary-text-color);
-              font-size: 0.9em;
-              cursor: pointer;
-            }
-            
-            .language-select:focus {
-              outline: none;
-              border-color: var(--primary-color);
-            }
             
             /* Increase all emoji sizes by 130% */
             .card-header,
-            .language-label,
-            .theme-button,
-            .language-select,
-            .language-select option {
+            .theme-button {
               font-size: 1.3em;
             }
             
@@ -263,13 +170,9 @@
               font-size: 1.17em; /* 0.9em * 1.3 */
             }
             
-            .language-select {
-              font-size: 1.17em; /* 0.9em * 1.3 */
-            }
-            
             .about-content {
               padding: 20px;
-              max-height: 400px;
+              max-height: 560px; /* 400px * 1.4 = 560px for 140% more space */
               overflow-y: auto;
               border: 1px solid var(--divider-color);
               border-radius: 8px;
@@ -357,16 +260,6 @@
             ℹ️ ${this.t('about', 'Help & About')}
           </div>
           
-          <div class="language-controls">
-            <div class="language-label">🌍 ${this.t('label_language', 'Language')}</div>
-            <select class="language-select" onchange="this.getRootNode().host.setLocale(this.value)">
-              ${this.availableLocales.map(locale => `
-                <option value="${locale.code}" ${this.currentLocale === locale.code ? 'selected' : ''}>
-                  ${locale.flag} ${locale.name}
-                </option>
-              `).join('')}
-            </select>
-          </div>
           
           <div class="about-content">
             <div class="app-info">

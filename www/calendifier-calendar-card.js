@@ -118,11 +118,6 @@
         this.render();
       }
 
-      async handleLocaleChange(event) {
-        // Reload holidays when locale changes (different country holidays)
-        await this.loadHolidays();
-        this.render();
-      }
 
       async handleSettingsChange(event) {
         // Reload holidays when settings change (including country changes)
@@ -316,11 +311,19 @@
 
       convertNumbers(text) {
         // Convert Western Arabic numerals to Arabic-Indic numerals for Arabic locales
-        if (this.currentLocale === 'ar_SA') {
+        if (this.currentLocale && this.currentLocale.startsWith('ar_')) {
           const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
           return text.toString().replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
         }
         return text.toString();
+      }
+
+      handleLocaleChange(event) {
+        super.handleLocaleChange(event);
+        // Reload holidays when locale changes (different country holidays)
+        this.loadHolidays().then(() => {
+          this.render();
+        });
       }
 
       // Removed getCountryFromLocale - backend now handles all locale-to-country mapping
@@ -919,7 +922,7 @@
           <div class="calendar-header">
             <button class="nav-button" onclick="this.getRootNode().host.previousMonth()">◀️</button>
             <div class="month-year">
-              ${this.getMonthName(month)} ${this.convertNumbers(year)}
+              ${this.getMonthName(month)} ${this.convertNumbers ? this.convertNumbers(year.toString()) : year}
             </div>
             <button class="nav-button" onclick="this.getRootNode().host.nextMonth()">▶️</button>
             <button class="nav-button today-button" onclick="this.getRootNode().host.goToToday()">📅 ${this.t('today', 'Today')}</button>
@@ -962,7 +965,7 @@
               
               return `
                 <div class="${classes.join(' ')}" ${clickHandler}>
-                  <div class="day-number">${this.convertNumbers(dayObj.day)}</div>
+                  <div class="day-number">${this.convertNumbers ? this.convertNumbers(dayObj.day.toString()) : dayObj.day}</div>
                   <div class="event-indicators">
                     ${dayHolidays.map(holiday => `<span class="holiday-indicator" title="${holiday.name}">🎊</span>`).join('')}
                     ${dayEvents.map(event => this.getEventEmoji(event)).join('')}

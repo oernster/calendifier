@@ -20,12 +20,12 @@
         this.timezone = 'UTC';
         this.use24Hour = true;
         this.worldTimezones = [
-          { name: 'New York', flag: '🇺🇸', timezone: 'America/New_York' },
-          { name: 'London', flag: '🇬🇧', timezone: 'Europe/London' },
-          { name: 'Tokyo', flag: '🇯🇵', timezone: 'Asia/Tokyo' },
-          { name: 'Sydney', flag: '🇦🇺', timezone: 'Australia/Sydney' },
-          { name: 'Paris', flag: '🇫🇷', timezone: 'Europe/Paris' },
-          { name: 'Dubai', flag: '🇦🇪', timezone: 'Asia/Dubai' }
+          { name: 'New York', flag: '🇺🇸', timezone: 'America/New_York', key: 'city_new_york' },
+          { name: 'London', flag: '🇬🇧', timezone: 'Europe/London', key: 'city_london' },
+          { name: 'Tokyo', flag: '🇯🇵', timezone: 'Asia/Tokyo', key: 'city_tokyo' },
+          { name: 'Sydney', flag: '🇦🇺', timezone: 'Australia/Sydney', key: 'city_sydney' },
+          { name: 'Paris', flag: '🇫🇷', timezone: 'Europe/Paris', key: 'city_paris' },
+          { name: 'Dubai', flag: '🇦🇪', timezone: 'Asia/Dubai', key: 'city_dubai' }
         ];
         this.settings = {};
         this.loading = true;
@@ -182,16 +182,16 @@
       updateWorldTimezone(index, timezone) {
         // Find the timezone info from predefined list
         const timezoneOptions = [
-          { name: 'New York', flag: '🇺🇸', timezone: 'America/New_York' },
-          { name: 'Los Angeles', flag: '🇺🇸', timezone: 'America/Los_Angeles' },
-          { name: 'London', flag: '🇬🇧', timezone: 'Europe/London' },
-          { name: 'Paris', flag: '🇫🇷', timezone: 'Europe/Paris' },
-          { name: 'Berlin', flag: '🇩🇪', timezone: 'Europe/Berlin' },
-          { name: 'Tokyo', flag: '🇯🇵', timezone: 'Asia/Tokyo' },
-          { name: 'Shanghai', flag: '🇨🇳', timezone: 'Asia/Shanghai' },
-          { name: 'Sydney', flag: '🇦🇺', timezone: 'Australia/Sydney' },
-          { name: 'Mumbai', flag: '🇮🇳', timezone: 'Asia/Kolkata' },
-          { name: 'Dubai', flag: '🇦🇪', timezone: 'Asia/Dubai' }
+          { name: 'New York', flag: '🇺🇸', timezone: 'America/New_York', key: 'city_new_york' },
+          { name: 'Los Angeles', flag: '🇺🇸', timezone: 'America/Los_Angeles', key: 'city_los_angeles' },
+          { name: 'London', flag: '🇬🇧', timezone: 'Europe/London', key: 'city_london' },
+          { name: 'Paris', flag: '🇫🇷', timezone: 'Europe/Paris', key: 'city_paris' },
+          { name: 'Berlin', flag: '🇩🇪', timezone: 'Europe/Berlin', key: 'city_berlin' },
+          { name: 'Tokyo', flag: '🇯🇵', timezone: 'Asia/Tokyo', key: 'city_tokyo' },
+          { name: 'Shanghai', flag: '🇨🇳', timezone: 'Asia/Shanghai', key: 'city_shanghai' },
+          { name: 'Sydney', flag: '🇦🇺', timezone: 'Australia/Sydney', key: 'city_sydney' },
+          { name: 'Mumbai', flag: '🇮🇳', timezone: 'Asia/Kolkata', key: 'city_mumbai' },
+          { name: 'Dubai', flag: '🇦🇪', timezone: 'Asia/Dubai', key: 'city_dubai' }
         ];
         
         const selectedTimezone = timezoneOptions.find(tz => tz.timezone === timezone);
@@ -200,6 +200,33 @@
           this.saveSettings();
           this.render();
         }
+      }
+
+      getTranslatedCityName(cityData) {
+        // Get translated city name using translation key, fallback to original name
+        if (cityData.key) {
+          return this.t(cityData.key, cityData.name);
+        }
+        return cityData.name;
+      }
+
+      getTranslatedTimezone(timezone) {
+        // Translate timezone names to current locale
+        const timezoneMap = {
+          'UTC': 'UTC',
+          'America/New_York': this.t('city_new_york', 'New York'),
+          'America/Los_Angeles': this.t('city_los_angeles', 'Los Angeles'),
+          'Europe/London': this.t('city_london', 'London'),
+          'Europe/Paris': this.t('city_paris', 'Paris'),
+          'Europe/Berlin': this.t('city_berlin', 'Berlin'),
+          'Asia/Tokyo': this.t('city_tokyo', 'Tokyo'),
+          'Asia/Shanghai': this.t('city_shanghai', 'Shanghai'),
+          'Australia/Sydney': this.t('city_sydney', 'Sydney'),
+          'Asia/Kolkata': this.t('city_mumbai', 'Mumbai'),
+          'Asia/Dubai': this.t('city_dubai', 'Dubai')
+        };
+        
+        return timezoneMap[timezone] || timezone;
       }
 
       updateNTPDisplay() {
@@ -243,21 +270,23 @@
         // Update digital display
         if (digitalTime) {
           const locale = (this.currentLocale || 'en-US').replace('_', '-');
-          digitalTime.textContent = now.toLocaleTimeString(locale, {
+          const timeText = now.toLocaleTimeString(locale, {
             hour12: !this.use24Hour,
             timeZone: this.timezone
           });
+          digitalTime.textContent = this.convertNumbers(timeText);
         }
 
         if (digitalDate) {
           const locale = (this.currentLocale || 'en-US').replace('_', '-');
-          digitalDate.textContent = now.toLocaleDateString(locale, {
+          const dateText = now.toLocaleDateString(locale, {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric',
             timeZone: this.timezone
           });
+          digitalDate.textContent = this.convertNumbers(dateText);
         }
 
         // Update analog clock hands (always use local time for analog display)
@@ -278,6 +307,15 @@
         this.updateWorldClocks();
       }
 
+      convertNumbers(text) {
+        // Convert Western Arabic numerals to Arabic-Indic numerals for Arabic locales
+        if (this.currentLocale && this.currentLocale.startsWith('ar_')) {
+          const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+          return text.toString().replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
+        }
+        return text.toString();
+      }
+
       updateWorldClocks() {
         const worldClocks = this.shadowRoot.querySelectorAll('.world-clock-time');
         
@@ -288,7 +326,7 @@
               timeZone: this.worldTimezones[index].timezone,
               hour12: !this.use24Hour
             });
-            clock.textContent = time;
+            clock.textContent = this.convertNumbers(time);
           }
         });
       }
@@ -298,6 +336,86 @@
         setTimeout(() => {
           this.syncNTP();
         }, 1000); // Small delay to ensure locale is fully loaded
+      }
+
+      updateClockNumbers() {
+        // Update clock numbers when locale changes
+        const clockNumbers = this.shadowRoot.querySelectorAll('.clock-number');
+        clockNumbers.forEach((numberEl, index) => {
+          const number = index + 1;
+          numberEl.textContent = this.convertNumbers(number.toString());
+        });
+      }
+
+      handleLocaleChange(event) {
+        super.handleLocaleChange(event);
+        // Update clock numbers and city names with new locale
+        setTimeout(() => {
+          this.updateClockNumbers();
+          this.updateWorldClockCityNames();
+          this.updateSettingsDropdown();
+          this.updateTimezoneDisplay();
+        }, 100);
+      }
+
+      updateTimezoneDisplay() {
+        // Update the timezone display text when locale changes
+        const timezoneSpan = this.shadowRoot.querySelector('.timezone-info span:nth-child(2)');
+        if (timezoneSpan) {
+          timezoneSpan.textContent = this.getTranslatedTimezone(this.timezone);
+        }
+      }
+
+      updateSettingsDropdown() {
+        // Update settings dropdown options when locale changes
+        const settingsSelect = this.shadowRoot.querySelector('.settings-input');
+        if (settingsSelect) {
+          // Update option text content
+          const options = settingsSelect.querySelectorAll('option');
+          options.forEach(option => {
+            const value = option.value;
+            switch(value) {
+              case 'UTC':
+                option.textContent = 'UTC';
+                break;
+              case 'America/New_York':
+                option.textContent = this.t('city_new_york', 'New York');
+                break;
+              case 'America/Los_Angeles':
+                option.textContent = this.t('city_los_angeles', 'Los Angeles');
+                break;
+              case 'Europe/London':
+                option.textContent = this.t('city_london', 'London');
+                break;
+              case 'Europe/Paris':
+                option.textContent = this.t('city_paris', 'Paris');
+                break;
+              case 'Europe/Berlin':
+                option.textContent = this.t('city_berlin', 'Berlin');
+                break;
+              case 'Asia/Tokyo':
+                option.textContent = this.t('city_tokyo', 'Tokyo');
+                break;
+              case 'Asia/Shanghai':
+                option.textContent = this.t('city_shanghai', 'Shanghai');
+                break;
+              case 'Australia/Sydney':
+                option.textContent = this.t('city_sydney', 'Sydney');
+                break;
+            }
+          });
+        }
+      }
+
+      updateWorldClockCityNames() {
+        // Update world clock city names when locale changes
+        const worldClockCities = this.shadowRoot.querySelectorAll('.world-clock-city');
+        worldClockCities.forEach((cityEl, index) => {
+          if (this.worldTimezones[index]) {
+            const tz = this.worldTimezones[index];
+            cityEl.textContent = `${tz.flag} ${this.getTranslatedCityName(tz)}`;
+          }
+        });
       }
 
       render() {
@@ -397,10 +515,12 @@
             
             .clock-number {
               position: absolute;
-              font-size: 12px;
+              font-size: 14px;
               font-weight: bold;
               color: var(--primary-text-color);
               transform: translate(-50%, -50%);
+              z-index: 5;
+              text-shadow: 0 1px 2px rgba(0,0,0,0.3);
             }
             
             .digital-display {
@@ -429,10 +549,15 @@
               display: flex;
               align-items: center;
               justify-content: center;
-              gap: 8px;
+              gap: 6px;
               margin-bottom: 8px;
-              font-size: 0.9em;
+              font-size: 0.85em;
               color: var(--secondary-text-color);
+              flex-wrap: wrap;
+              padding: 4px 8px;
+              background: rgba(var(--rgb-primary-color), 0.1);
+              border-radius: 6px;
+              min-height: 28px;
             }
             
             .time-format-toggle {
@@ -543,11 +668,13 @@
             
             .settings-input {
               width: 100%;
-              padding: 8px;
+              padding: 6px 8px;
               border: 1px solid var(--divider-color);
               border-radius: 4px;
               background: var(--secondary-background-color);
               color: var(--primary-text-color);
+              font-size: 0.9em;
+              max-width: 200px;
             }
             
             /* Increase all emoji sizes by 130% */
@@ -599,14 +726,14 @@
               <div class="settings-label">🌍 ${this.t('timezone', 'Timezone')}</div>
               <select class="settings-input" onchange="this.getRootNode().host.updateTimezone(this.value)">
                 <option value="UTC" ${this.timezone === 'UTC' ? 'selected' : ''}>UTC</option>
-                <option value="America/New_York" ${this.timezone === 'America/New_York' ? 'selected' : ''}>New York</option>
-                <option value="America/Los_Angeles" ${this.timezone === 'America/Los_Angeles' ? 'selected' : ''}>Los Angeles</option>
-                <option value="Europe/London" ${this.timezone === 'Europe/London' ? 'selected' : ''}>London</option>
-                <option value="Europe/Paris" ${this.timezone === 'Europe/Paris' ? 'selected' : ''}>Paris</option>
-                <option value="Europe/Berlin" ${this.timezone === 'Europe/Berlin' ? 'selected' : ''}>Berlin</option>
-                <option value="Asia/Tokyo" ${this.timezone === 'Asia/Tokyo' ? 'selected' : ''}>Tokyo</option>
-                <option value="Asia/Shanghai" ${this.timezone === 'Asia/Shanghai' ? 'selected' : ''}>Shanghai</option>
-                <option value="Australia/Sydney" ${this.timezone === 'Australia/Sydney' ? 'selected' : ''}>Sydney</option>
+                <option value="America/New_York" ${this.timezone === 'America/New_York' ? 'selected' : ''}>${this.t('city_new_york', 'New York')}</option>
+                <option value="America/Los_Angeles" ${this.timezone === 'America/Los_Angeles' ? 'selected' : ''}>${this.t('city_los_angeles', 'Los Angeles')}</option>
+                <option value="Europe/London" ${this.timezone === 'Europe/London' ? 'selected' : ''}>${this.t('city_london', 'London')}</option>
+                <option value="Europe/Paris" ${this.timezone === 'Europe/Paris' ? 'selected' : ''}>${this.t('city_paris', 'Paris')}</option>
+                <option value="Europe/Berlin" ${this.timezone === 'Europe/Berlin' ? 'selected' : ''}>${this.t('city_berlin', 'Berlin')}</option>
+                <option value="Asia/Tokyo" ${this.timezone === 'Asia/Tokyo' ? 'selected' : ''}>${this.t('city_tokyo', 'Tokyo')}</option>
+                <option value="Asia/Shanghai" ${this.timezone === 'Asia/Shanghai' ? 'selected' : ''}>${this.t('city_shanghai', 'Shanghai')}</option>
+                <option value="Australia/Sydney" ${this.timezone === 'Australia/Sydney' ? 'selected' : ''}>${this.t('city_sydney', 'Sydney')}</option>
               </select>
             </div>
           </div>
@@ -615,10 +742,15 @@
             <div class="clocks-row">
               <div class="analog-clock">
                 <div class="clock-numbers">
-                  <div class="clock-number" style="top: 8px; left: 50%;">12</div>
-                  <div class="clock-number" style="top: 50%; right: 8px;">3</div>
-                  <div class="clock-number" style="bottom: 8px; left: 50%;">6</div>
-                  <div class="clock-number" style="top: 50%; left: 8px;">9</div>
+                  ${Array.from({length: 12}, (_, i) => {
+                    const number = i + 1;
+                    const angle = (number * 30) - 90; // -90 to start at 12 o'clock
+                    const radius = 65; // Distance from center
+                    const x = 80 + radius * Math.cos(angle * Math.PI / 180); // 80 is center x
+                    const y = 80 + radius * Math.sin(angle * Math.PI / 180); // 80 is center y
+                    const displayNumber = this.convertNumbers ? this.convertNumbers(number.toString()) : number.toString();
+                    return `<div class="clock-number" style="left: ${x}px; top: ${y}px;">${displayNumber}</div>`;
+                  }).join('')}
                 </div>
                 <div class="clock-hand hour-hand"></div>
                 <div class="clock-hand minute-hand"></div>
@@ -632,7 +764,7 @@
                 
                 <div class="timezone-info">
                   <span>🌍</span>
-                  <span>${this.timezone}</span>
+                  <span>${this.getTranslatedTimezone(this.timezone)}</span>
                   <button class="time-format-toggle" onclick="this.getRootNode().host.toggleTimeFormat()">
                     ${this.use24Hour ? '24H' : '12H'}
                   </button>
@@ -652,7 +784,7 @@
             <div class="world-clocks">
               ${this.worldTimezones.map(tz => `
                 <div class="world-clock">
-                  <div class="world-clock-city">${tz.flag} ${tz.name}</div>
+                  <div class="world-clock-city">${tz.flag} ${this.getTranslatedCityName(tz)}</div>
                   <div class="world-clock-time">--:--:--</div>
                 </div>
               `).join('')}

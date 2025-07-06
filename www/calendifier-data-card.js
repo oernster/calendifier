@@ -231,24 +231,44 @@
 
       async changeLocale(newLocale) {
         try {
-          if (window.calendifierTranslationManager) {
-            const success = await window.calendifierTranslationManager.setLocale(newLocale);
-            if (success) {
-              this.showNotification(this.t('locale.changed', 'Language changed successfully'), 'success');
-              // Update the selector to show current locale
-              setTimeout(() => {
-                const selector = this.shadowRoot.querySelector('#localeSelect');
-                if (selector) {
-                  selector.value = newLocale;
-                }
-              }, 100);
-            } else {
-              this.showNotification(this.t('locale.change_failed', 'Failed to change language'), 'error');
-            }
+          // Update API settings first
+          const response = await fetch(`${this.getApiBaseUrl()}/api/v1/settings`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ locale: newLocale })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Failed to update API settings: ${response.status}`);
           }
+          
+          // Update translation manager if available
+          if (this.translationManager) {
+            await this.translationManager.setLocale(newLocale);
+          }
+          
+          // Update current locale
+          this.currentLocale = newLocale;
+          
+          // Reload translations for this card
+          await this.initTranslations();
+          
+          // Broadcast locale change to other cards
+          const event = new CustomEvent('calendifier-locale-changed', {
+            detail: { locale: newLocale },
+            bubbles: true,
+            composed: true
+          });
+          document.dispatchEvent(event);
+          
+          this.showNotification(`Language changed to ${newLocale}`, 'success');
+          
+          // Re-render the card with new locale
+          this.render();
+          
         } catch (error) {
-          console.error('Error changing locale:', error);
-          this.showNotification(this.t('locale.change_error', 'Error changing language'), 'error');
+          console.error('[DataCard] Language change error:', error);
+          this.showNotification('Failed to change language', 'error');
         }
       }
 
@@ -263,14 +283,22 @@
         const currentLocale = this.getCurrentLocale();
         
         try {
-          // Get available locales from API
+          // Use translation manager if available
+          if (this.translationManager) {
+            const locales = await this.translationManager.getAvailableLocales();
+            return locales.map(locale =>
+              `<option value="${locale.code}" ${locale.code === currentLocale ? 'selected' : ''}>${locale.flag} ${locale.name}</option>`
+            ).join('');
+          }
+          
+          // Fallback: Get available locales from API
           const response = await fetch(`${this.getApiBaseUrl()}/api/v1/translations`);
           if (response.ok) {
             const data = await response.json();
             const locales = data.locales || [];
             
             return locales.map(locale =>
-              `<option value="${locale.code}" ${locale.code === currentLocale ? 'selected' : ''}>${locale.flag} ${locale.native}</option>`
+              `<option value="${locale.code}" ${locale.code === currentLocale ? 'selected' : ''}>${locale.flag} ${locale.name || locale.native || locale.code}</option>`
             ).join('');
           }
         } catch (error) {
@@ -283,7 +311,9 @@
           { code: 'en_GB', name: '🇬🇧 English (UK)' },
           { code: 'de_DE', name: '🇩🇪 Deutsch' },
           { code: 'es_ES', name: '🇪🇸 Español' },
-          { code: 'fr_FR', name: '🇫🇷 Français' }
+          { code: 'fr_FR', name: '🇫🇷 Français' },
+          { code: 'pl_PL', name: '🇵🇱 Polski' },
+          { code: 'ar_SA', name: '🇸🇦 العربية' }
         ];
 
         return fallbackLocales.map(locale =>

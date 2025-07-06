@@ -34,43 +34,42 @@ if ([string]::IsNullOrEmpty($PiIP)) {
     }
 }
 
-Write-ColorOutput "`n=== ONE PASSWORD Deployment (Fixed) ===" $Blue
+Write-ColorOutput "`n=== Simple Deployment ===" $Blue
 
 # Create tar archive
 Write-ColorOutput "Creating archive..." $Blue
 tar -czf calendifier-deploy.tar.gz api_server.py main.py requirements.txt api_requirements.txt docker-compose.yml Dockerfile.api version.py setup-pi.sh lovelace-calendifier-config.yaml www calendar_app assets docs
 
-Write-ColorOutput "`nDeploying with ONE password..." $Blue
+if (-not (Test-Path "calendifier-deploy.tar.gz")) {
+    Write-ColorOutput "ERROR: Failed to create tarball!" $Red
+    exit 1
+}
 
-# Create the remote script with proper Unix line endings
-$RemoteScript = @"
-cat > calendifier-deploy.tar.gz
-mkdir -p ~/calendifier ~/calendifier/homeassistant/www
-tar -xzf calendifier-deploy.tar.gz
-mv api_server.py main.py requirements.txt api_requirements.txt docker-compose.yml Dockerfile.api version.py setup-pi.sh lovelace-calendifier-config.yaml ~/calendifier/
-mv www calendar_app assets docs ~/calendifier/
-cp -r ~/calendifier/www/* ~/calendifier/homeassistant/www/
-chmod -R 755 ~/calendifier
-chmod +x ~/calendifier/setup-pi.sh
-rm calendifier-deploy.tar.gz
-echo DEPLOYMENT_COMPLETE
-"@
+Write-ColorOutput "✓ Archive created: calendifier-deploy.tar.gz" $Green
 
-# Convert to Unix line endings and send
-$UnixScript = $RemoteScript -replace "`r`n", "`n" -replace "`r", "`n"
+# Transfer archive
+Write-ColorOutput "Transferring archive..." $Blue
+scp -o StrictHostKeyChecking=no calendifier-deploy.tar.gz $PiUser@$PiIP`:~/
 
-# Send everything in one command using binary-safe transfer
-Get-Content calendifier-deploy.tar.gz -AsByteStream | ssh -o StrictHostKeyChecking=no $PiUser@$PiIP "$UnixScript"
+if ($LASTEXITCODE -ne 0) {
+    Write-ColorOutput "ERROR: Failed to transfer archive!" $Red
+    Write-ColorOutput "Keeping tarball for manual transfer: calendifier-deploy.tar.gz" $Yellow
+    exit 1
+}
+
+Write-ColorOutput "✓ Archive transferred successfully" $Green
 
 # Clean up
+Write-ColorOutput "Cleaning up local archive..." $Blue
 Remove-Item calendifier-deploy.tar.gz -Force
 
 Write-ColorOutput "`n=== Deployment Complete ===" $Green
-Write-ColorOutput "✓ ONE password only!" $Blue
+Write-ColorOutput "✓ Archive transferred to Pi!" $Blue
 Write-ColorOutput "`nNext steps:" $Yellow
 Write-ColorOutput "1. SSH to your Pi: ssh $PiUser@$PiIP" $Reset
-Write-ColorOutput "2. Run: cd calendifier && ./setup-pi.sh" $Reset
-Write-ColorOutput "3. Access: http://$PiIP:8123" $Reset
+Write-ColorOutput "2. Extract: tar -xzf calendifier-deploy.tar.gz" $Reset
+Write-ColorOutput "3. Run: ./setup-pi.sh" $Reset
+Write-ColorOutput "4. Access: http://$PiIP:8123" $Reset
 Write-ColorOutput "`nWide Layout:" $Blue
 Write-ColorOutput "• Wide cards are automatically applied during setup" $Reset
 Write-ColorOutput "• Clear browser cache if cards appear narrow" $Reset
