@@ -118,7 +118,7 @@
   "dev_author": "Forfatter",
   "dev_built_with": "Bygget med",
   "dev_built_with_value": "Python, PySide6, FastAPI, oppmerksomhet på detaljer and LOTS of caffeine! ☕",
-  "support_text": "For hjelp, besøk dokumentasjonen vår eller kontakt meg via GitHub.",
+  "support_text": "For hjelp, besøk min dokumentasjon eller kontakt meg via GitHub.",
   "acknowledgments_text": "Takk til open source-samfunnet for uvurderlige verktøy og biblioteker.",
   "menu_file": "&Fil",
   "menu_import": "Importer",

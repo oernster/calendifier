@@ -119,7 +119,7 @@
   "dev_author": "Автор",
   "dev_built_with": "Створено з",
   "dev_built_with_value": "Python, PySide6, FastAPI, увагою до деталей and LOTS of caffeine! ☕",
-  "support_text": "Для допомоги відвідайте нашу документацію або зв'яжіться зі мною через GitHub.",
+  "support_text": "Для допомоги відвідайте мою документацію або зв'яжіться зі мною через GitHub.",
   "acknowledgments_text": "Дякуємо спільноті відкритого коду за неоціненні інструменти та бібліотеки.",
   "menu_file": "Файл",
   "menu_import": "Імпорт",

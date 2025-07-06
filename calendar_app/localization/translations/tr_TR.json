@@ -119,7 +119,7 @@
   "dev_author": "Yazar",
   "dev_built_with": "İle Geliştirildi",
   "dev_built_with_value": "Python, PySide6, FastAPI, detaylara dikkat and LOTS of caffeine! ☕",
-  "support_text": "Yardım için belgelerimizi ziyaret edin veya GitHub üzerinden benimle iletişime geçin.",
+  "support_text": "Yardım için belgelerimi ziyaret edin veya GitHub üzerinden benimle iletişime geçin.",
   "acknowledgments_text": "Değerli araçlar ve kütüphaneler için açık kaynak topluluğuna teşekkürler.",
   "menu_file": "Dosya",
   "menu_import": "İçe Aktar",

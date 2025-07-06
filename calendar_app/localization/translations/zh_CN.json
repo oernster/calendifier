@@ -159,7 +159,7 @@
   "dev_author": "作者",
   "dev_built_with": "建有",
   "dev_built_with_value": "Python、PySide6, FastAPI、关注细节 and LOTS of caffeine! ☕",
-  "support_text": "如需帮助，请访问我们的文档或通过GitHub联系我。",
+  "support_text": "如需帮助，请访问我的文档或通过GitHub联系我。",
   "acknowledgments_text": "感谢开源社区提供的宝贵工具和库。",
   "menu_file": "文件",
   "menu_import": "进口",

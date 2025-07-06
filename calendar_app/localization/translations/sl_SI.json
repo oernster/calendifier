@@ -81,7 +81,7 @@
   "dev_author": "Avtor",
   "dev_built_with": "Narejeno z",
   "dev_built_with_value": "Python, PySide6, FastAPI, pozornost do podrobnosti and LOTS of caffeine! ☕",
-  "support_text": "Za pomoč obiščite našo dokumentacijo ali me kontaktirajte prek GitHub.",
+  "support_text": "Za pomoč obiščite mojo dokumentacijo ali me kontaktirajte prek GitHub.",
   "acknowledgments_text": "Hvala skupnosti odprtokodnih projektov za neprecenljiva orodja in knjižnice.",
   "menu_file": "Datoteka",
   "menu_import": "Uvozi",

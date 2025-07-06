@@ -114,7 +114,7 @@
   "dev_author": "Penulis",
   "dev_built_with": "Dibuat dengan",
   "dev_built_with_value": "Python, PySide6, FastAPI, perhatian terhadap detail and LOTS of caffeine! ☕",
-  "support_text": "Untuk bantuan, kunjungi dokumentasi kami atau hubungi saya melalui GitHub.",
+  "support_text": "Untuk bantuan, kunjungi dokumentasi saya atau hubungi saya melalui GitHub.",
   "acknowledgments_text": "Terima kasih kepada komunitas open source untuk alat dan pustaka yang berharga.",
   "menu_file": "File",
   "menu_import": "Impor",

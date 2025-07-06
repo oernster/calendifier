@@ -122,7 +122,7 @@
   "dev_author": "Auteur",
   "dev_built_with": "Gebouwd met",
   "dev_built_with_value": "Python, PySide6, FastAPI, aandacht voor detail and LOTS of caffeine! ☕",
-  "support_text": "Voor hulp, bezoek onze documentatie of neem contact met me op via GitHub.",
+  "support_text": "Voor hulp, bezoek mijn documentatie of neem contact met me op via GitHub.",
   "acknowledgments_text": "Dank aan de open source gemeenschap voor waardevolle tools en bibliotheken.",
   "menu_file": "Bestand",
   "menu_import": "Importeren",

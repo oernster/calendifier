@@ -80,7 +80,7 @@
   "dev_author": "Szerző",
   "dev_built_with": "Készült",
   "dev_built_with_value": "Python, PySide6, FastAPI, figyelem a részletekre and LOTS of caffeine! ☕",
-  "support_text": "Segítségért látogassa meg dokumentációnkat vagy lépjen kapcsolatba velem a GitHubon keresztül.",
+  "support_text": "Segítségért látogassa meg dokumentációmat vagy lépjen kapcsolatba velem a GitHubon keresztül.",
   "acknowledgments_text": "Köszönet a nyílt forráskódú közösségnek a felbecsülhetetlen eszközökért és könyvtárakért.",
   "menu_file": "Fájl",
   "menu_import": "Import",

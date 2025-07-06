@@ -119,7 +119,7 @@
   "dev_author": "Tekijä",
   "dev_built_with": "Rakennettu käyttäen",
   "dev_built_with_value": "Python, PySide6, FastAPI, huomio yksityiskohtiin and LOTS of caffeine! ☕",
-  "support_text": "Saat apua dokumentaatiostamme tai ottamalla yhteyttä minuun GitHubin kautta.",
+  "support_text": "Saat apua dokumentaatiostani tai ottamalla yhteyttä minuun GitHubin kautta.",
   "acknowledgments_text": "Kiitos avoimen lähdekoodin yhteisölle korvaamattomista työkaluista ja kirjastoista.",
   "menu_file": "&Tiedosto",
   "menu_import": "Tuo",

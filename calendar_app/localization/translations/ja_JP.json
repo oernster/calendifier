@@ -158,7 +158,7 @@
   "dev_author": "著者",
   "dev_built_with": "で構築されている。",
   "dev_built_with_value": "Python、PySide6, FastAPI、細部へのこだわり and LOTS of caffeine! ☕",
-  "support_text": "ヘルプについては、ドキュメントをご覧いただくか、GitHubでお問い合わせください。",
+  "support_text": "ヘルプについては、私のドキュメントをご覧いただくか、GitHubでお問い合わせください。",
   "acknowledgments_text": "貴重なツールやライブラリを提供してくれたオープンソースコミュニティに感謝する。",
   "menu_file": "ファイル",
   "menu_import": "輸入",

@@ -120,7 +120,7 @@
   "dev_author": "Autor",
   "dev_built_with": "Construit cu",
   "dev_built_with_value": "Python, PySide6, FastAPI, atenție la detalii and LOTS of caffeine! ☕",
-  "support_text": "Pentru ajutor, vizitați documentația noastră sau contactați-mă prin GitHub.",
+  "support_text": "Pentru ajutor, vizitați documentația mea sau contactați-mă prin GitHub.",
   "acknowledgments_text": "Mulțumiri comunității open source pentru instrumentele și bibliotecile esențiale.",
   "menu_file": "Fișier",
   "menu_import": "Import",

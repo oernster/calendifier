@@ -160,7 +160,7 @@
   "dev_author": "Auteur",
   "dev_built_with": "Construit avec",
   "dev_built_with_value": "Python, PySide6, FastAPI, souci du détail and LOTS of caffeine! ☕",
-  "support_text": "Pour obtenir de l'aide, consultez notre documentation ou contactez-moi via GitHub.",
+  "support_text": "Pour obtenir de l'aide, consultez ma documentation ou contactez-moi via GitHub.",
   "acknowledgments_text": "Merci à la communauté open source pour ses outils et bibliothèques inestimables.",
   "menu_file": "Fichier",
   "menu_import": "Importation",

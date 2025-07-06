@@ -114,7 +114,7 @@
   "dev_author": "Tác giả",
   "dev_built_with": "Được xây dựng với",
   "dev_built_with_value": "Python, PySide6, FastAPI, sự chú ý đến chi tiết and LOTS of caffeine! ☕",
-  "support_text": "Để được trợ giúp, hãy truy cập tài liệu của chúng tôi hoặc liên hệ với tôi qua GitHub.",
+  "support_text": "Để được trợ giúp, hãy truy cập tài liệu của tôi hoặc liên hệ với tôi qua GitHub.",
   "acknowledgments_text": "Cảm ơn cộng đồng mã nguồn mở vì những công cụ và thư viện vô giá.",
   "menu_file": "Tệp",
   "menu_import": "Nhập",

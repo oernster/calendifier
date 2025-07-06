@@ -122,7 +122,7 @@
   "dev_author": "Författare",
   "dev_built_with": "Byggd med",
   "dev_built_with_value": "Python, PySide6, FastAPI, uppmärksamhet på detaljer and LOTS of caffeine! ☕",
-  "support_text": "För hjälp, besök vår dokumentation eller kontakta mig via GitHub.",
+  "support_text": "För hjälp, besök min dokumentation eller kontakta mig via GitHub.",
   "acknowledgments_text": "Tack till open source-gemenskapen för ovärderliga verktyg och bibliotek.",
   "menu_file": "Fil",
   "menu_import": "Importera",

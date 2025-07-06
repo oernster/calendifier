@@ -118,7 +118,7 @@
   "dev_author": "Autor",
   "dev_built_with": "Vytvořeno s",
   "dev_built_with_value": "Python, PySide6, FastAPI, pozornost k detailům and LOTS of caffeine! ☕",
-  "support_text": "Pro pomoc navštivte naši dokumentaci nebo mě kontaktujte přes GitHub.",
+  "support_text": "Pro pomoc navštivte mou dokumentaci nebo mě kontaktujte přes GitHub.",
   "acknowledgments_text": "Děkujeme komunitě open source za neocenitelné nástroje a knihovny.",
   "menu_file": "Soubor",
   "menu_import": "Import",

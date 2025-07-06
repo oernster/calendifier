@@ -89,7 +89,7 @@
   "dev_author": "Autor",
   "dev_built_with": "Construït amb",
   "dev_built_with_value": "Python, PySide6, FastAPI, atenció al detall and LOTS of caffeine! ☕",
-  "support_text": "Per obtenir ajuda, visiteu la nostra documentació o poseu-vos en contacte amb mi a través de GitHub.",
+  "support_text": "Per obtenir ajuda, visiteu la meva documentació o poseu-vos en contacte amb mi a través de GitHub.",
   "acknowledgments_text": "Gràcies a la comunitat de codi obert per les eines i biblioteques inestimables.",
   "menu_file": "Fitxer",
   "menu_import": "Importar",
