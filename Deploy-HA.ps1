@@ -36,12 +36,6 @@ if ([string]::IsNullOrEmpty($PiIP)) {
 
 Write-ColorOutput "`n=== ONE PASSWORD Deployment (Fixed) ===" $Blue
 
-# Ensure setup-pi.sh has Unix line endings before archiving
-Write-ColorOutput "Ensuring Unix line endings..." $Blue
-$SetupScript = Get-Content setup-pi.sh -Raw
-$UnixSetupScript = $SetupScript -replace "`r`n", "`n" -replace "`r", "`n"
-[System.IO.File]::WriteAllText("setup-pi.sh", $UnixSetupScript, [System.Text.UTF8Encoding]::new($false))
-
 # Create tar archive
 Write-ColorOutput "Creating archive..." $Blue
 tar -czf calendifier-deploy.tar.gz api_server.py main.py requirements.txt api_requirements.txt docker-compose.yml Dockerfile.api version.py setup-pi.sh lovelace-calendifier-config.yaml www calendar_app assets docs
