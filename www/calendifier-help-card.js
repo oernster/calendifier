@@ -20,6 +20,43 @@
         this.isLoading = true;
       }
 
+      /**
+       * Convert Western numerals to locale-appropriate numerals
+       * Supports Arabic-Indic, Devanagari, and Thai numeral systems
+       */
+      convertNumbers(text) {
+        if (!text || typeof text !== 'string') return text;
+        
+        const locale = this.currentLocale || 'en_US';
+        
+        // Arabic locales: Use Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩)
+        if (locale.startsWith('ar_')) {
+          return text.replace(/[0-9]/g, (digit) => {
+            const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return arabicNumerals[parseInt(digit)];
+          });
+        }
+        
+        // Hindi locale: Use Devanagari numerals (०१२३४५६७८९)
+        if (locale === 'hi_IN') {
+          return text.replace(/[0-9]/g, (digit) => {
+            const devanagariNumerals = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+            return devanagariNumerals[parseInt(digit)];
+          });
+        }
+        
+        // Thai locale: Use Thai numerals (๐๑๒๓๔๕๖๗๖๙)
+        if (locale === 'th_TH') {
+          return text.replace(/[0-9]/g, (digit) => {
+            const thaiNumerals = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
+            return thaiNumerals[parseInt(digit)];
+          });
+        }
+        
+        // All other locales: Use Western numerals (0123456789)
+        return text;
+      }
+
       async setConfig(config) {
         super.setConfig(config);
         
@@ -264,7 +301,7 @@
           <div class="about-content">
             <div class="app-info">
               <h2>${aboutData.app_name}</h2>
-              <p class="version">${this.t('version', 'Version')} ${aboutData.version}</p>
+              <p class="version">${this.t('version', 'Version')} ${this.convertNumbers(aboutData.version)}</p>
               <p class="description">${this.t('app_description', 'Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays')}</p>
             </div>
             
@@ -309,7 +346,7 @@
             <div class="license-section">
               <h3>📄 ${this.t('about_license', 'License')}</h3>
               <p><strong>${this.t('license_mit', 'MIT License')}</strong></p>
-              <p>${this.t('copyright', '© 2025 Oliver Ernster')}</p>
+              <p>${this.convertNumbers(this.t('copyright', '© 2025 Oliver Ernster'))}</p>
             </div>
             
             <div class="development-section">

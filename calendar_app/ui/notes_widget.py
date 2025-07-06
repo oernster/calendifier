@@ -17,6 +17,7 @@ from PySide6.QtGui import QFont
 
 from calendar_app.data.models import Note
 from calendar_app.localization import get_i18n_manager
+from calendar_app.localization.i18n_manager import convert_numbers
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +227,9 @@ class NotesWidget(QWidget):
             text_edit.setPlainText(note.content)
             text_edit.textChanged.connect(self._on_text_changed)
             
-            self.tab_widget.addTab(text_edit, note.title)
+            # Convert tab title to locale-appropriate numerals for display
+            converted_title = convert_numbers(note.title)
+            self.tab_widget.addTab(text_edit, converted_title)
         
         # Update delete button state
         self._update_delete_button()
@@ -247,7 +250,9 @@ class NotesWidget(QWidget):
             text_edit.setPlainText(new_note.content)
             text_edit.textChanged.connect(self._on_text_changed)
             
-            tab_index = self.tab_widget.addTab(text_edit, new_note.title)
+            # Convert tab title to locale-appropriate numerals for display
+            converted_title = convert_numbers(new_note.title)
+            tab_index = self.tab_widget.addTab(text_edit, converted_title)
             
             # Switch to new tab
             self.tab_widget.setCurrentIndex(tab_index)
@@ -358,6 +363,9 @@ class NotesWidget(QWidget):
             self.add_note_btn.setText(f"+ {_('notes.new_note', default='New Note')}")
             self.delete_note_btn.setText(f"🗑️ {_('dialogs.delete', default='Delete')}")
             
+            # Update tab titles with locale-appropriate numerals
+            self._refresh_tab_titles()
+            
             # Update placeholder content in first note if it's still the default
             if self.notes and len(self.notes) > 0:
                 first_note = self.notes[0]
@@ -381,3 +389,15 @@ class NotesWidget(QWidget):
             
         except Exception as e:
             logger.error(f"❌ Failed to refresh notes widget UI text: {e}")
+    
+    def _refresh_tab_titles(self):
+        """🔄 Refresh tab titles with locale-appropriate numerals."""
+        try:
+            for i, note in enumerate(self.notes):
+                if i < self.tab_widget.count():
+                    # Convert tab title to locale-appropriate numerals
+                    converted_title = convert_numbers(note.title)
+                    self.tab_widget.setTabText(i, converted_title)
+                    
+        except Exception as e:
+            logger.error(f"❌ Failed to refresh tab titles: {e}")

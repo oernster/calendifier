@@ -390,3 +390,48 @@ def get_available_locales() -> List[str]:
         List of available locale codes
     """
     return get_i18n_manager().get_available_locales()
+
+
+def convert_numbers(text: str, locale: Optional[str] = None) -> str:
+    """
+    Convert Western numerals to locale-appropriate numerals.
+    
+    Args:
+        text: Text containing numbers to convert
+        locale: Target locale (defaults to current locale)
+        
+    Returns:
+        Text with converted numerals
+    """
+    target_locale = locale or get_i18n_manager().current_locale
+    
+    # Define numeral mappings for specific locales
+    numeral_mappings = {
+        # Arabic-Indic numerals for Arabic locales
+        'ar_SA': {
+            '0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤',
+            '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩'
+        },
+        # Devanagari numerals for Hindi locales
+        'hi_IN': {
+            '0': '०', '1': '१', '2': '२', '3': '३', '4': '४',
+            '5': '५', '6': '६', '7': '७', '8': '८', '9': '९'
+        },
+        # Thai numerals for Thai locales
+        'th_TH': {
+            '0': '๐', '1': '๑', '2': '๒', '3': '๓', '4': '๔',
+            '5': '๕', '6': '๖', '7': '๗', '8': '๘', '9': '๙'
+        }
+    }
+    
+    # Get mapping for current locale
+    mapping = numeral_mappings.get(target_locale)
+    if not mapping:
+        return text  # No conversion needed for this locale
+    
+    # Convert each digit
+    result = text
+    for western, local in mapping.items():
+        result = result.replace(western, local)
+    
+    return result

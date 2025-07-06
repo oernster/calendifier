@@ -14,7 +14,7 @@ from PySide6.QtGui import QPainter, QPen, QBrush, QFont, QColor, QPalette
 
 from calendar_app.utils.ntp_client import TimeManager, NTPResult
 from calendar_app.config.themes import ThemeManager
-from calendar_app.localization.i18n_manager import get_i18n_manager
+from calendar_app.localization.i18n_manager import get_i18n_manager, convert_numbers
 
 def _(key: str, **kwargs) -> str:
     """Dynamic translation function that always uses current locale."""
@@ -103,7 +103,10 @@ class AnalogClockWidget(QWidget):
                 
                 painter.setFont(QFont("system-ui",  14, QFont.Weight.Bold))
                 text_rect = QRect(int(text_x - 10), int(text_y - 10), 20, 20)
-                painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, str(number))
+                
+                # Convert number to locale-appropriate numerals
+                number_str = convert_numbers(str(number))
+                painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, number_str)
         
         # Draw minute markers
         painter.setPen(QPen(self.number_color, 1))
@@ -212,9 +215,10 @@ class DigitalDisplayWidget(QWidget):
     
     def _update_display(self):
         """🔄 Update digital display."""
-        # Format time
+        # Format time and convert to locale-appropriate numerals
         time_str = self.current_time.strftime("%H:%M:%S")
-        self.time_label.setText(f"🕐 {time_str}")
+        converted_time_str = convert_numbers(time_str)
+        self.time_label.setText(f"🕐 {converted_time_str}")
         
         # Format date with localized day and month names
         import locale

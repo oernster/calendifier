@@ -113,7 +113,7 @@
   "shortcut_exit": "Ctrl+Q - Keluar",
   "dev_author": "Penulis",
   "dev_built_with": "Dibuat dengan",
-  "dev_built_with_value": "Python, PySide6, FastAPI, perhatian terhadap detail and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, perhatian terhadap detail dan BANYAK kafein! ☕",
   "support_text": "Untuk bantuan, kunjungi dokumentasi saya atau hubungi saya melalui GitHub.",
   "acknowledgments_text": "Terima kasih kepada komunitas open source untuk alat dan pustaka yang berharga.",
   "menu_file": "File",

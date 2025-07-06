@@ -118,7 +118,7 @@
   "shortcut_exit": "Ctrl+Q - Έξοδος",
   "dev_author": "Συγγραφέας",
   "dev_built_with": "Κατασκευασμένο με",
-  "dev_built_with_value": "Python, PySide6, FastAPI, προσοχή στη λεπτομέρεια and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, προσοχή στη λεπτομέρεια και ΠΟΛΛΗ καφεΐνη! ☕",
   "support_text": "Για βοήθεια, επισκεφθείτε την τεκμηρίωσή μου ή επικοινωνήστε μαζί μου μέσω GitHub.",
   "acknowledgments_text": "Ευχαριστούμε την κοινότητα ανοιχτού κώδικα για τα ανεκτίμητα εργαλεία και βιβλιοθήκες.",
   "menu_file": "Αρχείο",

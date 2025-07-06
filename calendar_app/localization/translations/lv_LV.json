@@ -76,7 +76,7 @@
   "shortcut_exit": "Ctrl+Q - Iziet",
   "dev_author": "Autors",
   "dev_built_with": "Izveidots ar",
-  "dev_built_with_value": "Python, PySide6, FastAPI, uzmanība detaļām and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, uzmanība detaļām un DAUDZ kofeīna! ☕",
   "support_text": "Lai saņemtu palīdzību, apmeklējiet manu dokumentāciju vai sazinieties ar mani caur GitHub.",
   "acknowledgments_text": "Paldies atvērtā koda kopienai par nenovērtējamiem rīkiem un bibliotēkām.",
   "menu_file": "Fails",

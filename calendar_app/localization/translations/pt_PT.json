@@ -113,7 +113,7 @@
   "shortcut_exit": "Ctrl+Q - Sair",
   "dev_author": "Autor",
   "dev_built_with": "Construído com",
-  "dev_built_with_value": "Python, PySide6, FastAPI, atenção ao detalhe and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, atenção ao detalhe e MUITA cafeína! ☕",
   "support_text": "Para ajuda, visite minha documentação ou entre em contato comigo via GitHub.",
   "acknowledgments_text": "Obrigado à comunidade open source pelas ferramentas e bibliotecas valiosas.",
   "menu_file": "Ficheiro",

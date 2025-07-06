@@ -113,7 +113,7 @@
   "shortcut_exit": "Ctrl+Q - ออก",
   "dev_author": "ผู้เขียน",
   "dev_built_with": "สร้างด้วย",
-  "dev_built_with_value": "Python, PySide6, FastAPI, ความใส่ใจในรายละเอียด and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, ความใส่ใจในรายละเอียด และคาเฟอีนเยอะมาก! ☕",
   "support_text": "สำหรับความช่วยเหลือ โปรดดูเอกสารของฉันหรือติดต่อฉันผ่าน GitHub",
   "acknowledgments_text": "ขอบคุณชุมชนโอเพ่นซอร์สสำหรับเครื่องมือและไลบรารีที่มีค่า",
   "menu_file": "ไฟล์",

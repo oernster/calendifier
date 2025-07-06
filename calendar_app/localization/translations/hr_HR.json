@@ -84,7 +84,7 @@
   "shortcut_exit": "Ctrl+Q - Exit",
   "dev_author": "Autor",
   "dev_built_with": "Izgrađeno s",
-  "dev_built_with_value": "Python, PySide6, FastAPI, pažnja na detalje and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, pažnja na detalje i PUNO kofeina! ☕",
   "support_text": "Za pomoć, posjetite moju dokumentaciju ili me kontaktirajte putem GitHub.",
   "acknowledgments_text": "Thanks to the open source community for invaluable tools and libraries.",
   "menu_file": "Datoteka",

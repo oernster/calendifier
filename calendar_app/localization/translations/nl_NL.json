@@ -121,7 +121,7 @@
   "shortcut_exit": "Ctrl+Q - Afsluiten",
   "dev_author": "Auteur",
   "dev_built_with": "Gebouwd met",
-  "dev_built_with_value": "Python, PySide6, FastAPI, aandacht voor detail and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, aandacht voor detail en VEEL cafeïne! ☕",
   "support_text": "Voor hulp, bezoek mijn documentatie of neem contact met me op via GitHub.",
   "acknowledgments_text": "Dank aan de open source gemeenschap voor waardevolle tools en bibliotheken.",
   "menu_file": "Bestand",

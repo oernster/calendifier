@@ -174,7 +174,7 @@
   "shortcut_exit": "Strg+Q - Beenden",
   "dev_author": "Autor",
   "dev_built_with": "Gebaut mit",
-  "dev_built_with_value": "Python, PySide6, FastAPI, Liebe zum Detail and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, Liebe zum Detail und VIEL Koffein! ☕",
   "support_text": "Für Hilfe besuchen Sie meine Dokumentation oder kontaktieren Sie mich über GitHub.",
   "acknowledgments_text": "Dank der Open-Source-Gemeinschaft für unschätzbare Werkzeuge und Bibliotheken.",
   "menu_file": "Datei",

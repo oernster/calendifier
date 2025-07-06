@@ -113,7 +113,7 @@
   "shortcut_exit": "Ctrl+Q - Afslut",
   "dev_author": "Forfatter",
   "dev_built_with": "Bygget med",
-  "dev_built_with_value": "Python, PySide6, FastAPI, opmærksomhed på detaljer and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, opmærksomhed på detaljer og MASSER af koffein! ☕",
   "support_text": "For hjælp, besøg min dokumentation eller kontakt mig via GitHub.",
   "acknowledgments_text": "Tak til open source-fællesskabet for uvurderlige værktøjer og biblioteker.",
   "menu_file": "&Fil",

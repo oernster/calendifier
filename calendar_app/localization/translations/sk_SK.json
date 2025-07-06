@@ -122,7 +122,7 @@
   "shortcut_exit": "Ctrl+Q - Ukončiť",
   "dev_author": "Autor",
   "dev_built_with": "Vytvorené s",
-  "dev_built_with_value": "Python, PySide6, FastAPI, pozornosť k detailom and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, pozornosť k detailom a VEĽA kofeínu! ☕",
   "support_text": "Pre pomoc navštívte moju dokumentáciu alebo ma kontaktujte cez GitHub.",
   "acknowledgments_text": "Ďakujeme open source komunite za neoceniteľné nástroje a knižnice.",
   "menu_file": "Súbor",

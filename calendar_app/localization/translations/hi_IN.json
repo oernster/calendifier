@@ -174,7 +174,7 @@
   "shortcut_exit": "Ctrl+Q - बाहर निकलें",
   "dev_author": "लेखक",
   "dev_built_with": "के साथ निर्मित",
-  "dev_built_with_value": "Python, PySide6, FastAPI, विस्तार पर ध्यान and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, विस्तार पर ध्यान और बहुत सारी कैफीन! ☕",
   "support_text": "सहायता के लिए, मेरे दस्तावेज़ देखें या GitHub के माध्यम से मुझसे संपर्क करें।",
   "acknowledgments_text": "अमूल्य उपकरण और लाइब्रेरी के लिए ओपन सोर्स समुदाय का धन्यवाद।",
   "menu_file": "फ़ाइल",

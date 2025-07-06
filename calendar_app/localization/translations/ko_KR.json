@@ -161,7 +161,7 @@
   "shortcut_exit": "Ctrl+Q - 종료",
   "dev_author": "작성자",
   "dev_built_with": "함께 구축",
-  "dev_built_with_value": "Python, PySide6, FastAPI, 디테일에 대한 관심 and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, 디테일에 대한 관심 그리고 많은 카페인! ☕",
   "support_text": "도움이 필요하시면 제 문서를 참조하거나 GitHub를 통해 연락해 주세요.",
   "acknowledgments_text": "귀중한 도구와 라이브러리를 제공하는 오픈 소스 커뮤니티 덕분입니다.",
   "menu_file": "파일",

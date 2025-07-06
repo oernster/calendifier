@@ -79,7 +79,7 @@
   "shortcut_exit": "Ctrl+Q - Kilépés",
   "dev_author": "Szerző",
   "dev_built_with": "Készült",
-  "dev_built_with_value": "Python, PySide6, FastAPI, figyelem a részletekre and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, figyelem a részletekre és SOK koffein! ☕",
   "support_text": "Segítségért látogassa meg dokumentációmat vagy lépjen kapcsolatba velem a GitHubon keresztül.",
   "acknowledgments_text": "Köszönet a nyílt forráskódú közösségnek a felbecsülhetetlen eszközökért és könyvtárakért.",
   "menu_file": "Fájl",

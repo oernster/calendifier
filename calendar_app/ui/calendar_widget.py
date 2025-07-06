@@ -19,7 +19,7 @@ from calendar_app.core.calendar_manager import CalendarManager
 from calendar_app.core.event_manager import EventManager
 from calendar_app.core.multi_country_holiday_provider import MultiCountryHolidayProvider
 from calendar_app.data.models import CalendarMonth, CalendarDay, Event
-from calendar_app.localization.i18n_manager import get_i18n_manager
+from calendar_app.localization.i18n_manager import get_i18n_manager, convert_numbers
 
 def _(key: str, **kwargs) -> str:
     """Dynamic translation function that always uses current locale."""
@@ -74,9 +74,10 @@ class CalendarDayWidget(QLabel):
         # Build display text using HTML for better formatting
         html_parts = []
         
-        # Day number (normal size)
+        # Day number (normal size) - convert to locale-appropriate numerals
         day_num = day.date.day
-        html_parts.append(f'<div style="font-weight: bold; margin-bottom: 2px;">{day_num}</div>')
+        converted_day_num = convert_numbers(str(day_num))
+        html_parts.append(f'<div style="font-weight: bold; margin-bottom: 2px;">{converted_day_num}</div>')
         
         # Add event indicators as larger icons
         if day.has_events():
@@ -281,7 +282,8 @@ class CalendarHeaderWidget(QWidget):
         ]
         
         month_name = month_names[self.current_month - 1]
-        self.month_year_label.setText(f"📅 {month_name} {self.current_year}")
+        converted_year = convert_numbers(str(self.current_year))
+        self.month_year_label.setText(f"📅 {month_name} {converted_year}")
     
     def set_month_year(self, year: int, month: int):
         """📅 Set current month and year."""
@@ -493,10 +495,11 @@ class CalendarGridWidget(QWidget):
             if week_idx < len(self.week_number_widgets):
                 week_number_widget = self.week_number_widgets[week_idx]
                 if week:  # If week has days
-                    # Get week number from first day of the week
+                    # Get week number from first day of the week - convert to locale-appropriate numerals
                     first_day = week[0].date
                     week_number = first_day.isocalendar()[1]  # ISO week number
-                    week_number_widget.setText(str(week_number))
+                    converted_week_number = convert_numbers(str(week_number))
+                    week_number_widget.setText(converted_week_number)
                     week_number_widget.show()
                 else:
                     week_number_widget.hide()

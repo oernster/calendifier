@@ -13,11 +13,12 @@ from PySide6.QtWidgets import (
     QTimeEdit, QCheckBox, QPushButton, QDialogButtonBox,
     QMessageBox, QWidget
 )
-from PySide6.QtCore import Qt, QDate, QTime, Signal
+from PySide6.QtCore import Qt, QDate, QTime, Signal, QTimer
 from PySide6.QtGui import QFont
 
 from calendar_app.data.models import Event
 from calendar_app.localization import get_i18n_manager
+from calendar_app.localization.i18n_manager import convert_numbers
 from version import UI_EMOJIS, EVENT_CATEGORY_EMOJIS
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,11 @@ class EventDialog(QDialog):
         self._setup_ui()
         self._load_event_data()
         self._refresh_qt_widgets_locale()  # Apply locale immediately
+        
+        # Setup timer for continuous calendar conversion
+        self._calendar_conversion_timer = QTimer()
+        self._calendar_conversion_timer.timeout.connect(self._update_calendar_numbers)
+        self._calendar_conversion_timer.start(500)  # Update every 500ms
         
         logger.debug(f"📝 Event dialog initialized ({'editing' if self.is_editing else 'creating'})")
     
@@ -105,6 +111,9 @@ class EventDialog(QDialog):
         self.date_edit = QDateEdit()
         self.date_edit.setDate(QDate(self.selected_date.year, self.selected_date.month, self.selected_date.day))
         self.date_edit.setCalendarPopup(True)
+        
+        # Connect signals for continuous numeral conversion
+        self.date_edit.dateChanged.connect(self._on_date_changed)
         date_row.addWidget(date_label)
         date_row.addWidget(self.date_edit)
         form_layout.addLayout(date_row)
@@ -127,6 +136,9 @@ class EventDialog(QDialog):
         start_time_label.setMinimumWidth(100)
         self.start_time_edit = QTimeEdit()
         self.start_time_edit.setTime(QTime(9, 0))  # Default 9:00 AM
+        
+        # Connect signals for continuous numeral conversion
+        self.start_time_edit.timeChanged.connect(lambda: self._apply_numeral_conversion_to_time_widget(self.start_time_edit))
         start_time_row.addWidget(start_time_label)
         start_time_row.addWidget(self.start_time_edit)
         form_layout.addLayout(start_time_row)
@@ -138,6 +150,9 @@ class EventDialog(QDialog):
         end_time_label.setMinimumWidth(100)
         self.end_time_edit = QTimeEdit()
         self.end_time_edit.setTime(QTime(10, 0))  # Default 10:00 AM
+        
+        # Connect signals for continuous numeral conversion
+        self.end_time_edit.timeChanged.connect(lambda: self._apply_numeral_conversion_to_time_widget(self.end_time_edit))
         end_time_row.addWidget(end_time_label)
         end_time_row.addWidget(self.end_time_edit)
         form_layout.addLayout(end_time_row)
@@ -353,6 +368,9 @@ class EventDialog(QDialog):
             # Update Qt widgets locale (QDateEdit, QTimeEdit)
             self._refresh_qt_widgets_locale()
             
+            # Trigger delayed numeral conversion to ensure Qt widgets are fully initialized
+            QTimer.singleShot(100, self._delayed_numeral_conversion)
+            
             # Update button texts
             button_box = self.findChild(QDialogButtonBox)
             if button_box:
@@ -441,7 +459,12 @@ class EventDialog(QDialog):
                 'lt_LT': QLocale(QLocale.Language.Lithuanian, QLocale.Country.Lithuania)
             }
             
-            qt_locale = qt_locale_mapping.get(current_locale, QLocale(QLocale.Language.English, QLocale.Country.UnitedKingdom))
+            # Special handling for Hindi and Thai - use Arabic locale to get numeral conversion
+            if current_locale in ['hi_IN', 'th_TH']:
+                # Use Arabic locale for Qt to enable numeral conversion, then convert to target numerals
+                qt_locale = QLocale(QLocale.Language.Arabic, QLocale.Country.SaudiArabia)
+            else:
+                qt_locale = qt_locale_mapping.get(current_locale, QLocale(QLocale.Language.English, QLocale.Country.UnitedKingdom))
             
             # Update QDateEdit and QTimeEdit widgets
             if hasattr(self, 'date_edit'):
@@ -449,14 +472,187 @@ class EventDialog(QDialog):
                 # Force refresh the calendar popup
                 if self.date_edit.calendarWidget():
                     self.date_edit.calendarWidget().setLocale(qt_locale)
+                # Apply numeral conversion for Hindi and Thai (Arabic works natively)
+                self._apply_numeral_conversion_to_date_widget()
             
             if hasattr(self, 'start_time_edit'):
                 self.start_time_edit.setLocale(qt_locale)
+                self._apply_numeral_conversion_to_time_widget(self.start_time_edit)
             
             if hasattr(self, 'end_time_edit'):
                 self.end_time_edit.setLocale(qt_locale)
+                self._apply_numeral_conversion_to_time_widget(self.end_time_edit)
             
             logger.debug(f"🌍 Updated Qt widgets locale to: {current_locale} ({qt_locale.name()})")
             
         except Exception as e:
             logger.warning(f"⚠️ Failed to refresh Qt widgets locale: {e}")
+    
+    def _apply_numeral_conversion_to_date_widget(self):
+        """Apply numeral conversion to date widget for Hindi and Thai locales."""
+        try:
+            current_locale = get_i18n_manager().current_locale
+            
+            # Only apply conversion for Hindi and Thai (Arabic works natively)
+            if current_locale not in ['hi_IN', 'th_TH']:
+                return
+            
+            # Convert the date display
+            if hasattr(self, 'date_edit'):
+                current_date = self.date_edit.date()
+                date_str = current_date.toString(self.date_edit.displayFormat())
+                
+                # First convert from Arabic-Indic to Western, then to target numerals
+                if current_locale == 'hi_IN':
+                    # Convert Arabic-Indic to Western first
+                    western_date = self._arabic_to_western(date_str)
+                    # Then convert Western to Devanagari
+                    converted_date = convert_numbers(western_date, 'hi_IN')
+                elif current_locale == 'th_TH':
+                    # Convert Arabic-Indic to Western first
+                    western_date = self._arabic_to_western(date_str)
+                    # Then convert Western to Thai
+                    converted_date = convert_numbers(western_date, 'th_TH')
+                else:
+                    converted_date = convert_numbers(date_str)
+                
+                if converted_date != date_str:
+                    line_edit = self.date_edit.lineEdit()
+                    if line_edit:
+                        line_edit.blockSignals(True)
+                        line_edit.setText(converted_date)
+                        line_edit.blockSignals(False)
+                
+                # Also convert calendar popup numbers
+                calendar_widget = self.date_edit.calendarWidget()
+                if calendar_widget:
+                    self._convert_calendar_widget_numbers(calendar_widget)
+                    
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to apply numeral conversion to date widget: {e}")
+    
+    def _apply_numeral_conversion_to_time_widget(self, time_widget):
+        """Apply numeral conversion to time widget for Hindi and Thai locales."""
+        try:
+            current_locale = get_i18n_manager().current_locale
+            
+            # Only apply conversion for Hindi and Thai (Arabic works natively)
+            if current_locale not in ['hi_IN', 'th_TH']:
+                return
+            
+            # Convert the time display
+            current_time = time_widget.time()
+            time_str = current_time.toString(time_widget.displayFormat())
+            
+            # First convert from Arabic-Indic to Western, then to target numerals
+            if current_locale == 'hi_IN':
+                # Convert Arabic-Indic to Western first
+                western_time = self._arabic_to_western(time_str)
+                # Then convert Western to Devanagari
+                converted_time = convert_numbers(western_time, 'hi_IN')
+            elif current_locale == 'th_TH':
+                # Convert Arabic-Indic to Western first
+                western_time = self._arabic_to_western(time_str)
+                # Then convert Western to Thai
+                converted_time = convert_numbers(western_time, 'th_TH')
+            else:
+                converted_time = convert_numbers(time_str)
+            
+            logger.debug(f"🔢 Converting time: '{time_str}' -> '{converted_time}'")
+            
+            if converted_time != time_str:
+                line_edit = time_widget.lineEdit()
+                if line_edit:
+                    line_edit.blockSignals(True)
+                    line_edit.setText(converted_time)
+                    line_edit.blockSignals(False)
+                    logger.debug(f"🔢 Time display updated to: {converted_time}")
+                    
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to apply numeral conversion to time widget: {e}")
+    
+    def _convert_calendar_widget_numbers(self, calendar_widget):
+        """Convert numbers in calendar widget for Hindi and Thai locales."""
+        try:
+            current_locale = get_i18n_manager().current_locale
+            
+            # Only apply conversion for Hindi and Thai (Arabic works natively)
+            if current_locale not in ['hi_IN', 'th_TH']:
+                return
+            
+            conversion_count = 0
+            # Find all QLabel widgets in the calendar and convert their text
+            for label in calendar_widget.findChildren(QLabel):
+                if label.text() and any(c.isdigit() for c in label.text()):
+                    original_text = label.text()
+                    
+                    # First convert from Arabic-Indic to Western, then to target numerals
+                    if current_locale == 'hi_IN':
+                        # Convert Arabic-Indic to Western first
+                        western_text = self._arabic_to_western(original_text)
+                        # Then convert Western to Devanagari
+                        converted_text = convert_numbers(western_text, 'hi_IN')
+                    elif current_locale == 'th_TH':
+                        # Convert Arabic-Indic to Western first
+                        western_text = self._arabic_to_western(original_text)
+                        # Then convert Western to Thai
+                        converted_text = convert_numbers(western_text, 'th_TH')
+                    else:
+                        converted_text = convert_numbers(original_text)
+                    
+                    if converted_text != original_text:
+                        label.setText(converted_text)
+                        conversion_count += 1
+                        
+            if conversion_count > 0:
+                logger.debug(f"🔢 Converted {conversion_count} calendar labels")
+                        
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to convert calendar widget numbers: {e}")
+    
+    def _on_date_changed(self):
+        """Handle date change to update numeral conversion."""
+        self._apply_numeral_conversion_to_date_widget()
+    
+    def _update_calendar_numbers(self):
+        """Continuously update calendar numbers for Hindi and Thai locales."""
+        try:
+            current_locale = get_i18n_manager().current_locale
+            
+            # Only apply conversion for Hindi and Thai (Arabic works natively)
+            if current_locale not in ['hi_IN', 'th_TH']:
+                return
+            
+            # Update calendar widget if it exists and is visible
+            if hasattr(self, 'date_edit'):
+                calendar_widget = self.date_edit.calendarWidget()
+                if calendar_widget and calendar_widget.isVisible():
+                    self._convert_calendar_widget_numbers(calendar_widget)
+                    
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to update calendar numbers: {e}")
+    
+    def _delayed_numeral_conversion(self):
+        """Apply numeral conversion after a delay to ensure widgets are ready."""
+        try:
+            logger.debug("🔢 Applying delayed numeral conversion")
+            self._apply_numeral_conversion_to_date_widget()
+            if hasattr(self, 'start_time_edit'):
+                self._apply_numeral_conversion_to_time_widget(self.start_time_edit)
+            if hasattr(self, 'end_time_edit'):
+                self._apply_numeral_conversion_to_time_widget(self.end_time_edit)
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to apply delayed numeral conversion: {e}")
+    
+    def _arabic_to_western(self, text):
+        """Convert Arabic-Indic numerals to Western numerals."""
+        arabic_to_western_map = {
+            '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+        }
+        
+        result = text
+        for arabic, western in arabic_to_western_map.items():
+            result = result.replace(arabic, western)
+        
+        return result

@@ -157,7 +157,7 @@
   "shortcut_exit": "Ctrl+Q - 終了",
   "dev_author": "著者",
   "dev_built_with": "で構築されている。",
-  "dev_built_with_value": "Python、PySide6, FastAPI、細部へのこだわり and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python、PySide6, FastAPI、細部へのこだわり そしてたくさんのカフェイン！ ☕",
   "support_text": "ヘルプについては、私のドキュメントをご覧いただくか、GitHubでお問い合わせください。",
   "acknowledgments_text": "貴重なツールやライブラリを提供してくれたオープンソースコミュニティに感謝する。",
   "menu_file": "ファイル",

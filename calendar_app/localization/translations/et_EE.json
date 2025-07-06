@@ -117,7 +117,7 @@
   "shortcut_exit": "Ctrl+Q - Välju",
   "dev_author": "Autor",
   "dev_built_with": "Ehitatud",
-  "dev_built_with_value": "Python, PySide6, FastAPI, tähelepanelikkusega and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, tähelepanelikkusega ja PALJU kofeiini! ☕",
   "support_text": "Abi saamiseks külastage minu dokumentatsiooni või võtke minuga ühendust GitHubi kaudu.",
   "acknowledgments_text": "Täname avatud lähtekoodiga kogukonda hindamatute tööriistade ja teekide eest.",
   "menu_file": "Fail",

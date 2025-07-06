@@ -128,7 +128,7 @@
   "shortcut_exit": "Ctrl+Q - Изход",
   "dev_author": "Автор",
   "dev_built_with": "Създадено с",
-  "dev_built_with_value": "Python, PySide6, FastAPI, внимание към детайлите and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, внимание към детайлите и МНОГО кафе! ☕",
   "support_text": "За помощ посетете моята документация или се свържете с мен чрез GitHub.",
   "acknowledgments_text": "Благодарим на общността с отворен код за безценните инструменти и библиотеки.",
   "menu_file": "Файл",

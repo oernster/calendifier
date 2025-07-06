@@ -127,7 +127,7 @@
   "shortcut_exit": "Ctrl+Q - יציאה",
   "dev_author": "מחבר",
   "dev_built_with": "נבנה עם",
-  "dev_built_with_value": "Python, PySide6, FastAPI, תשומת לב לפרטים and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, תשומת לב לפרטים והרבה קפאין! ☕",
   "support_text": "לעזרה, בקר בתיעוד שלי או צור קשר איתי דרך GitHub.",
   "acknowledgments_text": "תודה לקהילת הקוד הפתוח על הכלים והספריות החשובים.",
   "menu_file": "קובץ",

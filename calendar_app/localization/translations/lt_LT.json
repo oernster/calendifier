@@ -72,7 +72,7 @@
   "shortcut_exit": "Ctrl+Q - Išeiti",
   "dev_author": "Autorius",
   "dev_built_with": "Sukurta su",
-  "dev_built_with_value": "Python, PySide6, FastAPI, dėmesys detalėms and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, dėmesys detalėms ir DAUG kofeino! ☕",
   "support_text": "Pagalbos kreipkitės į mano dokumentaciją arba susisiekite su manimi per GitHub.",
   "acknowledgments_text": "Dėkojame atvirojo kodo bendruomenei už neįkainojamus įrankius ir bibliotekas.",
   "menu_file": "Failas",

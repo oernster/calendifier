@@ -181,7 +181,7 @@
   "shortcut_exit": "Ctrl+Q - Salir",
   "dev_author": "Autor",
   "dev_built_with": "Construido con",
-  "dev_built_with_value": "Python, PySide6, FastAPI, atención al detalle and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, atención al detalle ¡y MUCHA cafeína! ☕",
   "support_text": "Para obtener ayuda, visite mi documentación o contácteme a través de GitHub.",
   "acknowledgments_text": "Gracias a la comunidad de código abierto por sus valiosas herramientas y bibliotecas.",
   "menu_file": "Archivo",
