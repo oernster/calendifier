@@ -103,7 +103,7 @@
     "genuine_english_fix_engine": "Genuine English Content Fixer",
     "english_values_remaining": 0
   },
-  "app_name": "日曆",
+  "app_name": "📅 日曆",
   "app_description": "具有類比時鐘、事件處理、記筆記和節假日功能的跨平台桌面日曆和家庭助理整合",
   "main_window_title": "Calendifier - 個人行事曆",
   "about_dialog_title": "關於 Calendifier",
@@ -162,7 +162,7 @@
   "shortcut_exit": "Ctrl+Q - 退出",
   "dev_author": "作者",
   "dev_built_with": "內建",
-  "dev_built_with_value": "Python、PySide6、注重細節 and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python、PySide6, FastAPI、注重細節 and LOTS of caffeine! ☕",
   "support_text": "如需協助，請造訪我們的文件或透過GitHub聯絡我。",
   "acknowledgments_text": "感謝開放原始碼社群提供寶貴的工具和函式庫。",
   "menu_file": "檔案",

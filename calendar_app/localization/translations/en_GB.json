@@ -51,7 +51,7 @@
     "ui_emojis_removal_date": "2025-07-06",
     "ui_emojis_removal_reason": "Field obsolete - UI emojis now handled by version.py"
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Cross-platform desktop calendar and Home Assistant integration with analogue clock, event handling, note taking, and holidays",
   "main_window_title": "Calendifier - Personal Calendar Application",
   "about_dialog_title": "About Calendifier",
@@ -110,7 +110,7 @@
   "shortcut_exit": "Ctrl+Q - Exit",
   "dev_author": "Author",
   "dev_built_with": "Built with",
-  "dev_built_with_value": "Python, PySide6, attention to detail and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, attention to detail and LOTS of caffeine! ☕",
   "support_text": "For help, visit our documentation or contact me via GitHub.",
   "acknowledgments_text": "Thanks to the open source community for invaluable tools and libraries.",
   "menu_file": "File",

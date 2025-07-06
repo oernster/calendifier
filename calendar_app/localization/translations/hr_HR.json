@@ -25,7 +25,7 @@
     "genuine_english_fixes": 36,
     "genuine_english_fix_engine": "Genuine English Content Fixer"
   },
-  "app_name": "Kalendar",
+  "app_name": "📅 Kalendar",
   "app_description": "Višeplatformski desktop kalendar s Home Assistant integracijom, analognim satom, upravljanjem događaja, bilješkama i blagdanima",
   "main_window_title": "Kalendar - Osobna kalendarska aplikacija",
   "about_dialog_title": "O Kalendaru",
@@ -84,7 +84,7 @@
   "shortcut_exit": "Ctrl+Q - Exit",
   "dev_author": "Autor",
   "dev_built_with": "Izgrađeno s",
-  "dev_built_with_value": "Python, PySide6, pažnja na detalje and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, pažnja na detalje and LOTS of caffeine! ☕",
   "support_text": "Za pomoć, posjetite našu dokumentaciju ili me kontaktirajte putem GitHub.",
   "acknowledgments_text": "Thanks to the open source community for invaluable tools and libraries.",
   "menu_file": "Datoteka",

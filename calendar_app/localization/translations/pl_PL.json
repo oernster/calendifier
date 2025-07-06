@@ -58,7 +58,7 @@
     "complete_english_elimination_engine": "Complete English Elimination Engine",
     "english_values_remaining": 0
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Wieloplatformowy kalendarz biurkowy i integracja z Home Assistant z zegarem analogowym, obsługą wydarzeń, robieniem notatek i świętami",
   "main_window_title": "Calendifier - Aplikacja Kalendarza Osobistego",
   "about_dialog_title": "O Calendifier",
@@ -117,7 +117,7 @@
   "shortcut_exit": "Ctrl+Q - Wyjście",
   "dev_author": "Autor",
   "dev_built_with": "Zbudowane z",
-  "dev_built_with_value": "Python, PySide6, dbałość o szczegóły and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, dbałość o szczegóły and LOTS of caffeine! ☕",
   "support_text": "Aby uzyskać pomoc, odwiedź naszą dokumentację lub skontaktuj się ze mną przez GitHub.",
   "acknowledgments_text": "Dziękujemy społeczności open source za nieocenione narzędzia i biblioteki.",
   "menu_file": "Plik",

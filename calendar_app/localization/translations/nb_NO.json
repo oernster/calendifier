@@ -58,7 +58,7 @@
     "ultimate_final_fix_engine": "Ultimate Final English Value Replacer",
     "english_values_remaining": 0
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Kryssplattform skrivebordskalender og Hjemmeassistent-integrasjon med analog klokke, hendelseshåndtering, notattaking og helligdager",
   "main_window_title": "Calendifier - Personlig kalenderapplikasjon",
   "about_dialog_title": "Om Calendifier",
@@ -117,7 +117,7 @@
   "shortcut_exit": "Ctrl+Q - Avslutt",
   "dev_author": "Forfatter",
   "dev_built_with": "Bygget med",
-  "dev_built_with_value": "Python, PySide6, oppmerksomhet på detaljer and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, oppmerksomhet på detaljer and LOTS of caffeine! ☕",
   "support_text": "For hjelp, besøk dokumentasjonen vår eller kontakt meg via GitHub.",
   "acknowledgments_text": "Takk til open source-samfunnet for uvurderlige verktøy og biblioteker.",
   "menu_file": "&Fil",

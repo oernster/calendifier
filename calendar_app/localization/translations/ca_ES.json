@@ -29,7 +29,7 @@
     "catalan_real_english_fixes": 6,
     "catalan_real_english_fix_engine": "Catalan Real English Values Fix Engine"
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Aplicació de calendari multiplataforma d'escriptori i integració amb Home Assistant amb rellotge analògic, gestió d'esdeveniments, presa de notes i festius",
   "main_window_title": "Calendifier - Aplicació de Calendari Personal",
   "about_dialog_title": "Quant a Calendifier",
@@ -88,7 +88,7 @@
   "shortcut_exit": "Ctrl+Q - Sortir",
   "dev_author": "Autor",
   "dev_built_with": "Construït amb",
-  "dev_built_with_value": "Python, PySide6, atenció al detall and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, atenció al detall and LOTS of caffeine! ☕",
   "support_text": "Per obtenir ajuda, visiteu la nostra documentació o poseu-vos en contacte amb mi a través de GitHub.",
   "acknowledgments_text": "Gràcies a la comunitat de codi obert per les eines i biblioteques inestimables.",
   "menu_file": "Fitxer",

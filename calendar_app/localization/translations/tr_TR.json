@@ -59,7 +59,7 @@
     "english_values_remaining": 0,
     "true_100_percent_achieved": true
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Analog saat, etkinlik yönetimi, not alma ve tatil günleri ile çapraz platform masaüstü takvimi ve Home Assistant entegrasyonu",
   "main_window_title": "Calendifier - Kişisel Takvim Uygulaması",
   "about_dialog_title": "Calendifier Hakkında",
@@ -118,7 +118,7 @@
   "shortcut_exit": "Ctrl+Q - Çıkış",
   "dev_author": "Yazar",
   "dev_built_with": "İle Geliştirildi",
-  "dev_built_with_value": "Python, PySide6, detaylara dikkat and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, detaylara dikkat and LOTS of caffeine! ☕",
   "support_text": "Yardım için belgelerimizi ziyaret edin veya GitHub üzerinden benimle iletişime geçin.",
   "acknowledgments_text": "Değerli araçlar ve kütüphaneler için açık kaynak topluluğuna teşekkürler.",
   "menu_file": "Dosya",

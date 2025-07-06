@@ -54,7 +54,7 @@
     "fix_date": "2025-07-06 09:45:00",
     "fix_reason": "Complete comprehensive fix for TRUE 100% completion"
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Calendário de secretária multiplataforma e integração com Home Assistant com relógio analógico, gestão de eventos, criação de notas e feriados",
   "main_window_title": "Calendifier - Aplicação de Calendário Pessoal",
   "about_dialog_title": "Acerca do Calendifier",
@@ -113,7 +113,7 @@
   "shortcut_exit": "Ctrl+Q - Sair",
   "dev_author": "Autor",
   "dev_built_with": "Construído com",
-  "dev_built_with_value": "Python, PySide6, atenção ao detalhe and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, atenção ao detalhe and LOTS of caffeine! ☕",
   "support_text": "Para ajuda, visite nossa documentação ou entre em contato comigo via GitHub.",
   "acknowledgments_text": "Obrigado à comunidade open source pelas ferramentas e bibliotecas valiosas.",
   "menu_file": "Ficheiro",

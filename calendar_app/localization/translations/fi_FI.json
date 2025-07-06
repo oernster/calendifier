@@ -59,7 +59,7 @@
     "english_values_remaining": 0,
     "true_100_percent_achieved": true
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Monialustainen työpöytäkalenteri ja Koti-assistentti-integraatio analogisella kellolla, tapahtumien hallinnalla, muistiinpanoilla ja juhlapäivillä",
   "main_window_title": "Calendifier - Henkilökohtainen kalenterisovellus",
   "about_dialog_title": "Tietoja Calendifierista",
@@ -118,7 +118,7 @@
   "shortcut_exit": "Ctrl+Q - Poistu",
   "dev_author": "Tekijä",
   "dev_built_with": "Rakennettu käyttäen",
-  "dev_built_with_value": "Python, PySide6, huomio yksityiskohtiin and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, huomio yksityiskohtiin and LOTS of caffeine! ☕",
   "support_text": "Saat apua dokumentaatiostamme tai ottamalla yhteyttä minuun GitHubin kautta.",
   "acknowledgments_text": "Kiitos avoimen lähdekoodin yhteisölle korvaamattomista työkaluista ja kirjastoista.",
   "menu_file": "&Tiedosto",

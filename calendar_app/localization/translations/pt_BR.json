@@ -110,7 +110,7 @@
     "english_values_remaining": 0,
     "true_100_percent_achieved": true
   },
-  "app_name": "Calendário",
+  "app_name": "📅 Calendário",
   "app_description": "Calendário de desktop multiplataforma e integração Assistente Doméstico com relógio analógico, gerenciamento de eventos, anotações e feriados",
   "main_window_title": "Calendifier - Calendário pessoal",
   "about_dialog_title": "Sobre o Calendifier",
@@ -169,7 +169,7 @@
   "shortcut_exit": "Ctrl+Q - Sair",
   "dev_author": "Autor",
   "dev_built_with": "Construído com",
-  "dev_built_with_value": "Python, PySide6, atenção aos detalhes and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, atenção aos detalhes and LOTS of caffeine! ☕",
   "support_text": "Para ajuda, visite nossa documentação ou entre em contato comigo via GitHub.",
   "acknowledgments_text": "Agradecemos à comunidade de código aberto pelas ferramentas e bibliotecas de valor inestimável.",
   "menu_file": "Arquivo",

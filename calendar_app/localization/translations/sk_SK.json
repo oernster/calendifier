@@ -63,7 +63,7 @@
     "fix_date": "2025-07-06 09:45:00",
     "fix_reason": "Complete comprehensive fix for TRUE 100% completion"
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Multiplatformová desktopová kalendárna aplikácia s analógovými hodinami, správou udalostí, poznámkami a sviatkami",
   "main_window_title": "Calendifier - Osobná kalendárna aplikácia",
   "about_dialog_title": "O aplikácii Calendifier",
@@ -122,7 +122,7 @@
   "shortcut_exit": "Ctrl+Q - Ukončiť",
   "dev_author": "Autor",
   "dev_built_with": "Vytvorené s",
-  "dev_built_with_value": "Python, PySide6, pozornosť k detailom and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, pozornosť k detailom and LOTS of caffeine! ☕",
   "support_text": "Pre pomoc navštívte našu dokumentáciu alebo ma kontaktujte cez GitHub.",
   "acknowledgments_text": "Ďakujeme open source komunite za neoceniteľné nástroje a knižnice.",
   "menu_file": "Súbor",

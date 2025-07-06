@@ -62,7 +62,7 @@
     "final_100_percent_elimination_fixes": 0,
     "final_100_percent_elimination_engine": "Final 100% Elimination Engine"
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Multiplattforms skrivbordskalender och Hemassistent-integration med analog klocka, händelsehantering, anteckningar och helgdagar",
   "main_window_title": "Calendifier - Personlig kalenderapplikation",
   "about_dialog_title": "Om Calendifier",
@@ -121,7 +121,7 @@
   "shortcut_exit": "Ctrl+Q - Avsluta",
   "dev_author": "Författare",
   "dev_built_with": "Byggd med",
-  "dev_built_with_value": "Python, PySide6, uppmärksamhet på detaljer and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, uppmärksamhet på detaljer and LOTS of caffeine! ☕",
   "support_text": "För hjälp, besök vår dokumentation eller kontakta mig via GitHub.",
   "acknowledgments_text": "Tack till open source-gemenskapen för ovärderliga verktyg och bibliotek.",
   "menu_file": "Fil",

@@ -98,7 +98,7 @@
     "ui_emojis_removal_reason": "Field obsolete - UI emojis now handled by version.py",
     "fix_reason": "Real comprehensive fix for TRUE 100% completion"
   },
-  "app_name": "カレンダー",
+  "app_name": "📅 カレンダー",
   "app_description": "アナログ時計、イベント処理、メモ取り、祝日機能を備えたクロスプラットフォームデスクトップカレンダーとホームアシスタント統合",
   "main_window_title": "カレンダー",
   "about_dialog_title": "Calendifierについて",
@@ -157,7 +157,7 @@
   "shortcut_exit": "Ctrl+Q - 終了",
   "dev_author": "著者",
   "dev_built_with": "で構築されている。",
-  "dev_built_with_value": "Python、PySide6、細部へのこだわり and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python、PySide6, FastAPI、細部へのこだわり and LOTS of caffeine! ☕",
   "support_text": "ヘルプについては、ドキュメントをご覧いただくか、GitHubでお問い合わせください。",
   "acknowledgments_text": "貴重なツールやライブラリを提供してくれたオープンソースコミュニティに感謝する。",
   "menu_file": "ファイル",

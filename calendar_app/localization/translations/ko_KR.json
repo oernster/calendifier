@@ -102,7 +102,7 @@
     "ui_emojis_removal_reason": "Field obsolete - UI emojis now handled by version.py",
     "fix_reason": "Real comprehensive fix for TRUE 100% completion"
   },
-  "app_name": "캘린더",
+  "app_name": "📅 캘린더",
   "app_description": "아날로그 시계, 이벤트 처리, 메모 작성 및 휴일 기능이 있는 크로스 플랫폼 데스크톱 캘린더 및 홈 어시스턴트 통합",
   "main_window_title": "Calendifier - 개인 Calendifier",
   "about_dialog_title": "캘린더 정보",
@@ -161,7 +161,7 @@
   "shortcut_exit": "Ctrl+Q - 종료",
   "dev_author": "작성자",
   "dev_built_with": "함께 구축",
-  "dev_built_with_value": "Python, PySide6, 디테일에 대한 관심 and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, 디테일에 대한 관심 and LOTS of caffeine! ☕",
   "support_text": "도움이 필요하시면 문서를 참조하거나 GitHub를 통해 연락해 주세요.",
   "acknowledgments_text": "귀중한 도구와 라이브러리를 제공하는 오픈 소스 커뮤니티 덕분입니다.",
   "menu_file": "파일",

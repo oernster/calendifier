@@ -115,7 +115,7 @@
     "ultimate_final_fixes_applied": 12,
     "ultimate_final_fix_engine": "Ultimate Final English Value Replacer"
   },
-  "app_name": "Kalender",
+  "app_name": "📅 Kalender",
   "app_description": "Plattformübergreifende Desktop-Kalender-Anwendung und Heim-Assistent-Integration mit analoger Uhr, Ereignisverwaltung, Notizen und Feiertagen",
   "main_window_title": "Calendifier - Persönlicher Kalender",
   "about_dialog_title": "Über Calendifier",
@@ -174,7 +174,7 @@
   "shortcut_exit": "Strg+Q - Beenden",
   "dev_author": "Autor",
   "dev_built_with": "Gebaut mit",
-  "dev_built_with_value": "Python, PySide6, Liebe zum Detail and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, Liebe zum Detail and LOTS of caffeine! ☕",
   "support_text": "Für Hilfe besuchen Sie unsere Dokumentation oder kontaktieren Sie mich über GitHub.",
   "acknowledgments_text": "Dank der Open-Source-Gemeinschaft für unschätzbare Werkzeuge und Bibliotheken.",
   "menu_file": "Datei",

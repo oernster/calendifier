@@ -62,7 +62,7 @@
     "final_100_percent_elimination_fixes": 1,
     "final_100_percent_elimination_engine": "Final 100% Elimination Engine"
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Cross-platform desktop kalender en Home Assistant integratie met analoge klok, gebeurtenisbeheer, notities maken en feestdagen",
   "main_window_title": "Calendifier - Persoonlijke Kalender Applicatie",
   "about_dialog_title": "Over Calendifier",
@@ -121,7 +121,7 @@
   "shortcut_exit": "Ctrl+Q - Afsluiten",
   "dev_author": "Auteur",
   "dev_built_with": "Gebouwd met",
-  "dev_built_with_value": "Python, PySide6, aandacht voor detail and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, aandacht voor detail and LOTS of caffeine! ☕",
   "support_text": "Voor hulp, bezoek onze documentatie of neem contact met me op via GitHub.",
   "acknowledgments_text": "Dank aan de open source gemeenschap voor waardevolle tools en bibliotheken.",
   "menu_file": "Bestand",

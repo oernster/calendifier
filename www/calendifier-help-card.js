@@ -57,7 +57,7 @@
           } else {
             // Fallback: create basic about data with version from API
             this.aboutData = {
-              app_name: this.t('app_name', '📅 Calendifier'),
+              app_name: this.t('app_name', 'Calendifier'),
               version: await this.getVersionFromAPI(),
               description: this.t('app_description', 'Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays'),
               features: []
@@ -67,7 +67,7 @@
           console.error('[HelpCard] Error loading about data:', error);
           // Fallback: create basic about data with version from API
           this.aboutData = {
-            app_name: this.t('app_name', '📅 Calendifier'),
+            app_name: this.t('app_name', 'Calendifier'),
             version: await this.getVersionFromAPI(),
             description: this.t('app_description', 'Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays'),
             features: []
@@ -112,7 +112,7 @@
         }
 
         const aboutData = this.aboutData || {
-          app_name: this.t('app_name', '📅 Calendifier'),
+          app_name: this.t('app_name', 'Calendifier'),
           version: '1.4.0',
           description: this.t('app_description', 'Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays'),
           features: []
@@ -263,7 +263,7 @@
           
           <div class="about-content">
             <div class="app-info">
-              <h2>📅 ${aboutData.app_name}</h2>
+              <h2>${aboutData.app_name}</h2>
               <p class="version">${this.t('version', 'Version')} ${aboutData.version}</p>
               <p class="description">${this.t('app_description', 'Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays')}</p>
             </div>

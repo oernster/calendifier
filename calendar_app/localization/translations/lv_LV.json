@@ -17,7 +17,7 @@
     "genuine_english_fix_engine": "Genuine English Content Fixer",
     "english_values_remaining": 0
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Starpplatformu darbvirsmas kalendārs un Home Assistant integrācija ar analogu pulksteni, notikumu apstrādi, piezīmju veidošanu un svētkiem",
   "main_window_title": "Calendifier - Personīgā kalendāra lietotne",
   "about_dialog_title": "Par Calendifier",
@@ -76,7 +76,7 @@
   "shortcut_exit": "Ctrl+Q - Iziet",
   "dev_author": "Autors",
   "dev_built_with": "Izveidots ar",
-  "dev_built_with_value": "Python, PySide6, uzmanība detaļām and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, uzmanība detaļām and LOTS of caffeine! ☕",
   "support_text": "Lai saņemtu palīdzību, apmeklējiet mūsu dokumentāciju vai sazinieties ar mani caur GitHub.",
   "acknowledgments_text": "Paldies atvērtā koda kopienai par nenovērtējamiem rīkiem un bibliotēkām.",
   "menu_file": "Fails",

@@ -54,7 +54,7 @@
     "fix_date": "2025-07-06 09:40:00",
     "fix_reason": "Real comprehensive fix for TRUE 100% completion"
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Ứng dụng lịch desktop đa nền tảng và tích hợp Home Assistant với đồng hồ analog, quản lý sự kiện, ghi chú và ngày lễ",
   "main_window_title": "Calendifier - Ứng Dụng Lịch Cá Nhân",
   "about_dialog_title": "Về Calendifier",
@@ -113,7 +113,7 @@
   "shortcut_exit": "Ctrl+Q - Thoát",
   "dev_author": "Tác giả",
   "dev_built_with": "Được xây dựng với",
-  "dev_built_with_value": "Python, PySide6, sự chú ý đến chi tiết and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, sự chú ý đến chi tiết and LOTS of caffeine! ☕",
   "support_text": "Để được trợ giúp, hãy truy cập tài liệu của chúng tôi hoặc liên hệ với tôi qua GitHub.",
   "acknowledgments_text": "Cảm ơn cộng đồng mã nguồn mở vì những công cụ và thư viện vô giá.",
   "menu_file": "Tệp",

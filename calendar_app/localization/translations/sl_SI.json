@@ -21,7 +21,7 @@
     "complete_english_elimination_engine": "Complete English Elimination Engine",
     "english_values_remaining": 0
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Večplatformna namizna aplikacija koledarja in integracija Home Assistant z analogno uro, upravljanjem dogodkov, pisanjem opomb in prazniki",
   "main_window_title": "Calendifier - Osebna aplikacija koledarja",
   "about_dialog_title": "O aplikaciji Calendifier",
@@ -80,7 +80,7 @@
   "shortcut_exit": "Ctrl+Q - Izhod",
   "dev_author": "Avtor",
   "dev_built_with": "Narejeno z",
-  "dev_built_with_value": "Python, PySide6, pozornost do podrobnosti and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, pozornost do podrobnosti and LOTS of caffeine! ☕",
   "support_text": "Za pomoč obiščite našo dokumentacijo ali me kontaktirajte prek GitHub.",
   "acknowledgments_text": "Hvala skupnosti odprtokodnih projektov za neprecenljiva orodja in knjižnice.",
   "menu_file": "Datoteka",

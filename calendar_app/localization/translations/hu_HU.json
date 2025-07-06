@@ -20,7 +20,7 @@
     "fix_date": "2025-07-06 09:45:00",
     "fix_reason": "Complete comprehensive fix for TRUE 100% completion"
   },
-  "app_name": "Calendifier",
+  "app_name": "📅 Calendifier",
   "app_description": "Többplatformos asztali naptár és Home Assistant integráció analóg órával, eseménykezeléssel, jegyzetelési funkcióval és ünnepekkel",
   "main_window_title": "Calendifier - Személyes naptár alkalmazás",
   "about_dialog_title": "A Calendifier-ről",
@@ -79,7 +79,7 @@
   "shortcut_exit": "Ctrl+Q - Kilépés",
   "dev_author": "Szerző",
   "dev_built_with": "Készült",
-  "dev_built_with_value": "Python, PySide6, figyelem a részletekre and LOTS of caffeine! ☕",
+  "dev_built_with_value": "Python, PySide6, FastAPI, figyelem a részletekre and LOTS of caffeine! ☕",
   "support_text": "Segítségért látogassa meg dokumentációnkat vagy lépjen kapcsolatba velem a GitHubon keresztül.",
   "acknowledgments_text": "Köszönet a nyílt forráskódú közösségnek a felbecsülhetetlen eszközökért és könyvtárakért.",
   "menu_file": "Fájl",

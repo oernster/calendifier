@@ -310,12 +310,55 @@
       }
 
       convertNumbers(text) {
-        // Convert Western Arabic numerals to Arabic-Indic numerals for Arabic locales
-        if (this.currentLocale && this.currentLocale.startsWith('ar_')) {
-          const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-          return text.toString().replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
+        if (!this.currentLocale) {
+          return text.toString();
         }
-        return text.toString();
+        
+        const textStr = text.toString();
+        
+        // Arabic-Indic numerals for Arabic locales
+        if (this.currentLocale.startsWith('ar_')) {
+          const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+          return textStr.replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
+        }
+        
+        // Hebrew numerals for Hebrew (Israel)
+        if (this.currentLocale === 'he_IL') {
+          // Hebrew uses Hebrew letters for traditional numbering, but Western numerals are standard in digital contexts
+          // Keep Western numerals for better readability and compatibility
+          return textStr;
+        }
+        
+        // Devanagari numerals for Hindi (India)
+        if (this.currentLocale === 'hi_IN') {
+          const hindiNumerals = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+          return textStr.replace(/[0-9]/g, (digit) => hindiNumerals[parseInt(digit)]);
+        }
+        
+        // Thai numerals for Thai (Thailand)
+        if (this.currentLocale === 'th_TH') {
+          const thaiNumerals = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
+          return textStr.replace(/[0-9]/g, (digit) => thaiNumerals[parseInt(digit)]);
+        }
+        
+        // Persian/Farsi numerals (if we had fa_IR, but we don't in our current locale list)
+        // Chinese numerals - Western numerals are standard in digital contexts for zh_CN, zh_TW
+        // Japanese numerals - Western numerals are standard in digital contexts for ja_JP
+        // Korean numerals - Western numerals are standard in digital contexts for ko_KR
+        
+        // Myanmar/Burmese numerals (if we had my_MM, but we don't in our current locale list)
+        // Khmer numerals (if we had km_KH, but we don't in our current locale list)
+        // Lao numerals (if we had lo_LA, but we don't in our current locale list)
+        // Tibetan numerals (if we had bo_CN, but we don't in our current locale list)
+        
+        // All European locales (bg_BG, ca_ES, cs_CZ, da_DK, de_DE, el_GR, en_GB, en_US,
+        // es_ES, et_EE, fi_FI, fr_CA, fr_FR, hr_HR, hu_HU, it_IT, lt_LT, lv_LV,
+        // nb_NO, nl_NL, pl_PL, pt_BR, pt_PT, ro_RO, ru_RU, sk_SK, sl_SI, sv_SE,
+        // tr_TR, uk_UA) use Western numerals
+        
+        // Indonesian (id_ID) and Vietnamese (vi_VN) use Western numerals
+        
+        return textStr;
       }
 
       handleLocaleChange(event) {
@@ -922,7 +965,7 @@
           <div class="calendar-header">
             <button class="nav-button" onclick="this.getRootNode().host.previousMonth()">◀️</button>
             <div class="month-year">
-              ${this.getMonthName(month)} ${this.convertNumbers ? this.convertNumbers(year.toString()) : year}
+              ${this.getMonthName(month)} ${this.convertNumbers(year.toString())}
             </div>
             <button class="nav-button" onclick="this.getRootNode().host.nextMonth()">▶️</button>
             <button class="nav-button today-button" onclick="this.getRootNode().host.goToToday()">📅 ${this.t('today', 'Today')}</button>
@@ -965,7 +1008,7 @@
               
               return `
                 <div class="${classes.join(' ')}" ${clickHandler}>
-                  <div class="day-number">${this.convertNumbers ? this.convertNumbers(dayObj.day.toString()) : dayObj.day}</div>
+                  <div class="day-number">${this.convertNumbers(dayObj.day.toString())}</div>
                   <div class="event-indicators">
                     ${dayHolidays.map(holiday => `<span class="holiday-indicator" title="${holiday.name}">🎊</span>`).join('')}
                     ${dayEvents.map(event => this.getEventEmoji(event)).join('')}
