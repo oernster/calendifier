@@ -515,6 +515,7 @@ Calendifier includes comprehensive documentation in the `docs/` directory:
 |----------|-------------|
 | [Architecture Overview](docs/architecture.md) | Complete system architecture and component design |
 | [API Server](docs/api-server.md) | API endpoints and server implementation details |
+| **API Documentation** | Access the interactive API documentation at `http://your-server-ip:8000/docs` (Swagger UI) or `http://your-server-ip:8000/redoc` (ReDoc) |
 | [Desktop Application Lifecycle](docs/desktop-application-lifecycle.md) | Desktop app initialization and execution flow |
 | [Desktop UI Components](docs/desktop-ui-components.md) | Desktop UI widget implementation details |
 | [Home Assistant Deployment](docs/home-assistant-deployment.md) | Home Assistant integration deployment guide |
