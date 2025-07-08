@@ -309,7 +309,7 @@ On first launch, the application will:
 
 ## 🏗️ Architecture
 
-This application features a sophisticated modular architecture with emphasis on internationalization and cultural awareness. For detailed technical documentation, see **[📖 Architecture Documentation](docs/architecture.md)**.
+This application features a sophisticated modular architecture with emphasis on internationalization and cultural awareness. For detailed technical documentation, see **[📖 Architecture Documentation](docs/architecture.md)** and the [📚 Documentation](#-documentation) section for additional specialized documentation files.
 
 ### 🧩 Key Components
 
@@ -507,6 +507,21 @@ calendifier/
 └── 📁 tests/                     # Test suite
 ```
 
+## 📚 Documentation
+
+Calendifier includes comprehensive documentation in the `docs/` directory:
+
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](docs/architecture.md) | Complete system architecture and component design |
+| [API Server](docs/api-server.md) | API endpoints and server implementation details |
+| [Desktop Application Lifecycle](docs/desktop-application-lifecycle.md) | Desktop app initialization and execution flow |
+| [Desktop UI Components](docs/desktop-ui-components.md) | Desktop UI widget implementation details |
+| [Home Assistant Deployment](docs/home-assistant-deployment.md) | Home Assistant integration deployment guide |
+| [RRule Implementation](docs/rrule-implementation.md) | Recurring event rule implementation details |
+| [Translation System](docs/translation-system.md) | Internationalization and localization architecture |
+| [Web Components](docs/web-components.md) | Home Assistant web component implementation |
+
 ## ⚙️ Configuration
 
 ### 🏠 User Data Location
@@ -558,7 +573,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 📖 **Documentation:** [Architecture Guide](docs/architecture.md)
+- 📖 **Documentation:** [Complete Documentation](#-documentation) including [Architecture Guide](docs/architecture.md)
 - 🐛 **Issues:** [GitHub Issues](https://github.com/oernster/calendifier/issues)
 - 💬 **Discussions:** [GitHub Discussions](https://github.com/oernster/calendifier/discussions)
 
@@ -570,6 +585,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *Supporting 40 languages and 40 countries worldwide*
 
-[🌍 View Architecture](docs/architecture.md) • [🚀 Quick Start](#-quick-start) • [🤝 Contributing](#-contributing)
+[🌍 View Architecture](docs/architecture.md) • [📚 Documentation](#-documentation) • [🚀 Quick Start](#-quick-start) • [🤝 Contributing](#-contributing)
 
 </div>
