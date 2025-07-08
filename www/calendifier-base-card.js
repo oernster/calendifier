@@ -128,7 +128,8 @@ class CalendifierBaseCard extends HTMLElement {
       const translation = this.translationManager.t(key, null);
       // Only return translation if it's actually translated (not the key itself)
       if (translation && translation !== key) {
-        return translation;
+        // Apply number conversion to the translation for proper localization
+        return this.convertNumbers ? this.convertNumbers(translation) : translation;
       }
     } catch (error) {
       console.error(`[${this.constructor.name}] Translation error for key ${key}:`, error);

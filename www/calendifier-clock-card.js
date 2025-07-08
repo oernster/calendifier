@@ -237,7 +237,7 @@
           ntpStatus.className = `ntp-status ${this.ntpSynced ? 'synced' : 'not-synced'}`;
           ntpStatus.innerHTML = `
             <span>${this.ntpSynced ? '📡' : '⚠️'}</span>
-            <span>NTP: ${this.ntpSynced ? this.t('connected', 'Connected') : this.t('disconnected', 'Disconnected')}</span>
+            <span>NTP: ${this.ntpSynced ? this.convertNumbers(this.t('connected', 'Connected')) : this.convertNumbers(this.t('disconnected', 'Disconnected'))}</span>
           `;
         }
         
@@ -465,7 +465,7 @@
         if (this.loading) {
           this.shadowRoot.innerHTML = `
             <style>${this.getCommonStyles()}</style>
-            ${this.renderLoadingState(this.t('loading', 'Loading clock...'))}
+            ${this.renderLoadingState(this.convertNumbers(this.t('loading', 'Loading clock...')))}
           `;
           return;
         }
@@ -492,7 +492,7 @@
               gap: 24px;
               align-items: center;
               justify-content: center;
-              flex-wrap: wrap;
+              flex-wrap: nowrap; /* Prevent wrapping to keep horizontal layout */
             }
             
             .analog-clock {
@@ -572,6 +572,8 @@
               padding: 16px;
               border-radius: 8px;
               min-width: 200px;
+              width: 200px; /* Fixed width to prevent layout shifts */
+              box-sizing: border-box; /* Include padding in width calculation */
             }
             
             .digital-time {
@@ -756,10 +758,10 @@
           <div class="notification"></div>
           
           <div class="card-header">
-            <span>🕐 ${this.t('time', 'Time')}</span>
+            <span>🕐 ${this.convertNumbers(this.t('time', 'Time'))}</span>
             <div class="header-actions">
               <button class="action-button" onclick="this.getRootNode().host.toggleSettings()">
-                ⚙️ ${this.t('settings', 'Settings')}
+                ⚙️ ${this.convertNumbers(this.t('menu_settings', 'Settings'))}
               </button>
             </div>
           </div>
@@ -803,23 +805,23 @@
               
               <div class="digital-display">
                 <div class="digital-time">--:--:--</div>
-                <div class="digital-date">${this.t('loading', 'Loading...')}</div>
+                <div class="digital-date">${this.convertNumbers(this.t('loading', 'Loading...'))}</div>
                 
                 <div class="timezone-info">
                   <span>🌍</span>
                   <span>${this.getTranslatedTimezone(this.timezone)}</span>
                   <button class="time-format-toggle" onclick="this.getRootNode().host.toggleTimeFormat()">
-                    ${this.use24Hour ? '24H' : '12H'}
+                    ${this.convertNumbers(this.use24Hour ? '24' : '12')}
                   </button>
                 </div>
                 
                 <div class="ntp-status not-synced">
                   <span>⚠️</span>
-                  <span>NTP: ${this.t('connecting', 'Connecting...')}</span>
+                  <span>NTP: ${this.convertNumbers(this.t('connecting', 'Connecting...'))}</span>
                 </div>
                 
                 <button class="sync-button" onclick="this.getRootNode().host.syncNTP()">
-                  🔄 ${this.t('sync', 'Sync')}
+                  🔄 ${this.convertNumbers(this.t('sync', 'Sync'))}
                 </button>
               </div>
             </div>
