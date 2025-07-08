@@ -316,18 +316,12 @@ class DatabaseManager:
                     logger.info(f"🔄 Processing recurring event {event.id} ({event.title}) for date {target_date}")
                     logger.info(f"🔄 Event start_date: {event.start_date}, target_date: {target_date}")
                     
-                    # Generate recurring occurrences
+                    # Generate recurring occurrences - these will include the start date if it matches
                     recurring_events = self._generate_recurring_events(event, target_date)
                     logger.info(f"🔄 Generated {len(recurring_events)} recurring events")
                     
-                    # If we're querying for the master event's original date, add the master event
-                    if target_date == event.start_date:
-                        events.append(event)
-                        logger.info(f"🔄 Added master event {event.id} (start_date {event.start_date} == target_date {target_date})")
-                    else:
-                        logger.info(f"🔄 Skipped master event {event.id} (start_date {event.start_date} != target_date {target_date})")
-                    
-                    # Add all generated occurrences (they should only be for the target date)
+                    # CRITICAL FIX: Only add generated occurrences, never the master event itself
+                    # The generator will create an occurrence for the start date if it matches the pattern
                     for rec_event in recurring_events:
                         events.append(rec_event)
                         logger.info(f"🔄 Generated event: {rec_event.title} on {rec_event.start_date} (master_id: {getattr(rec_event, 'recurrence_master_id', None)})")
@@ -710,23 +704,16 @@ class DatabaseManager:
         if not event or not event.is_recurring:
             return False
         
-        # Parse existing exception dates
-        exception_dates = []
-        if event.exception_dates:
-            try:
-                import json
-                exception_dates = json.loads(event.exception_dates)
-            except (json.JSONDecodeError, TypeError):
-                exception_dates = []
+        # Work with the exception_dates list directly (it's already a list of date objects)
+        exception_dates = event.exception_dates.copy() if event.exception_dates else []
         
         # Add new exception date if not already present
-        exception_date_str = exception_date.isoformat()
-        if exception_date_str not in exception_dates:
-            exception_dates.append(exception_date_str)
+        if exception_date not in exception_dates:
+            exception_dates.append(exception_date)
             exception_dates.sort()
             
             # Update event with new exception dates
-            event.exception_dates = json.dumps(exception_dates)
+            event.exception_dates = exception_dates
             return self.update_event(event)
         
         return True  # Already exists
@@ -737,22 +724,15 @@ class DatabaseManager:
         if not event or not event.is_recurring:
             return False
         
-        # Parse existing exception dates
-        exception_dates = []
-        if event.exception_dates:
-            try:
-                import json
-                exception_dates = json.loads(event.exception_dates)
-            except (json.JSONDecodeError, TypeError):
-                exception_dates = []
+        # Work with the exception_dates list directly (it's already a list of date objects)
+        exception_dates = event.exception_dates.copy() if event.exception_dates else []
         
         # Remove exception date if present
-        exception_date_str = exception_date.isoformat()
-        if exception_date_str in exception_dates:
-            exception_dates.remove(exception_date_str)
+        if exception_date in exception_dates:
+            exception_dates.remove(exception_date)
             
             # Update event with modified exception dates
-            event.exception_dates = json.dumps(exception_dates) if exception_dates else None
+            event.exception_dates = exception_dates if exception_dates else []
             return self.update_event(event)
         
         return True  # Already removed

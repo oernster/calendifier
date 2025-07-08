@@ -188,6 +188,32 @@ class EventManager:
             logger.error(f"❌ Failed to get event count: {e}")
             return 0
     
+    def add_exception_date(self, master_event_id: int, exception_date: date) -> bool:
+        """➕ Add exception date to recurring event."""
+        try:
+            success = self.db_manager.add_exception_date(master_event_id, exception_date)
+            if success:
+                logger.info(f"✅ Added exception date {exception_date} to event ID {master_event_id}")
+            else:
+                logger.warning(f"⚠️ Failed to add exception date {exception_date} to event ID {master_event_id}")
+            return success
+        except Exception as e:
+            logger.error(f"❌ Failed to add exception date: {e}")
+            return False
+    
+    def remove_exception_date(self, master_event_id: int, exception_date: date) -> bool:
+        """➖ Remove exception date from recurring event."""
+        try:
+            success = self.db_manager.remove_exception_date(master_event_id, exception_date)
+            if success:
+                logger.info(f"✅ Removed exception date {exception_date} from event ID {master_event_id}")
+            else:
+                logger.warning(f"⚠️ Failed to remove exception date {exception_date} from event ID {master_event_id}")
+            return success
+        except Exception as e:
+            logger.error(f"❌ Failed to remove exception date: {e}")
+            return False
+    
     def export_events_to_ics(self, events: List[Event], file_path: Union[str, Path]) -> bool:
         """📤 Export events to ICS format."""
         if not ICALENDAR_AVAILABLE:

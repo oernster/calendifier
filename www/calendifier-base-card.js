@@ -9,14 +9,39 @@ class CalendifierBaseCard extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.translationManager = null;
-    this.currentLocale = 'en_US';
+    this.currentLocale = 'en_GB'; // Match API server default
     this.isTranslationReady = false;
     this.config = {};
+    this.cardType = null; // Will be set by subclasses
+    this.subscriptions = []; // Track event subscriptions for cleanup
     
     // Bind methods to preserve context
     this.handleLocaleChange = this.handleLocaleChange.bind(this);
     
     this.initTranslations();
+    this.initEventService();
+  }
+
+  /**
+   * Initialize event service integration
+   */
+  async initEventService() {
+    // Wait for event service to be available
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+    
+    while (!window.CalendifierEventService && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    if (!window.CalendifierEventService) {
+      console.warn(`[${this.constructor.name}] Event service not available after 5 seconds`);
+      return;
+    }
+    
+    this.eventService = window.CalendifierEventService;
+    console.log(`[${this.constructor.name}] Event service connected`);
   }
 
   async initTranslations() {
@@ -95,8 +120,8 @@ class CalendifierBaseCard extends HTMLElement {
    */
   t(key, fallback = null) {
     if (!this.translationManager || !this.isTranslationReady) {
-      // During initialization, return the key to avoid English fallbacks
-      return key;
+      // During initialization, return fallback if provided, otherwise key
+      return fallback || key;
     }
     
     try {
@@ -109,8 +134,8 @@ class CalendifierBaseCard extends HTMLElement {
       console.error(`[${this.constructor.name}] Translation error for key ${key}:`, error);
     }
     
-    // If no translation found, return the key (no English fallbacks allowed)
-    return key;
+    // If no translation found, return fallback if provided, otherwise key
+    return fallback || key;
   }
 
   async loadDirectTranslations() {
@@ -119,7 +144,7 @@ class CalendifierBaseCard extends HTMLElement {
       const settingsResponse = await fetch(`${this.getApiBaseUrl()}/api/v1/settings`);
       if (settingsResponse.ok) {
         const settings = await settingsResponse.json();
-        this.currentLocale = settings.locale || 'en_US';
+        this.currentLocale = settings.locale || 'en_GB'; // Match API server default
       }
 
       // Load translations for current locale
@@ -142,19 +167,40 @@ class CalendifierBaseCard extends HTMLElement {
   async handleLocaleChange(event) {
     const newLocale = event.detail.locale;
     
-    this.currentLocale = newLocale;
-    
-    // Reload translations for new locale
-    if (this.translationManager) {
-      try {
-        await this.translationManager.setLocale(newLocale);
-      } catch (error) {
-        console.error(`[${this.constructor.name}] Failed to update translation manager:`, error);
-      }
+    // Prevent infinite loops by checking if locale actually changed
+    if (this.currentLocale === newLocale) {
+      console.log(`[${this.constructor.name}] Locale change ignored - already ${newLocale}`);
+      return;
     }
     
-    // Re-render with new locale
-    this.render();
+    // Prevent multiple simultaneous locale changes
+    if (this._localeChangeInProgress) {
+      console.log(`[${this.constructor.name}] Locale change already in progress, ignoring`);
+      return;
+    }
+    
+    this._localeChangeInProgress = true;
+    
+    try {
+      console.log(`[${this.constructor.name}] Locale changing from ${this.currentLocale} to ${newLocale}`);
+      this.currentLocale = newLocale;
+      
+      // Reload translations for new locale
+      if (this.translationManager) {
+        try {
+          await this.translationManager.setLocale(newLocale);
+        } catch (error) {
+          console.error(`[${this.constructor.name}] Failed to update translation manager:`, error);
+        }
+      }
+      
+      // Re-render with new locale
+      this.render();
+      
+    } finally {
+      // Always clear the flag, even if an error occurred
+      this._localeChangeInProgress = false;
+    }
   }
 
   /**
@@ -193,6 +239,102 @@ class CalendifierBaseCard extends HTMLElement {
   }
 
   /**
+   * Register this card instance and publish registration event
+   */
+  registerCard() {
+    if (this.cardType && this.eventService) {
+      this.eventService.publish(
+        this.eventService.EventTypes.CARD_REGISTERED,
+        { cardType: this.cardType, cardInstance: this },
+        this
+      );
+      console.log(`[${this.constructor.name}] Registered as ${this.cardType}`);
+    }
+  }
+
+  /**
+   * Unregister this card instance and publish unregistration event
+   */
+  unregisterCard() {
+    if (this.cardType && this.eventService) {
+      this.eventService.publish(
+        this.eventService.EventTypes.CARD_UNREGISTERED,
+        { cardType: this.cardType },
+        this
+      );
+      console.log(`[${this.constructor.name}] Unregistered ${this.cardType}`);
+    }
+  }
+
+  /**
+   * Subscribe to events
+   * @param {string} eventType - Type of event to subscribe to
+   * @param {Function} callback - Callback function
+   * @returns {string} Subscription ID
+   */
+  subscribe(eventType, callback) {
+    if (!this.eventService) {
+      console.warn(`[${this.constructor.name}] Event service not available for subscription`);
+      return null;
+    }
+    
+    const subscriptionId = this.eventService.subscribe(eventType, callback, this);
+    this.subscriptions.push(subscriptionId);
+    return subscriptionId;
+  }
+
+  /**
+   * Publish an event
+   * @param {string} eventType - Type of event to publish
+   * @param {Object} data - Event data
+   */
+  publish(eventType, data = {}) {
+    if (!this.eventService) {
+      console.warn(`[${this.constructor.name}] Event service not available for publishing`);
+      return;
+    }
+    
+    this.eventService.publish(eventType, data, this);
+  }
+
+  /**
+   * Request another card to perform an action
+   * @param {string} targetCardType - Type of target card
+   * @param {string} action - Action to request
+   * @param {Object} data - Action data
+   * @returns {Promise} Promise that resolves when action is complete
+   */
+  async requestCardAction(targetCardType, action, data = {}) {
+    return new Promise((resolve, reject) => {
+      const requestId = `${action}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Subscribe to response
+      const responseSubscription = this.subscribe(`${action}-response-${requestId}`, (event) => {
+        this.eventService.unsubscribe(responseSubscription);
+        
+        if (event.data.success) {
+          resolve(event.data.result);
+        } else {
+          reject(new Error(event.data.error || 'Action failed'));
+        }
+      });
+      
+      // Set timeout
+      setTimeout(() => {
+        this.eventService.unsubscribe(responseSubscription);
+        reject(new Error(`Timeout waiting for ${targetCardType} to respond to ${action}`));
+      }, 10000);
+      
+      // Publish request
+      this.publish(`${action}-request`, {
+        targetCardType,
+        requestId,
+        data
+      });
+    });
+  }
+
+  /**
    * Home Assistant integration (no-op for independence)
    * @param {Object} hass - Home Assistant object
    */
@@ -221,6 +363,17 @@ class CalendifierBaseCard extends HTMLElement {
   disconnectedCallback() {
     // Remove event listeners
     document.removeEventListener('calendifier-locale-changed', this.handleLocaleChange);
+    
+    // Unsubscribe from all events
+    if (this.eventService) {
+      this.eventService.unsubscribeAll(this);
+    }
+    
+    // Unregister card
+    this.unregisterCard();
+    
+    // Unregister from card registry
+    this.unregisterCard();
   }
 
   /**
@@ -278,24 +431,25 @@ class CalendifierBaseCard extends HTMLElement {
       }
       
       .notification {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        left: 10px;
-        padding: 12px;
-        border-radius: 4px;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+        padding: 12px 24px;
+        border-radius: 8px;
         font-size: 0.9em;
         font-weight: bold;
         opacity: 0;
-        transform: translateY(-10px);
         transition: all 0.3s ease;
-        z-index: 1000;
+        z-index: 10000;
         text-align: center;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       }
       
       .notification.show {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(-50%) translateY(0);
       }
       
       .notification.success {
@@ -399,6 +553,29 @@ class CalendifierBaseCard extends HTMLElement {
       </div>
     `;
   }
+
+  /**
+   * Get current local date in YYYY-MM-DD format
+   * Avoids timezone issues with toISOString()
+   * @returns {string} Local date in YYYY-MM-DD format
+   */
+  getLocalDateString(date = null) {
+    const d = date || new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+}
+
+// Load event service if not already loaded
+if (!window.CalendifierEventService) {
+  const script = document.createElement('script');
+  script.src = '/local/calendifier-event-service.js';
+  script.onload = () => {
+    console.log('[BaseCard] Event service loaded');
+  };
+  script.onerror = () => {
+    console.error('[BaseCard] Failed to load event service');
+  };
+  document.head.appendChild(script);
 }
 
 // Make CalendifierBaseCard available globally

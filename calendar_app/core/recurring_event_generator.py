@@ -170,52 +170,112 @@ class RecurringEventGenerator:
             components.byday = [weekday_map[start_date.weekday()]]
             logger.debug(f"🔄 _generate_weekly: No BYDAY specified, using start date weekday: {components.byday}")
         
-        # Find the start of the week containing start_date
-        days_since_monday = start_date.weekday()
-        week_start = start_date - timedelta(days=days_since_monday)
-        logger.debug(f"🔄 _generate_weekly: week_start={week_start}")
-        
-        current_week = week_start
-        occurrence_count = 0
-        
-        # Continue until the week start is more than 7 days past the range_end
-        # This ensures we don't miss occurrences in the last week of the range
-        while current_week <= range_end + timedelta(days=7):
-            logger.debug(f"🔄 _generate_weekly: Processing week starting {current_week}")
+        # CRITICAL FIX: For weekly events with interval > 1, we need to calculate from the actual start date
+        # not from the week containing the start date, to ensure proper interval counting
+        if components.interval > 1:
+            # Start from the actual start date for interval calculation
+            current_base_date = start_date
+            week_count = 0
+            occurrence_count = 0
             
-            # Check if we've reached the count limit
-            if components.count and occurrence_count >= components.count:
-                logger.debug(f"🔄 _generate_weekly: Reached count limit {components.count}")
-                break
-            
-            # Check if we've reached the until date
-            if components.until and current_week > components.until:
-                logger.debug(f"🔄 _generate_weekly: Reached until date {components.until}")
-                break
-            
-            # Generate occurrences for this week
-            for weekday in components.byday:
-                weekday_index = self._weekday_to_index(weekday)
-                occurrence_date = current_week + timedelta(days=weekday_index)
-                logger.debug(f"🔄 _generate_weekly: Checking {weekday} ({weekday_index}) -> {occurrence_date}")
+            while current_base_date <= range_end + timedelta(days=7):
+                logger.debug(f"🔄 _generate_weekly: Processing interval week {week_count}, base_date={current_base_date}")
                 
-                # Check if date is in range and after start date
-                if (occurrence_date >= max(start_date, range_start) and
-                    occurrence_date <= range_end and
-                    (not components.until or occurrence_date <= components.until)):
+                # Check if we've reached the count limit
+                if components.count and occurrence_count >= components.count:
+                    logger.debug(f"🔄 _generate_weekly: Reached count limit {components.count}")
+                    break
+                
+                # Check if we've reached the until date
+                if components.until and current_base_date > components.until:
+                    logger.debug(f"🔄 _generate_weekly: Reached until date {components.until}")
+                    break
+                
+                # Find the start of the week containing current_base_date
+                days_since_monday = current_base_date.weekday()
+                week_start = current_base_date - timedelta(days=days_since_monday)
+                
+                # Generate occurrences for this week
+                for weekday in components.byday:
+                    weekday_index = self._weekday_to_index(weekday)
+                    occurrence_date = week_start + timedelta(days=weekday_index)
+                    logger.debug(f"🔄 _generate_weekly: Checking {weekday} ({weekday_index}) -> {occurrence_date}")
                     
-                    logger.debug(f"🔄 _generate_weekly: ✅ Yielding occurrence: {occurrence_date}")
-                    yield occurrence_date
-                    occurrence_count += 1
-                    
-                    if components.count and occurrence_count >= components.count:
-                        break
-                else:
-                    logger.debug(f"🔄 _generate_weekly: ❌ Skipping {occurrence_date} (out of range or before start)")
+                    # Check if date is in range and after/equal to start date
+                    if (occurrence_date >= start_date and
+                        occurrence_date >= range_start and
+                        occurrence_date <= range_end and
+                        (not components.until or occurrence_date <= components.until)):
+                        
+                        # Debug logging for UNTIL date issues
+                        if components.until:
+                            logger.debug(f"🔄 UNTIL check: occurrence_date={occurrence_date}, until={components.until}, passes={occurrence_date <= components.until}")
+                        
+                        logger.debug(f"🔄 _generate_weekly: ✅ Yielding occurrence: {occurrence_date}")
+                        yield occurrence_date
+                        occurrence_count += 1
+                        
+                        if components.count and occurrence_count >= components.count:
+                            break
+                    else:
+                        logger.debug(f"🔄 _generate_weekly: ❌ Skipping {occurrence_date} (out of range or before start)")
+                
+                # Advance by interval weeks from the current base date
+                current_base_date += timedelta(weeks=components.interval)
+                week_count += 1
+                logger.debug(f"🔄 _generate_weekly: Advanced to next interval week: {current_base_date}")
+        else:
+            # Original logic for interval = 1 (every week)
+            # Find the start of the week containing start_date
+            days_since_monday = start_date.weekday()
+            week_start = start_date - timedelta(days=days_since_monday)
+            logger.debug(f"🔄 _generate_weekly: week_start={week_start}")
             
-            # Advance by interval weeks
-            current_week += timedelta(weeks=components.interval)
-            logger.debug(f"🔄 _generate_weekly: Advanced to next week: {current_week}")
+            current_week = week_start
+            occurrence_count = 0
+            
+            # Continue until the week start is more than 7 days past the range_end
+            while current_week <= range_end + timedelta(days=7):
+                logger.debug(f"🔄 _generate_weekly: Processing week starting {current_week}")
+                
+                # Check if we've reached the count limit
+                if components.count and occurrence_count >= components.count:
+                    logger.debug(f"🔄 _generate_weekly: Reached count limit {components.count}")
+                    break
+                
+                # Check if we've reached the until date
+                if components.until and current_week > components.until:
+                    logger.debug(f"🔄 _generate_weekly: Reached until date {components.until}")
+                    break
+                
+                # Generate occurrences for this week
+                for weekday in components.byday:
+                    weekday_index = self._weekday_to_index(weekday)
+                    occurrence_date = current_week + timedelta(days=weekday_index)
+                    logger.debug(f"🔄 _generate_weekly: Checking {weekday} ({weekday_index}) -> {occurrence_date}")
+                    
+                    # Check if date is in range and after/equal to start date
+                    if (occurrence_date >= start_date and
+                        occurrence_date >= range_start and
+                        occurrence_date <= range_end and
+                        (not components.until or occurrence_date <= components.until)):
+                        
+                        # Debug logging for UNTIL date issues
+                        if components.until:
+                            logger.debug(f"🔄 UNTIL check: occurrence_date={occurrence_date}, until={components.until}, passes={occurrence_date <= components.until}")
+                        
+                        logger.debug(f"🔄 _generate_weekly: ✅ Yielding occurrence: {occurrence_date}")
+                        yield occurrence_date
+                        occurrence_count += 1
+                        
+                        if components.count and occurrence_count >= components.count:
+                            break
+                    else:
+                        logger.debug(f"🔄 _generate_weekly: ❌ Skipping {occurrence_date} (out of range or before start)")
+                
+                # Advance by interval weeks
+                current_week += timedelta(weeks=components.interval)
+                logger.debug(f"🔄 _generate_weekly: Advanced to next week: {current_week}")
     
     def _generate_monthly(self, components: RRuleComponents, start_date: date, range_start: date, range_end: date) -> Iterator[date]:
         """Generate monthly occurrences"""

@@ -13,6 +13,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Union
 from functools import lru_cache
+from datetime import date, datetime
 from .number_formatter import NumberFormatter
 
 logger = logging.getLogger(__name__)
@@ -379,6 +380,140 @@ class I18nManager:
         except Exception as e:
             logger.warning(f"Failed to format ordinal {number}: {e}")
             return str(number)
+    
+    def format_date_for_locale(self, date_obj: Union[date, datetime], locale_code: Optional[str] = None) -> str:
+        """
+        Format date according to locale-specific conventions.
+        
+        Args:
+            date_obj: Date or datetime object to format
+            locale_code: Specific locale to use (defaults to current locale)
+            
+        Returns:
+            Formatted date string
+        """
+        target_locale = locale_code or self.current_locale
+        
+        try:
+            # Extract date if datetime object
+            if isinstance(date_obj, datetime):
+                date_obj = date_obj.date()
+            
+            day = date_obj.day
+            month = date_obj.month
+            year = date_obj.year
+            
+            # Format components with zero padding
+            day_str = f"{day:02d}"
+            month_str = f"{month:02d}"
+            year_str = str(year)
+            
+            # US, Canada (English), and Philippines use MM/DD/YYYY
+            if target_locale.startswith(('en_US', 'en_CA', 'en_PH')):
+                formatted_date = f"{month_str}/{day_str}/{year_str}"
+            
+            # Most European, UK, and Commonwealth countries use DD/MM/YYYY
+            elif target_locale.startswith((
+                'en_GB', 'en_AU', 'en_NZ', 'en_ZA', 'en_IE', 'en_IN',
+                'fr_', 'de_', 'es_', 'it_', 'pt_', 'nl_', 'da_', 'sv_', 'nb_',
+                'fi_', 'pl_', 'cs_', 'sk_', 'hu_', 'ro_', 'bg_', 'hr_', 'sl_',
+                'et_', 'lv_', 'lt_', 'el_', 'tr_', 'ru_', 'uk_', 'ca_', 'eu_',
+                'gl_', 'id_', 'ms_', 'vi_', 'th_', 'hi_'
+            )):
+                formatted_date = f"{day_str}/{month_str}/{year_str}"
+            
+            # East Asian countries typically use YYYY/MM/DD or YYYY-MM-DD
+            elif target_locale.startswith(('ja_', 'ko_', 'zh_')):
+                formatted_date = f"{year_str}/{month_str}/{day_str}"
+            
+            # Arabic countries use DD/MM/YYYY but with Arabic numerals
+            elif target_locale.startswith(('ar_', 'he_', 'fa_')):
+                formatted_date = f"{day_str}/{month_str}/{year_str}"
+                # Convert to Arabic-Indic numerals for Arabic locales
+                if target_locale.startswith('ar_'):
+                    formatted_date = self.convert_numbers(formatted_date, target_locale)
+            
+            # Default to DD/MM/YYYY for most other locales
+            else:
+                formatted_date = f"{day_str}/{month_str}/{year_str}"
+            
+            return formatted_date
+            
+        except Exception as e:
+            logger.warning(f"Failed to format date {date_obj} for locale {target_locale}: {e}")
+            return date_obj.strftime("%Y-%m-%d")
+    
+    def get_date_input_format(self, date_obj: Union[date, datetime]) -> str:
+        """
+        Get date in HTML input format (always YYYY-MM-DD regardless of locale).
+        
+        Args:
+            date_obj: Date or datetime object to format
+            
+        Returns:
+            Date string in YYYY-MM-DD format
+        """
+        try:
+            # Extract date if datetime object
+            if isinstance(date_obj, datetime):
+                date_obj = date_obj.date()
+            
+            return date_obj.strftime("%Y-%m-%d")
+        except Exception as e:
+            logger.warning(f"Failed to format date input {date_obj}: {e}")
+            return str(date_obj)
+    
+    def parse_date_from_locale_format(self, date_str: str, locale_code: Optional[str] = None) -> Optional[date]:
+        """
+        Parse date string from locale-specific format.
+        
+        Args:
+            date_str: Date string in locale format
+            locale_code: Specific locale to use (defaults to current locale)
+            
+        Returns:
+            Parsed date object or None if parsing fails
+        """
+        target_locale = locale_code or self.current_locale
+        
+        try:
+            # Convert native numerals back to Western numerals first
+            normalized_str = date_str
+            if target_locale.startswith('ar_'):
+                # Convert Arabic-Indic numerals back to Western
+                arabic_to_western = {
+                    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+                    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+                }
+                for arabic, western in arabic_to_western.items():
+                    normalized_str = normalized_str.replace(arabic, western)
+            
+            # Try different date formats based on locale
+            formats_to_try = []
+            
+            if target_locale.startswith(('en_US', 'en_CA', 'en_PH')):
+                formats_to_try = ['%m/%d/%Y', '%m-%d-%Y', '%m.%d.%Y']
+            elif target_locale.startswith(('ja_', 'ko_', 'zh_')):
+                formats_to_try = ['%Y/%m/%d', '%Y-%m-%d', '%Y.%m.%d']
+            else:
+                # Most other locales use DD/MM/YYYY
+                formats_to_try = ['%d/%m/%Y', '%d-%m-%Y', '%d.%m.%Y']
+            
+            # Always try ISO format as fallback
+            formats_to_try.append('%Y-%m-%d')
+            
+            for fmt in formats_to_try:
+                try:
+                    return datetime.strptime(normalized_str, fmt).date()
+                except ValueError:
+                    continue
+            
+            logger.warning(f"Could not parse date string '{date_str}' for locale {target_locale}")
+            return None
+            
+        except Exception as e:
+            logger.warning(f"Error parsing date '{date_str}' for locale {target_locale}: {e}")
+            return None
 
 # Global instance
 _i18n_manager: Optional[I18nManager] = None
@@ -488,3 +623,44 @@ def convert_numbers(text: str, locale: Optional[str] = None) -> str:
         result = result.replace(western, local)
     
     return result
+
+
+def format_date_for_locale(date_obj: Union[date, datetime], locale_code: Optional[str] = None) -> str:
+    """
+    Convenience function for formatting dates according to locale.
+    
+    Args:
+        date_obj: Date or datetime object to format
+        locale_code: Specific locale to use (defaults to current locale)
+        
+    Returns:
+        Formatted date string
+    """
+    return get_i18n_manager().format_date_for_locale(date_obj, locale_code)
+
+
+def get_date_input_format(date_obj: Union[date, datetime]) -> str:
+    """
+    Convenience function for getting HTML input date format.
+    
+    Args:
+        date_obj: Date or datetime object to format
+        
+    Returns:
+        Date string in YYYY-MM-DD format
+    """
+    return get_i18n_manager().get_date_input_format(date_obj)
+
+
+def parse_date_from_locale_format(date_str: str, locale_code: Optional[str] = None) -> Optional[date]:
+    """
+    Convenience function for parsing dates from locale format.
+    
+    Args:
+        date_str: Date string in locale format
+        locale_code: Specific locale to use (defaults to current locale)
+        
+    Returns:
+        Parsed date object or None if parsing fails
+    """
+    return get_i18n_manager().parse_date_from_locale_format(date_str, locale_code)

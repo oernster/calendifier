@@ -131,7 +131,7 @@
           if (response.ok) {
             const settings = await response.json();
             this.currentTheme = settings.theme || 'auto';
-            this.currentLocale = settings.locale || 'en_US';
+            this.currentLocale = settings.locale || 'en_GB'; // Match API server default
           }
         } catch (error) {
           console.error('[HelpCard] Error loading theme:', error);

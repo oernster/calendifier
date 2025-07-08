@@ -299,14 +299,52 @@ class RRuleDialog(QDialog):
         self.end_group.addButton(self.until_radio)
         until_layout.addWidget(self.until_radio)
         
-        self.until_edit = NativeLineEdit(i18n_manager=self.i18n) if NATIVE_WIDGETS_AVAILABLE else QLineEdit()
-        default_until = self.start_date + timedelta(days=365)
-        # Format default until date with native numerals
-        default_until_str = self._format_date_with_native_numerals(default_until)
-        self.until_edit.setText(default_until_str)
-        if NATIVE_WIDGETS_AVAILABLE and hasattr(self.until_edit, 'setI18nManager'):
-            self.until_edit.setI18nManager(self.i18n)
-        self.until_edit.textChanged.connect(self._update_preview)
+        # Create pure datepicker button (no edit field)
+        from PySide6.QtWidgets import QPushButton, QCalendarWidget
+        from PySide6.QtCore import QDate, QLocale
+        from PySide6.QtGui import QIcon
+        
+        # Store the selected date
+        self.until_date = self.start_date + timedelta(days=365)
+        
+        # Create button that shows selected date with dropdown arrow
+        self.until_edit = QPushButton()
+        self.until_edit.setMaximumWidth(150)
+        self.until_edit.setMinimumWidth(120)
+        self.until_edit.clicked.connect(self._show_until_calendar)
+        
+        # Don't use system icon - we'll use emoji in text instead
+        # Remove any default icon
+        self.until_edit.setIcon(QIcon())
+        
+        # Set stylesheet to center text
+        self.until_edit.setStyleSheet("""
+            QPushButton {
+                text-align: center;
+            }
+        """)
+        
+        # Update button text with formatted date
+        self._update_until_button_text()
+        
+        # Store locale info for calendar
+        self.current_locale = getattr(self.i18n, 'current_locale', 'en_US')
+        
+        # Set Qt locale for proper calendar behavior
+        self.qt_locale_mapping = {
+            'en_US': QLocale(QLocale.Language.English, QLocale.Country.UnitedStates),
+            'en_GB': QLocale(QLocale.Language.English, QLocale.Country.UnitedKingdom),
+            'en_CA': QLocale(QLocale.Language.English, QLocale.Country.Canada),
+            'fr_FR': QLocale(QLocale.Language.French, QLocale.Country.France),
+            'de_DE': QLocale(QLocale.Language.German, QLocale.Country.Germany),
+            'es_ES': QLocale(QLocale.Language.Spanish, QLocale.Country.Spain),
+            'it_IT': QLocale(QLocale.Language.Italian, QLocale.Country.Italy),
+            'ja_JP': QLocale(QLocale.Language.Japanese, QLocale.Country.Japan),
+            'ko_KR': QLocale(QLocale.Language.Korean, QLocale.Country.SouthKorea),
+            'zh_CN': QLocale(QLocale.Language.Chinese, QLocale.Country.China),
+            'zh_TW': QLocale(QLocale.Language.Chinese, QLocale.Country.Taiwan),
+        }
+        self.qt_locale = self.qt_locale_mapping.get(self.current_locale, QLocale(QLocale.Language.English, QLocale.Country.UnitedKingdom))
         until_layout.addWidget(self.until_edit)
         # Remove stretch for vertical alignment
         # until_layout.addStretch()
@@ -489,13 +527,9 @@ class RRuleDialog(QDialog):
                 count = self.count_spin.value()
                 parts.append(f"COUNT={count}")
             elif self.until_radio.isChecked():
-                until_text = self.until_edit.text().strip()
-                if until_text:
-                    try:
-                        until_date = datetime.strptime(until_text, "%Y-%m-%d").date()
-                        parts.append(f"UNTIL={until_date.strftime('%Y%m%d')}")
-                    except ValueError:
-                        pass  # Invalid date format, skip
+                # Get date from stored until_date
+                if hasattr(self, 'until_date') and self.until_date:
+                    parts.append(f"UNTIL={self.until_date.strftime('%Y%m%d')}")
             
             return ";".join(parts)
             
@@ -546,9 +580,9 @@ class RRuleDialog(QDialog):
                 self.count_spin.setValue(components.count)
             elif components.until:
                 self.until_radio.setChecked(True)
-                # Format until date with native numerals
-                until_date_str = self._format_date_with_native_numerals(components.until)
-                self.until_edit.setText(until_date_str)
+                # Store the until date and update button
+                self.until_date = components.until
+                self._update_until_button_text()
             else:
                 self.never_radio.setChecked(True)
             
@@ -741,30 +775,9 @@ class RRuleDialog(QDialog):
     def _format_date_with_native_numerals(self, date_obj):
         """Format date with native numerals for current locale"""
         try:
-            # Get basic date string
-            date_str = date_obj.strftime("%Y-%m-%d")
-            
-            # Convert to native numerals if needed
-            locale = getattr(self.i18n, 'current_locale', 'en_US')
-            
-            # Native number systems mapping
-            number_systems = {
-                # Arabic-Indic numerals
-                'ar_SA': {'0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤', '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩'},
-                # Devanagari numerals
-                'hi_IN': {'0': '०', '1': '१', '2': '२', '3': '३', '4': '४', '5': '५', '6': '६', '7': '७', '8': '८', '9': '९'},
-                # Thai numerals
-                'th_TH': {'0': '๐', '1': '๑', '2': '๒', '3': '๓', '4': '๔', '5': '๕', '6': '๖', '7': '๗', '8': '๘', '9': '๙'},
-            }
-            
-            # Convert to native numerals if locale supports it
-            if locale in number_systems:
-                number_map = number_systems[locale]
-                native_date_str = ''.join(number_map.get(digit, digit) for digit in date_str)
-                return native_date_str
-            
-            return date_str
-            
+            # Use centralized date formatting from i18n manager
+            from calendar_app.localization.i18n_manager import format_date_for_locale
+            return format_date_for_locale(date_obj)
         except Exception as e:
             logger.warning(f"Failed to format date with native numerals: {e}")
             return date_obj.strftime("%Y-%m-%d")
@@ -783,6 +796,94 @@ class RRuleDialog(QDialog):
             'SU': 'sunday'
         }
         return weekday_map.get(code, code.lower())
+    
+    def _update_until_button_text(self):
+        """Update the until button text with formatted date"""
+        try:
+            if hasattr(self, 'until_date') and self.until_date:
+                # Format date according to locale
+                formatted_date = self._format_date_with_native_numerals(self.until_date)
+                # Add two spaces before text to balance the arrow on the right
+                self.until_edit.setText(f"  {formatted_date}  🔽")
+            else:
+                # Add two spaces before text to balance the arrow on the right
+                self.until_edit.setText("  Select Date  🔽")
+        except Exception as e:
+            logger.warning(f"Error updating until button text: {e}")
+            self.until_edit.setText("  Select Date  🔽")
+    
+    def _show_until_calendar(self):
+        """Show calendar popup for until date selection"""
+        try:
+            from PySide6.QtWidgets import QCalendarWidget, QVBoxLayout, QDialog, QDialogButtonBox
+            from PySide6.QtCore import QDate
+            
+            # Create calendar dialog
+            dialog = QDialog(self)
+            dialog.setWindowTitle(self.i18n.get_text("rrule.end.until", default="Until"))
+            dialog.setModal(True)
+            dialog.resize(350, 300)
+            
+            layout = QVBoxLayout(dialog)
+            
+            # Create calendar widget
+            calendar = QCalendarWidget()
+            calendar.setLocale(self.qt_locale)
+            
+            # Customize calendar navigation buttons with red triangle emojis
+            try:
+                # Get the navigation bar and customize button text
+                nav_bar = calendar.findChild(QWidget, "qt_calendar_navigationbar")
+                if nav_bar:
+                    # Find previous/next month buttons
+                    buttons = nav_bar.findChildren(QPushButton)
+                    for button in buttons:
+                        if "previous" in button.objectName().lower() or "left" in button.objectName().lower():
+                            button.setText("◀️")  # Red left triangle
+                        elif "next" in button.objectName().lower() or "right" in button.objectName().lower():
+                            button.setText("▶️")  # Red right triangle
+                
+                # Alternative approach: set stylesheet for navigation buttons
+                calendar.setStyleSheet("""
+                    QCalendarWidget QToolButton#qt_calendar_prevmonth {
+                        qproperty-text: "◀️";
+                        font-size: 14px;
+                    }
+                    QCalendarWidget QToolButton#qt_calendar_nextmonth {
+                        qproperty-text: "▶️";
+                        font-size: 14px;
+                    }
+                """)
+            except Exception as e:
+                logger.warning(f"Could not customize calendar navigation buttons: {e}")
+            
+            # Set current date
+            if hasattr(self, 'until_date') and self.until_date:
+                qdate = QDate(self.until_date.year, self.until_date.month, self.until_date.day)
+                calendar.setSelectedDate(qdate)
+            
+            layout.addWidget(calendar)
+            
+            # Add buttons
+            button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+            button_box.accepted.connect(dialog.accept)
+            button_box.rejected.connect(dialog.reject)
+            layout.addWidget(button_box)
+            
+            # Show dialog and get result
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                selected_qdate = calendar.selectedDate()
+                self.until_date = date(selected_qdate.year(), selected_qdate.month(), selected_qdate.day())
+                self._update_until_button_text()
+                self._update_preview()
+                
+        except Exception as e:
+            logger.error(f"Error showing calendar: {e}")
+            QMessageBox.warning(
+                self,
+                self.i18n.get_text("error.title", default="Error"),
+                f"Failed to show calendar: {e}"
+            )
 
     def get_rrule(self) -> Optional[str]:
         """Get the result RRULE"""

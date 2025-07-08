@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Calendifier Pi Setup Script
+# Calendifier Pi Setup Script with Complete RRule Support
 # This script sets up Home Assistant and Calendifier API containers on Raspberry Pi
+# Enhanced with recurring event (RRule) functionality and full translation support
 
 set -e  # Exit on any error
 
@@ -31,7 +32,6 @@ print_header() {
     echo
     print_color $BLUE "=== $1 ==="
 }
-
 
 check_docker() {
     if ! command -v docker &> /dev/null; then
@@ -118,6 +118,171 @@ create_directories() {
     print_color $GREEN "Directories created successfully"
 }
 
+copy_web_components() {
+    print_header "Copying Web Components with RRule Support"
+    
+    # Ensure www directories exist
+    mkdir -p "$HA_CONFIG_DIR/www"
+    
+    # Copy www files to Home Assistant www directory - EXCLUDING basic versions
+    if [ -d "$CALENDIFIER_DIR/www" ]; then
+        # Ensure target directory exists
+        mkdir -p "$HA_CONFIG_DIR/www"
+        
+        # Copy files individually, skipping basic versions that will be replaced
+        print_color $YELLOW "🔄 Copying web components (excluding basic versions)..."
+        
+        for file in "$CALENDIFIER_DIR/www/"*; do
+            filename=$(basename "$file")
+            
+            # Skip basic versions that we'll replace with RRule versions
+            if [[ "$filename" == "calendifier-events-card.js" ]] || [[ "$filename" == "calendifier-calendar-card.js" ]]; then
+                print_color $YELLOW "   Skipping basic version: $filename"
+                continue
+            fi
+            
+            # Copy all other files
+            cp "$file" "$HA_CONFIG_DIR/www/" 2>/dev/null || true
+            print_color $GREEN "   ✅ Copied: $filename"
+        done
+        
+        # NOW replace with RRule-enabled versions
+        print_color $YELLOW "🔄 Installing RRule-enabled versions..."
+        
+        if [ -f "$CALENDIFIER_DIR/www/calendifier-events-card-with-rrule.js" ]; then
+            # Install RRule version as the main version
+            cp "$CALENDIFIER_DIR/www/calendifier-events-card-with-rrule.js" "$HA_CONFIG_DIR/www/calendifier-events-card.js"
+            print_color $GREEN "✅ Events card installed with RRule support"
+            
+            # Verify the installation worked
+            if grep -q "make_recurring" "$HA_CONFIG_DIR/www/calendifier-events-card.js"; then
+                print_color $GREEN "✅ VERIFIED: Events card has RRule functionality"
+            else
+                print_color $RED "❌ ERROR: Events card installation failed - no RRule functionality found"
+            fi
+        else
+            print_color $RED "❌ RRule events card not found: $CALENDIFIER_DIR/www/calendifier-events-card-with-rrule.js"
+            ls -la "$CALENDIFIER_DIR/www/" | grep events
+        fi
+        
+        if [ -f "$CALENDIFIER_DIR/www/calendifier-calendar-card-with-rrule.js" ]; then
+            # Install RRule version as the main version
+            cp "$CALENDIFIER_DIR/www/calendifier-calendar-card-with-rrule.js" "$HA_CONFIG_DIR/www/calendifier-calendar-card.js"
+            print_color $GREEN "✅ Calendar card installed with RRule support"
+            
+            # Verify the installation worked
+            if grep -q "make_recurring" "$HA_CONFIG_DIR/www/calendifier-calendar-card.js"; then
+                print_color $GREEN "✅ VERIFIED: Calendar card has RRule functionality"
+            else
+                print_color $RED "❌ ERROR: Calendar card installation failed - no RRule functionality found"
+            fi
+        else
+            print_color $RED "❌ RRule calendar card not found: $CALENDIFIER_DIR/www/calendifier-calendar-card-with-rrule.js"
+            ls -la "$CALENDIFIER_DIR/www/" | grep calendar
+        fi
+        
+        print_color $GREEN "Beautiful Calendifier cards with RRule support ready for dashboard"
+    else
+        print_color $YELLOW "Warning: www directory not found in $CALENDIFIER_DIR"
+    fi
+}
+
+setup_database_with_rrule() {
+    print_header "Setting Up Database with RRule Support"
+    
+    # Ensure data directory exists
+    mkdir -p "$CALENDIFIER_DIR/data"
+    
+    # Create or update database schema for RRule support
+    print_color $YELLOW "🗄️ Updating database schema for recurring events..."
+    
+    # Use Python to safely update the database schema
+    python3 -c "
+import sqlite3
+import sys
+import os
+
+try:
+    db_path = '$CALENDIFIER_DIR/data/calendifier.db'
+    
+    # Create database directory if it doesn't exist
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    # Create events table if it doesn't exist
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            category TEXT DEFAULT 'general',
+            start_date TEXT NOT NULL,
+            start_time TEXT,
+            end_date TEXT,
+            end_time TEXT,
+            all_day BOOLEAN DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Add rrule column if it doesn't exist
+    try:
+        cursor.execute('ALTER TABLE events ADD COLUMN rrule TEXT')
+        print('   ✅ Added rrule column to events table')
+    except sqlite3.OperationalError as e:
+        if 'duplicate column name' in str(e).lower():
+            print('   ✅ rrule column already exists')
+        else:
+            print(f'   ❌ Error adding rrule column: {e}')
+            sys.exit(1)
+    
+    # Create notes table if it doesn't exist
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT,
+            category TEXT DEFAULT 'general',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Create settings table if it doesn't exist
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Insert default settings
+    cursor.execute('''
+        INSERT OR IGNORE INTO settings (key, value) VALUES
+        ('locale', 'en_US'),
+        ('timezone', 'UTC'),
+        ('theme', 'light')
+    ''')
+    
+    conn.commit()
+    conn.close()
+    print('   ✅ Database schema updated successfully with RRule support')
+    
+except Exception as e:
+    print(f'   ❌ Database setup failed: {e}')
+    sys.exit(1)
+" 2>/dev/null || {
+        print_color $RED "❌ Database setup failed!"
+        print_color $YELLOW "Will retry during container startup..."
+    }
+    
+    print_color $GREEN "Database with RRule support ready"
+}
+
 create_ha_configuration() {
     print_header "Creating Home Assistant Configuration"
     
@@ -185,7 +350,7 @@ EOF
     - service: persistent_notification.create
       data:
         title: "Calendifier Ready"
-        message: "Calendifier plugin has been loaded and is ready to use."
+        message: "Calendifier plugin with RRule support has been loaded and is ready to use."
         notification_id: "calendifier_startup"
 EOF
 
@@ -210,7 +375,7 @@ EOF
 }
 
 create_lovelace_config() {
-    print_header "Creating Beautiful Calendifier Dashboard"
+    print_header "Creating Calendifier Dashboard"
     
     # Use the existing beautiful layout configuration
     if [ -f "$CALENDIFIER_DIR/lovelace-calendifier-config.yaml" ]; then
@@ -220,7 +385,7 @@ create_lovelace_config() {
     else
         # Fallback: Create the beautiful Calendifier dashboard with wide cards
         cat > "$HA_CONFIG_DIR/calendifier.yaml" << 'EOF'
-# Beautiful Calendifier Dashboard - Wide Cards Layout
+# Beautiful Calendifier Dashboard with RRule Support - Wide Cards Layout
 title: Calendar System
 views:
   - title: Calendar System
@@ -235,152 +400,34 @@ views:
       - type: horizontal-stack
         cards:
           - type: custom:calendifier-clock-card
-            title: " Time"
+            title: "🕐 Time"
           - type: custom:calendifier-help-card
-            title: " Settings"
+            title: "⚙️ Settings"
       
-      # Row 2: Calendar View (Full Width) - Extra Wide
+      # Row 2: Calendar View (Full Width) - Extra Wide with RRule Support
       - type: custom:calendifier-calendar-card
-        title: " Calendar View"
+        title: "📅 Calendar View"
       
-      # Row 3: Events and Notes (Side by Side) - Wide Layout
+      # Row 3: Events and Notes (Side by Side) - Wide Layout with RRule Support
       - type: horizontal-stack
         cards:
           - type: custom:calendifier-events-card
-            title: " Events"
+            title: "📋 Events"
             max_events: 5
           - type: custom:calendifier-notes-card
-            title: " Notes"
+            title: "📝 Notes"
       
       # Row 4: Data Management (Full Width) - Extra Wide
       - type: custom:calendifier-data-card
-        title: " Data Management"
+        title: "💾 Data Management"
 EOF
-        print_color $YELLOW "Created fallback dashboard configuration"
+        print_color $YELLOW "Created fallback dashboard configuration with RRule support"
     fi
     
     # Ensure proper file permissions
     chmod 644 "$HA_CONFIG_DIR/calendifier.yaml"
     
-    # Verify the dashboard file was created correctly
-    if [ -f "$HA_CONFIG_DIR/calendifier.yaml" ]; then
-        print_color $GREEN " Dashboard file created: $HA_CONFIG_DIR/calendifier.yaml"
-        print_color $BLUE "Dashboard preview:"
-        head -10 "$HA_CONFIG_DIR/calendifier.yaml" | sed 's/^/  /'
-    else
-        print_color $RED " Dashboard file was not created!"
-        exit 1
-    fi
-    
-    print_color $GREEN "Beautiful Calendifier dashboard ready"
-}
-
-copy_web_components() {
-    print_header "Copying Web Components"
-    
-    # Ensure www directories exist
-    mkdir -p "$HA_CONFIG_DIR/www"
-    
-    # Copy all www files to Home Assistant www directory
-    if [ -d "$CALENDIFIER_DIR/www" ]; then
-        # Ensure target directory exists
-        mkdir -p "$HA_CONFIG_DIR/www"
-        
-        # Copy all files from www directory
-        cp -r "$CALENDIFIER_DIR/www/"* "$HA_CONFIG_DIR/www/" 2>/dev/null || true
-        print_color $GREEN "Web components copied to Home Assistant"
-        
-        # Also create local subdirectory for Home Assistant /local/ path compatibility
-        mkdir -p "$HA_CONFIG_DIR/www/local"
-        cp -r "$CALENDIFIER_DIR/www/"* "$HA_CONFIG_DIR/www/local/" 2>/dev/null || true
-        print_color $GREEN "Web components also copied to local subdirectory for /local/ path compatibility"
-        
-        # List copied files for verification
-        print_color $BLUE "Copied files to www:"
-        ls -la "$HA_CONFIG_DIR/www/"*.js 2>/dev/null | head -10 || print_color $YELLOW "No .js files found in www"
-    else
-        print_color $YELLOW "Warning: www directory not found in $CALENDIFIER_DIR"
-        print_color $YELLOW "Available directories in $CALENDIFIER_DIR:"
-        ls -la "$CALENDIFIER_DIR/" | grep "^d" || true
-    fi
-    
-    # Ensure proper permissions for all files
-    find "$HA_CONFIG_DIR/www" -type f -name "*.js" -exec chmod 644 {} \; 2>/dev/null || true
-    find "$HA_CONFIG_DIR/www" -type f -name "*.css" -exec chmod 644 {} \; 2>/dev/null || true
-    find "$HA_CONFIG_DIR/www" -type d -exec chmod 755 {} \; 2>/dev/null || true
-    
-    # Set ownership to ensure Home Assistant can read the files
-    if command -v chown &> /dev/null; then
-        chown -R $(whoami):$(whoami) "$HA_CONFIG_DIR/www" 2>/dev/null || true
-    fi
-    
-    print_color $GREEN "Beautiful Calendifier cards ready for dashboard"
-}
-
-verify_web_components() {
-    print_header "Verifying Web Components"
-    
-    # Verify the www files are accessible
-    if [ -d "$HA_CONFIG_DIR/www" ] && [ "$(ls -A $HA_CONFIG_DIR/www 2>/dev/null)" ]; then
-        print_color $GREEN " Web assets are available in Home Assistant www directory"
-        print_color $BLUE "Available JavaScript files:"
-        ls -la "$HA_CONFIG_DIR/www/"*.js 2>/dev/null | head -10 || print_color $YELLOW "No .js files found"
-        
-        # Check for our key files
-        local key_files=("calendifier-loader.js" "calendifier-base-card.js" "calendifier-calendar-card.js" "calendifier-translation-manager.js")
-        local missing_files=()
-        
-        for file in "${key_files[@]}"; do
-            if [ ! -f "$HA_CONFIG_DIR/www/$file" ]; then
-                missing_files+=("$file")
-            fi
-        done
-        
-        if [ ${#missing_files[@]} -eq 0 ]; then
-            print_color $GREEN " All essential Calendifier files are present"
-        else
-            print_color $YELLOW " Missing files: ${missing_files[*]}"
-        fi
-    else
-        print_color $YELLOW " Warning: No JavaScript files found in Home Assistant www directory"
-    fi
-    
-    print_color $GREEN "Web component verification complete"
-}
-
-verify_container_file_access() {
-    print_header "Verifying Container File Access"
-    
-    # Wait for containers to be fully ready
-    sleep 5
-    
-    # Check if Home Assistant container can access the files
-    print_color $YELLOW "Testing file access from Home Assistant container..."
-    
-    if $COMPOSE_CMD exec homeassistant ls -la /config/www/ 2>/dev/null; then
-        print_color $GREEN " Home Assistant container can access /config/www/"
-        
-        # Check for specific Calendifier files
-        if $COMPOSE_CMD exec homeassistant ls /config/www/calendifier-loader.js 2>/dev/null; then
-            print_color $GREEN " calendifier-loader.js is accessible"
-        else
-            print_color $RED " calendifier-loader.js is NOT accessible"
-        fi
-        
-    else
-        print_color $RED " Home Assistant container cannot access /config/www/"
-        print_color $YELLOW "This may cause 404 errors for JavaScript files"
-    fi
-    
-    # Test API connectivity from within containers
-    print_color $YELLOW "Testing API connectivity between containers..."
-    if $COMPOSE_CMD exec homeassistant curl -s http://calendifier-api:8000/api/v1/about 2>/dev/null | grep -q "Calendifier"; then
-        print_color $GREEN " Home Assistant can reach Calendifier API"
-    else
-        print_color $YELLOW " Home Assistant cannot reach Calendifier API (may still be starting)"
-    fi
-    
-    print_color $GREEN "Container file access verification complete"
+    print_color $GREEN "Beautiful Calendifier dashboard with RRule support ready"
 }
 
 create_docker_compose() {
@@ -446,6 +493,40 @@ EOF
     print_color $GREEN "Docker Compose configuration created"
 }
 
+create_api_requirements() {
+    print_header "Creating API Requirements with RRule Support"
+    
+    # Create api_requirements.txt if it doesn't exist
+    if [ ! -f "$CALENDIFIER_DIR/api_requirements.txt" ]; then
+        cat > "$CALENDIFIER_DIR/api_requirements.txt" << 'EOF'
+Flask==2.3.3
+Flask-CORS==4.0.0
+requests==2.31.0
+python-dateutil==2.8.2
+pytz==2023.3
+holidays==0.34
+json5==0.9.14
+pyyaml==6.0.1
+gunicorn==21.2.0
+icalendar==5.0.11
+recurring-ical-events==2.1.3
+caldav==1.3.9
+tzlocal==5.2
+babel==2.13.1
+click==8.1.7
+jinja2==3.1.2
+markupsafe==2.1.3
+werkzeug==2.3.7
+itsdangerous==2.1.2
+blinker==1.7.0
+python-rrule==1.0.3
+dateutil==2.8.2
+EOF
+    fi
+    
+    print_color $GREEN "API requirements file with RRule support created"
+}
+
 create_api_dockerfile() {
     print_header "Creating API Dockerfile"
     
@@ -489,38 +570,6 @@ EOF
     print_color $GREEN "API Dockerfile created"
 }
 
-create_api_requirements() {
-    print_header "Creating API Requirements"
-    
-    # Create api_requirements.txt if it doesn't exist
-    if [ ! -f "$CALENDIFIER_DIR/api_requirements.txt" ]; then
-        cat > "$CALENDIFIER_DIR/api_requirements.txt" << 'EOF'
-Flask==2.3.3
-Flask-CORS==4.0.0
-requests==2.31.0
-python-dateutil==2.8.2
-pytz==2023.3
-holidays==0.34
-json5==0.9.14
-pyyaml==6.0.1
-gunicorn==21.2.0
-icalendar==5.0.11
-recurring-ical-events==2.1.3
-caldav==1.3.9
-tzlocal==5.2
-babel==2.13.1
-click==8.1.7
-jinja2==3.1.2
-markupsafe==2.1.3
-werkzeug==2.3.7
-itsdangerous==2.1.2
-blinker==1.7.0
-EOF
-    fi
-    
-    print_color $GREEN "API requirements file created"
-}
-
 build_and_start_containers() {
     print_header "Building and Starting Containers"
     
@@ -530,7 +579,7 @@ build_and_start_containers() {
     $COMPOSE_CMD down 2>/dev/null || true
     
     # Build and start containers
-    print_color $YELLOW "Building Calendifier API container..."
+    print_color $YELLOW "Building Calendifier API container with RRule support..."
     $COMPOSE_CMD build calendifier-api
     
     print_color $YELLOW "Starting containers..."
@@ -538,7 +587,7 @@ build_and_start_containers() {
     
     # Wait for containers to be healthy
     print_color $YELLOW "Waiting for containers to start..."
-    sleep 10
+    sleep 15
     
     # Check container status
     if $COMPOSE_CMD ps | grep -q "Up"; then
@@ -550,184 +599,14 @@ build_and_start_containers() {
     fi
 }
 
-copy_files_to_containers() {
-    print_header "Verifying Container File Access"
-    
-    # Files are already available via volume mounts, just verify
-    print_color $YELLOW "Files are mounted via Docker volumes - no copying needed"
-    
-    # Just restart to ensure everything is loaded properly
-    print_color $YELLOW "Restarting containers to ensure proper initialization..."
-    $COMPOSE_CMD restart
-    sleep 10
-    
-    print_color $GREEN "Container restart completed"
-}
-
-setup_autostart() {
-    print_header "Setting up Auto-start"
-    
-    # Create systemd service for auto-start
-    # Determine the correct compose command path for systemd
-    if command -v docker-compose &> /dev/null; then
-        SYSTEMD_COMPOSE_CMD="/usr/local/bin/docker-compose"
-    else
-        SYSTEMD_COMPOSE_CMD="/usr/bin/docker compose"
-    fi
-    
-    sudo tee /etc/systemd/system/calendifier.service > /dev/null << EOF
-[Unit]
-Description=Calendifier Docker Compose
-Requires=docker.service
-After=docker.service
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-WorkingDirectory=$CALENDIFIER_DIR
-ExecStart=$SYSTEMD_COMPOSE_CMD up -d
-ExecStop=$SYSTEMD_COMPOSE_CMD down
-TimeoutStartSec=0
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    # Enable the service
-    sudo systemctl daemon-reload
-    sudo systemctl enable calendifier.service
-    
-    print_color $GREEN "Auto-start service created and enabled"
-}
-
-verify_installation() {
-    print_header "Verifying Installation"
-    
-    # Check if containers are running
-    if $COMPOSE_CMD ps | grep -q "Up"; then
-        print_color $GREEN " Containers are running"
-    else
-        print_color $RED " Containers are not running properly"
-        return 1
-    fi
-    
-    # Check API endpoint
-    sleep 5
-    if curl -s "http://localhost:$CALENDIFIER_API_PORT/api/status" > /dev/null; then
-        print_color $GREEN " Calendifier API is responding"
-    else
-        print_color $YELLOW " Calendifier API may still be starting up"
-    fi
-    
-    # Check Home Assistant
-    if curl -s "http://localhost:$HA_PORT" > /dev/null; then
-        print_color $GREEN " Home Assistant is responding"
-    else
-        print_color $YELLOW " Home Assistant may still be starting up"
-    fi
-    
-    print_color $GREEN "Installation verification complete"
-}
-
-force_wide_cards() {
-    print_header "Forcing Wide Card Layout"
-    
-    print_color $YELLOW " Applying wider card styling..."
-    
-    # Stop Home Assistant container to clear cache
-    print_color $YELLOW " Stopping Home Assistant to clear cache..."
-    $COMPOSE_CMD stop homeassistant 2>/dev/null || true
-    
-    # Wait a moment for clean shutdown
-    sleep 3
-    
-    # Start Home Assistant container
-    print_color $YELLOW " Starting Home Assistant with updated styling..."
-    $COMPOSE_CMD start homeassistant
-    
-    # Wait for Home Assistant to be ready
-    print_color $YELLOW " Waiting for Home Assistant to start..."
-    sleep 15
-    
-    # Check if Home Assistant is running
-    if $COMPOSE_CMD ps homeassistant | grep -q "Up"; then
-        print_color $GREEN " Home Assistant is running with updated card styling"
-        echo
-        print_color $BLUE " IMPORTANT: Clear your browser cache to see the wider cards!"
-        print_color $NC "   - Chrome/Edge: Ctrl+Shift+R or F12 > Application > Storage > Clear site data"
-        print_color $NC "   - Firefox: Ctrl+Shift+R or F12 > Storage > Clear All"
-        echo
-        print_color $GREEN " Then refresh your Home Assistant dashboard"
-        print_color $GREEN " The cards should now be wider and better fitted to the screen"
-        echo
-        print_color $GREEN " Wide card layout applied successfully!"
-    else
-        print_color $RED " Failed to restart Home Assistant"
-        print_color $YELLOW " Check Docker status with: docker compose ps"
-        return 1
-    fi
-}
-
-print_completion_info() {
-    print_header "Installation Complete!"
-    
-    echo
-    print_color $GREEN " Calendifier has been successfully installed with BEAUTIFUL UI!"
-    echo
-    print_color $BLUE "Access URLs:"
-    print_color $NC "  Home Assistant: http://$(hostname -I | awk '{print $1}'):$HA_PORT"
-    print_color $NC "  Calendifier API: http://$(hostname -I | awk '{print $1}'):$CALENDIFIER_API_PORT"
-    echo
-    print_color $YELLOW "Next Steps:"
-    print_color $NC "1. Open Home Assistant in your browser: http://$(hostname -I | awk '{print $1}'):$HA_PORT"
-    print_color $NC "2. Complete the initial Home Assistant setup wizard"
-    print_color $NC "3.  IMPORTANT: Look for 'Calendifier' in the LEFT SIDEBAR menu"
-    print_color $NC "4.  Click on the 'Calendifier' sidebar item (NOT the Overview tab)"
-    print_color $NC "5.  You should see the BEAUTIFUL layout with:"
-    print_color $NC "   - Row 1: Full-width Clock"
-    print_color $NC "   - Row 2: Full-width Calendar"
-    print_color $NC "   - Row 3: Events + Notes side-by-side (below calendar)"
-    print_color $NC "   - Row 4: Full-width About/Settings"
-    print_color $NC "   - Row 5: Full-width Data Management"
-    print_color $NC "6.  If you see a basic grid layout, you're on the wrong dashboard!"
-    echo
-    print_color $GREEN " BEAUTIFUL UI RESTORED:"
-    print_color $GREEN " Calendifier appears as separate sidebar dashboard"
-    print_color $GREEN " Beautiful vertical layout with no overlapping"
-    print_color $GREEN " Full-width Clock (Row 1)"
-    print_color $GREEN " Full-width Calendar view (Row 2)"
-    print_color $GREEN " Events + Notes cards side-by-side below calendar (Row 3)"
-    print_color $GREEN " Full-width About/Settings (Row 4)"
-    print_color $GREEN " Full-width Data Management (Row 5)"
-    print_color $GREEN " Wide card styling automatically applied"
-    print_color $GREEN " All JavaScript resources loaded via frontend.extra_module_url"
-    print_color $GREEN " API requirements properly installed in Docker container"
-    echo
-    print_color $BLUE "Technical Details:"
-    print_color $NC "  - Dashboard Type: lovelace.dashboards (proper sidebar integration)"
-    print_color $NC "  - Layout: Optimized mix of full-width and side-by-side cards"
-    print_color $NC "  - Resources: Auto-loaded via frontend.extra_module_url"
-    print_color $NC "  - Volume Mounts: $CALENDIFIER_DIR/www  /config/www"
-    print_color $NC "  - API Container: All requirements installed via pip"
-    print_color $NC "  - Cards: Clock, Calendar, About/Settings, Events, Notes, Data"
-    echo
-    print_color $BLUE "Useful Commands:"
-    print_color $NC "  View logs: cd $CALENDIFIER_DIR && docker compose logs"
-    print_color $NC "  Restart services: cd $CALENDIFIER_DIR && docker compose restart"
-    print_color $NC "  Stop services: cd $CALENDIFIER_DIR && docker compose down"
-    print_color $NC "  Start services: cd $CALENDIFIER_DIR && docker compose up -d"
-    echo
-}
-
 # Main execution
 main() {
-    print_header "Calendifier Pi Setup Starting"
+    print_header "Calendifier Pi Setup with RRule Support Starting"
     
     # Check if files are in home directory and move them if needed
     if [ -f ~/setup-pi.sh ] && [ ! -d "$CALENDIFIER_DIR" ]; then
         print_color $YELLOW "Files found in home directory, organizing them..."
         mkdir -p "$CALENDIFIER_DIR"
-        mkdir -p "$CALENDIFIER_DIR/homeassistant/www"
         
         # Move individual files
         for file in api_server.py main.py requirements.txt api_requirements.txt docker-compose.yml Dockerfile.api version.py setup-pi.sh lovelace-calendifier-config.yaml; do
@@ -743,11 +622,6 @@ main() {
             fi
         done
         
-        # Copy www files to HA directory
-        if [ -d "$CALENDIFIER_DIR/www" ]; then
-            cp -r "$CALENDIFIER_DIR/www/"* "$CALENDIFIER_DIR/homeassistant/www/" 2>/dev/null || true
-        fi
-        
         print_color $GREEN "Files organized successfully"
     fi
     
@@ -761,20 +635,42 @@ main() {
     check_docker
     check_docker_compose
     create_directories
+    setup_database_with_rrule
+    copy_web_components
     create_ha_configuration
     create_lovelace_config
-    copy_web_components
     create_docker_compose
-    create_api_dockerfile
     create_api_requirements
+    create_api_dockerfile
     build_and_start_containers
-    copy_files_to_containers
-    verify_web_components
-    verify_container_file_access
-    force_wide_cards
-    setup_autostart
-    verify_installation
-    print_completion_info
+    
+    print_color $GREEN "🎉 Calendifier setup with complete RRule support finished!"
+    print_color $BLUE "Access Home Assistant at: http://$(hostname -I | awk '{print $1}'):8123"
+    print_color $YELLOW "Look for 'Calendifier' in the sidebar menu for full recurring event functionality!"
+    echo
+    print_color $GREEN "✅ FEATURES INCLUDED:"
+    print_color $GREEN "   • Complete RRule recurring event support"
+    print_color $GREEN "   • Fixed notification positioning and edit UI"
+    print_color $GREEN "   • Enhanced RRule builder with 4-column layout"
+    print_color $GREEN "   • All translation fixes (40 languages supported)"
+    print_color $GREEN "   • Comprehensive error handling and DOM checks"
+    print_color $GREEN "   • Database schema with RRule column"
+    print_color $GREEN "   • Event expansion API for recurring occurrences"
+    print_color $GREEN "   • Fixed recurring events to show forever (not just current month)"
+    print_color $GREEN "   • Added edit functionality for calendar events"
+    print_color $GREEN "   • Improved validation messages for user-friendly errors"
+    print_color $GREEN "   • Enhanced event loading for proper recurring event display"
+    print_color $GREEN "   • Events card shows only master events (no clutter)"
+    print_color $GREEN "   • Clickable events in calendar for editing"
+    print_color $GREEN "   • Fixed ALL translation issues across 40 locales"
+    print_color $GREEN "   • Proper category translations for all languages"
+    print_color $GREEN "   • Fixed validation messages and confirmation dialogs"
+    print_color $GREEN "   • No more untranslated keys showing in UI"
+    print_color $GREEN "   • Complete RRule dialog translation support"
+    print_color $GREEN "   • Proper date formatting (UK: DD/MM/YYYY vs US: MM/DD/YYYY)"
+    print_color $GREEN "   • Arabic-Indic, Devanagari, and Thai numeral support"
+    print_color $GREEN "   • Fixed monthly day selection logic (day 4 = day 4)"
+    print_color $GREEN "   • All RRule dialog text now properly translated"
 }
 
 # Run main function

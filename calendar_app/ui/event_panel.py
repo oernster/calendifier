@@ -18,7 +18,7 @@ from PySide6.QtGui import QFont
 from calendar_app.core.event_manager import EventManager
 from calendar_app.data.models import Event
 from calendar_app.ui.event_dialog import EventDialog
-from calendar_app.localization.i18n_manager import get_i18n_manager
+from calendar_app.localization.i18n_manager import get_i18n_manager, format_date_for_locale
 
 def _(key: str, **kwargs) -> str:
     """Dynamic translation function that always uses current locale."""
@@ -426,11 +426,14 @@ class EventPanel(QWidget):
             
             weekday = weekday_names[selected_date.weekday()]
             month = month_names[selected_date.month - 1]
-            date_str = f"{weekday}, {selected_date.day} {month} {selected_date.year}"
+            
+            # Use centralized date formatting for the numeric part
+            formatted_date = format_date_for_locale(selected_date)
+            date_str = f"{weekday}, {formatted_date} ({month})"
         except Exception as e:
             # Ultimate fallback
             logger.warning(f"⚠️ Failed to format date: {e}")
-            date_str = selected_date.strftime("%Y-%m-%d")
+            date_str = format_date_for_locale(selected_date)
         
         self.date_label.setText(f"📅 {date_str}")
         
@@ -551,19 +554,27 @@ class EventPanel(QWidget):
             if result == "delete_this":
                 # Add this date as an exception to the master event
                 try:
-                    # TODO: Implement add_exception_date in event_manager
-                    # For now, show a message
-                    QMessageBox.information(
-                        self,
-                        f"ℹ️ {_('info_title', default='Information')}",
-                        _("events.exception_feature_coming_soon", default="Adding exceptions to recurring events will be implemented in a future update.")
-                    )
+                    if self.event_manager.add_exception_date(event.recurrence_master_id, event.start_date):
+                        self.refresh_events()  # Refresh to hide this occurrence
+                        self.event_deleted.emit(event)
+                        QMessageBox.information(
+                            self,
+                            f"✅ {_('info_title', default='Information')}",
+                            _("events.exception_added_successfully", default="This occurrence has been successfully excluded from the recurring event series.")
+                        )
+                        logger.debug(f"✅ Added exception date {event.start_date} to recurring event: {event.get_display_title()}")
+                    else:
+                        QMessageBox.warning(
+                            self,
+                            f"❌ {_('error_title', default='Error')}",
+                            _("events.exception_add_failed", default="Failed to exclude this occurrence. Please try again.")
+                        )
                 except Exception as e:
                     logger.error(f"❌ Failed to add exception date: {e}")
                     QMessageBox.critical(
                         self,
                         f"❌ {_('error_title', default='Error')}",
-                        f"An error occurred while adding exception:\n{str(e)}"
+                        f"An error occurred while excluding this occurrence:\n{str(e)}"
                     )
             elif result == "delete_all":
                 # Delete the master event

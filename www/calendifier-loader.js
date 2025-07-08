@@ -29,12 +29,15 @@
     return `/local/`;
   }
   
-  // Load script with promise
+  // Load script with promise and cache busting
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = src;
+      // Add cache busting parameter with timestamp
+      const cacheBuster = `?v=${Date.now()}`;
+      script.src = src + cacheBuster;
       script.onload = () => {
+        console.log(`✅ Loaded: ${src}`);
         resolve();
       };
       script.onerror = () => {
@@ -67,10 +70,14 @@
       await loadScript(`${baseUrl}calendifier-base-card.js`);
       window.calendifierLoadingState.baseCard = true;
       
+      // Load RRule builder first
+      await loadScript(`${baseUrl}rrule-builder.js`);
+      console.log('✅ RRule builder loaded');
+      
       const cardScripts = [
         'calendifier-help-card.js',
-        'calendifier-events-card.js',
-        'calendifier-calendar-card.js',
+        'calendifier-events-card-with-rrule.js',
+        'calendifier-calendar-card-with-rrule.js',
         'calendifier-clock-card.js',
         'calendifier-notes-card.js',
         'calendifier-data-card.js'

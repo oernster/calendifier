@@ -179,11 +179,15 @@ class EventDialog(QDialog):
         
         # Recurring checkbox and button container
         recurring_container = QHBoxLayout()
+        
+        # Add stretch to push checkbox and button to the right
+        recurring_container.addStretch()
+        
         self.recurring_check = QCheckBox(_("recurring.enable", default="Make Recurring"))
         self.recurring_check.toggled.connect(self._on_recurring_toggled)
         recurring_container.addWidget(self.recurring_check)
         
-        # RRULE pattern button
+        # RRULE pattern button (directly after checkbox)
         self.rrule_button = QPushButton(_("recurring.pattern", default="Repeat Pattern"))
         self.rrule_button.setEnabled(False)
         self.rrule_button.setFixedWidth(150)  # Set fixed width to ensure text fits
@@ -199,9 +203,6 @@ class EventDialog(QDialog):
         self.pattern_description.setStyleSheet("color: #666; font-style: italic;")
         self.pattern_description.setVisible(False)
         recurring_container.addWidget(self.pattern_description)
-        
-        # Remove the stretch so button can expand to the right
-        # recurring_container.addStretch()
         
         recurring_widget = QWidget()
         recurring_widget.setLayout(recurring_container)
@@ -649,6 +650,18 @@ class EventDialog(QDialog):
             # Update QDateEdit and QTimeEdit widgets
             if hasattr(self, 'date_edit'):
                 self.date_edit.setLocale(qt_locale)
+                
+                # Set explicit date format based on locale
+                if current_locale.startswith('en_US') or current_locale.startswith('en_CA') or current_locale.startswith('en_PH'):
+                    # US format: MM/dd/yyyy
+                    self.date_edit.setDisplayFormat("MM/dd/yyyy")
+                elif current_locale.startswith(('ja_', 'ko_', 'zh_')):
+                    # East Asian format: yyyy/MM/dd
+                    self.date_edit.setDisplayFormat("yyyy/MM/dd")
+                else:
+                    # Most other locales: dd/MM/yyyy
+                    self.date_edit.setDisplayFormat("dd/MM/yyyy")
+                
                 # Force refresh the calendar popup
                 if self.date_edit.calendarWidget():
                     self.date_edit.calendarWidget().setLocale(qt_locale)

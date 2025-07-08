@@ -19,7 +19,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Import holidays library directly
 try:
@@ -63,48 +63,120 @@ except ImportError:
 
 
 class Event(BaseModel):
-    id: Optional[int] = None
-    title: str
-    start_date: str
-    start_time: Optional[str] = None
-    end_date: Optional[str] = None
-    end_time: Optional[str] = None
-    description: Optional[str] = None
-    category: str = "default"
-    is_all_day: bool = False
+    """Event model for calendar events with optional recurring support"""
+    id: Optional[int] = Field(None, description="Unique event identifier (auto-generated)")
+    title: str = Field(..., description="Event title", example="Team Meeting")
+    start_date: str = Field(..., description="Event start date in YYYY-MM-DD format", example="2025-01-15")
+    start_time: Optional[str] = Field(None, description="Event start time in HH:MM format", example="14:30")
+    end_date: Optional[str] = Field(None, description="Event end date in YYYY-MM-DD format", example="2025-01-15")
+    end_time: Optional[str] = Field(None, description="Event end time in HH:MM format", example="15:30")
+    description: Optional[str] = Field(None, description="Event description", example="Weekly team standup meeting")
+    category: str = Field("default", description="Event category", example="work")
+    is_all_day: bool = Field(False, description="Whether the event is all-day")
+    rrule: Optional[str] = Field(None, description="RFC 5545 RRULE pattern for recurring events", example="FREQ=WEEKLY;BYDAY=MO")
 
 
 class Note(BaseModel):
-    id: Optional[int] = None
-    title: str
-    content: str
-    category: str = "general"
-    date: str
-    tags: Optional[str] = None
+    """Note model for text notes with categorization"""
+    id: Optional[int] = Field(None, description="Unique note identifier (auto-generated)")
+    title: str = Field(..., description="Note title", example="Meeting Notes")
+    content: str = Field(..., description="Note content", example="Discussed project timeline and deliverables")
+    category: str = Field("general", description="Note category", example="work")
+    date: str = Field(..., description="Note date in YYYY-MM-DD format", example="2025-01-15")
+    tags: Optional[str] = Field(None, description="Comma-separated tags", example="meeting,project,timeline")
 
 
 class Settings(BaseModel):
-    locale: str = "en_GB"
-    timezone: str = "Europe/London"
-    theme: str = "dark"
-    holiday_country: str = "GB"
-    first_day_of_week: int = 1
-    show_week_numbers: bool = False
-    date_format: str = "YYYY-MM-DD"
-    time_format: str = "24h"
-    notifications_enabled: bool = True
-    auto_sync: bool = True
-    sync_interval: int = 30
-    accent_color: str = "#0078d4"
-    compact_mode: bool = False
-    show_emojis: bool = True
-    debug_mode: bool = False
+    """Application settings model"""
+    locale: str = Field("en_GB", description="Application locale", example="en_US")
+    timezone: str = Field("Europe/London", description="Timezone identifier", example="America/New_York")
+    theme: str = Field("dark", description="UI theme", example="light")
+    holiday_country: str = Field("GB", description="Country code for holidays", example="US")
+    first_day_of_week: int = Field(1, description="First day of week (0=Sunday, 1=Monday)", example=0)
+    show_week_numbers: bool = Field(False, description="Show week numbers in calendar")
+    date_format: str = Field("YYYY-MM-DD", description="Date format preference", example="MM/DD/YYYY")
+    time_format: str = Field("24h", description="Time format preference", example="12h")
+    notifications_enabled: bool = Field(True, description="Enable notifications")
+    auto_sync: bool = Field(True, description="Enable automatic NTP synchronization")
+    sync_interval: int = Field(30, description="NTP sync interval in minutes", example=60)
+    accent_color: str = Field("#0078d4", description="UI accent color", example="#ff6b35")
+    compact_mode: bool = Field(False, description="Enable compact UI mode")
+    show_emojis: bool = Field(True, description="Show emojis in UI")
+    debug_mode: bool = Field(False, description="Enable debug mode")
 
 
 class CalendifierAPI:
     def __init__(self, db_path: str = "calendifier.db"):
         self.db_path = db_path
-        self.app = FastAPI(title="Calendifier API", version=__version__)
+        self.app = FastAPI(
+            title="📅 Calendifier API",
+            description="""
+## Calendifier API Server
+
+A comprehensive calendar and event management API with multi-language support, holidays, and NTP synchronization.
+
+### Features
+- 📋 **Event Management**: Create, read, update, delete events with recurring support (RRULE)
+- 📝 **Notes**: Organize notes with categories and tags
+- 🎉 **Holidays**: Support for 28+ countries with localized names
+- 🌍 **Internationalization**: 28+ languages with full translation support
+- 🕐 **NTP Synchronization**: Accurate time synchronization
+- 📤📥 **Import/Export**: JSON-based data exchange
+- ⚙️ **Settings**: Comprehensive configuration management
+
+### Authentication
+This API is designed for Home Assistant integration and uses CORS for cross-origin requests.
+
+### Rate Limiting
+No rate limiting is currently implemented. Use responsibly.
+
+### Error Handling
+All endpoints return standard HTTP status codes with JSON error messages.
+            """,
+            version=__version__,
+            contact={
+                "name": "Oliver Ernster",
+                "email": "oliver@example.com",
+            },
+            license_info={
+                "name": "GPL-3.0",
+                "url": "https://www.gnu.org/licenses/gpl-3.0.html",
+            },
+            tags_metadata=[
+                {
+                    "name": "events",
+                    "description": "Event management operations including recurring events with RRULE support",
+                },
+                {
+                    "name": "notes",
+                    "description": "Note management operations with categorization and tagging",
+                },
+                {
+                    "name": "holidays",
+                    "description": "Holiday information for 28+ countries with localized names",
+                },
+                {
+                    "name": "settings",
+                    "description": "Application configuration and preferences",
+                },
+                {
+                    "name": "translations",
+                    "description": "Internationalization and localization support",
+                },
+                {
+                    "name": "ntp",
+                    "description": "Network Time Protocol synchronization",
+                },
+                {
+                    "name": "import-export",
+                    "description": "Data import and export operations",
+                },
+                {
+                    "name": "system",
+                    "description": "System information and health checks",
+                },
+            ]
+        )
         self.setup_cors()
         self.setup_database()
         self.setup_routes()
@@ -161,9 +233,18 @@ class CalendifierAPI:
                 description TEXT,
                 category TEXT DEFAULT 'default',
                 is_all_day BOOLEAN DEFAULT 0,
+                rrule TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        
+        # Add rrule column to existing events table if it doesn't exist
+        try:
+            cursor.execute("ALTER TABLE events ADD COLUMN rrule TEXT")
+            print("✅ Added rrule column to events table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            pass
         
         # Notes table
         cursor.execute("""
@@ -201,15 +282,127 @@ class CalendifierAPI:
         conn.commit()
         conn.close()
 
+    def expand_rrule(self, rrule: str, start_date: datetime.date, range_start: datetime.date, range_end: datetime.date) -> List[datetime.date]:
+        """Expand an RRULE pattern into individual occurrence dates within the given range"""
+        try:
+            # Parse RRULE components
+            parts = rrule.split(';')
+            rules = {}
+            for part in parts:
+                if '=' in part:
+                    key, value = part.split('=', 1)
+                    rules[key] = value
+            
+            frequency = rules.get('FREQ', 'WEEKLY')
+            interval = int(rules.get('INTERVAL', '1'))
+            count = int(rules.get('COUNT', '100')) if 'COUNT' in rules else None
+            until = None
+            
+            if 'UNTIL' in rules:
+                until_str = rules['UNTIL']
+                if len(until_str) == 8:  # YYYYMMDD format
+                    until = datetime.strptime(until_str, '%Y%m%d').date()
+            
+            occurrences = []
+            current = start_date
+            generated = 0
+            max_occurrences = count if count else 100  # Limit to prevent infinite loops
+            
+            # Generate occurrences
+            while len(occurrences) < max_occurrences and current <= range_end:
+                # Stop if we've reached the until date
+                if until and current > until:
+                    break
+                
+                # Add occurrence if it's within our range
+                if range_start <= current <= range_end:
+                    occurrences.append(current)
+                
+                generated += 1
+                if count and generated >= count:
+                    break
+                
+                # Calculate next occurrence based on frequency
+                if frequency == 'DAILY':
+                    current = current + timedelta(days=interval)
+                elif frequency == 'WEEKLY':
+                    # Handle BYDAY for weekly events
+                    if 'BYDAY' in rules:
+                        weekdays = rules['BYDAY'].split(',')
+                        weekday_map = {'MO': 0, 'TU': 1, 'WE': 2, 'TH': 3, 'FR': 4, 'SA': 5, 'SU': 6}
+                        target_weekdays = [weekday_map[day] for day in weekdays if day in weekday_map]
+                        
+                        if target_weekdays:
+                            # Find next occurrence on specified weekdays
+                            next_date = current + timedelta(days=1)
+                            while next_date.weekday() not in target_weekdays:
+                                next_date += timedelta(days=1)
+                                if next_date > range_end + timedelta(days=7):  # Prevent infinite loop
+                                    break
+                            current = next_date
+                        else:
+                            current = current + timedelta(weeks=interval)
+                    else:
+                        current = current + timedelta(weeks=interval)
+                elif frequency == 'MONTHLY':
+                    # Simple monthly increment (same day of month)
+                    try:
+                        if current.month == 12:
+                            current = current.replace(year=current.year + 1, month=1)
+                        else:
+                            current = current.replace(month=current.month + interval)
+                    except ValueError:
+                        # Handle cases like Feb 31 -> Feb 28
+                        next_month = current.month + interval
+                        next_year = current.year
+                        while next_month > 12:
+                            next_month -= 12
+                            next_year += 1
+                        
+                        # Find last day of target month if original day doesn't exist
+                        import calendar
+                        last_day = calendar.monthrange(next_year, next_month)[1]
+                        target_day = min(current.day, last_day)
+                        current = datetime(next_year, next_month, target_day).date()
+                elif frequency == 'YEARLY':
+                    try:
+                        current = current.replace(year=current.year + interval)
+                    except ValueError:
+                        # Handle leap year edge case (Feb 29)
+                        current = current.replace(year=current.year + interval, day=28)
+                else:
+                    # Unknown frequency, break to prevent infinite loop
+                    break
+                
+                # Safety check to prevent infinite loops
+                if generated > 1000:
+                    break
+            
+            return occurrences
+            
+        except Exception as e:
+            print(f"Error expanding RRULE '{rrule}': {e}")
+            return [start_date] if range_start <= start_date <= range_end else []
+
     def setup_routes(self):
         """Setup API routes"""
         
-        @self.app.get("/")
+        @self.app.get("/", tags=["system"], summary="API Root", description="Get basic API information")
         async def root():
+            """Get basic API information and status"""
             return {"message": "Calendifier API Server", "version": __version__, "status": "running"}
         
-        @self.app.get("/health")
+        @self.app.get("/health", tags=["system"], summary="Health Check", description="Check API health and NTP sync status")
         async def health_check():
+            """
+            Health check endpoint for monitoring and load balancers.
+            
+            Returns:
+            - API status
+            - Current timestamp
+            - NTP synchronization status
+            - Last NTP sync time
+            """
             return {
                 "status": "healthy",
                 "timestamp": datetime.now().isoformat(),
@@ -218,8 +411,16 @@ class CalendifierAPI:
             }
         
         # Events endpoints
-        @self.app.get("/api/v1/events")
+        @self.app.get("/api/v1/events", tags=["events"], summary="Get All Events", description="Retrieve all events with calculated days until")
         async def get_events():
+            """
+            Get all events from the database.
+            
+            Returns:
+            - List of all events
+            - Each event includes days_until calculation
+            - Events are sorted by start_date and start_time
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM events ORDER BY start_date, start_time")
@@ -234,7 +435,8 @@ class CalendifierAPI:
                     "end_time": row[5],
                     "description": row[6],
                     "category": row[7],
-                    "is_all_day": bool(row[8])
+                    "is_all_day": bool(row[8]),
+                    "rrule": row[9] if len(row) > 9 else None
                 }
                 # Calculate days until
                 event_date = datetime.strptime(row[2], "%Y-%m-%d").date()
@@ -244,26 +446,55 @@ class CalendifierAPI:
             conn.close()
             return {"events": events}
         
-        @self.app.post("/api/v1/events")
+        @self.app.post("/api/v1/events", tags=["events"], summary="Create Event", description="Create a new event with optional recurring pattern")
         async def create_event(event: Event):
+            """
+            Create a new event.
+            
+            Parameters:
+            - **event**: Event object with all required fields
+            
+            Returns:
+            - Created event ID
+            - Success message
+            
+            Example RRULE patterns:
+            - `FREQ=DAILY` - Daily recurrence
+            - `FREQ=WEEKLY;BYDAY=MO,WE,FR` - Every Monday, Wednesday, Friday
+            - `FREQ=MONTHLY;INTERVAL=2` - Every 2 months
+            - `FREQ=YEARLY` - Annual recurrence
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT INTO events (title, start_date, start_time, end_date, end_time, description, category, is_all_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (event.title, event.start_date, event.start_time, event.end_date, event.end_time, event.description, event.category, event.is_all_day)
+                "INSERT INTO events (title, start_date, start_time, end_date, end_time, description, category, is_all_day, rrule) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (event.title, event.start_date, event.start_time, event.end_date, event.end_time, event.description, event.category, event.is_all_day, event.rrule)
             )
             event_id = cursor.lastrowid
             conn.commit()
             conn.close()
             return {"id": event_id, "message": "Event created successfully"}
         
-        @self.app.put("/api/v1/events/{event_id}")
+        @self.app.put("/api/v1/events/{event_id}", tags=["events"], summary="Update Event", description="Update an existing event")
         async def update_event(event_id: int, event: Event):
+            """
+            Update an existing event.
+            
+            Parameters:
+            - **event_id**: ID of the event to update
+            - **event**: Updated event data
+            
+            Returns:
+            - Success message
+            
+            Raises:
+            - 404: Event not found
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute(
-                "UPDATE events SET title = ?, start_date = ?, start_time = ?, end_date = ?, end_time = ?, description = ?, category = ?, is_all_day = ? WHERE id = ?",
-                (event.title, event.start_date, event.start_time, event.end_date, event.end_time, event.description, event.category, event.is_all_day, event_id)
+                "UPDATE events SET title = ?, start_date = ?, start_time = ?, end_date = ?, end_time = ?, description = ?, category = ?, is_all_day = ?, rrule = ? WHERE id = ?",
+                (event.title, event.start_date, event.start_time, event.end_date, event.end_time, event.description, event.category, event.is_all_day, event.rrule, event_id)
             )
             if cursor.rowcount == 0:
                 conn.close()
@@ -272,8 +503,20 @@ class CalendifierAPI:
             conn.close()
             return {"message": "Event updated successfully"}
         
-        @self.app.delete("/api/v1/events/{event_id}")
+        @self.app.delete("/api/v1/events/{event_id}", tags=["events"], summary="Delete Event", description="Delete an event")
         async def delete_event(event_id: int):
+            """
+            Delete an event.
+            
+            Parameters:
+            - **event_id**: ID of the event to delete
+            
+            Returns:
+            - Success message
+            
+            Raises:
+            - 404: Event not found
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute("DELETE FROM events WHERE id = ?", (event_id,))
@@ -284,9 +527,105 @@ class CalendifierAPI:
             conn.close()
             return {"message": "Event deleted successfully"}
         
+        @self.app.get("/api/v1/events/expanded", tags=["events"], summary="Get Expanded Events", description="Get events with recurring events expanded into individual occurrences")
+        async def get_expanded_events(start_date: str = None, end_date: str = None):
+            """
+            Get events with recurring events expanded into individual occurrences.
+            
+            This endpoint takes recurring events (those with RRULE patterns) and expands them
+            into individual occurrences within the specified date range.
+            
+            Parameters:
+            - **start_date**: Start date for expansion (YYYY-MM-DD). Defaults to current month start.
+            - **end_date**: End date for expansion (YYYY-MM-DD). Defaults to current month end.
+            
+            Returns:
+            - List of expanded events (recurring events become multiple entries)
+            - Date range used for expansion
+            - Total count of expanded events
+            
+            Example:
+            A weekly recurring event will appear as separate entries for each week in the range.
+            """
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM events ORDER BY start_date, start_time")
+            
+            # Set default date range if not provided (current month)
+            if not start_date:
+                start_date = datetime.now().replace(day=1).strftime("%Y-%m-%d")
+            if not end_date:
+                next_month = datetime.now().replace(day=28) + timedelta(days=4)
+                end_date = (next_month - timedelta(days=next_month.day)).strftime("%Y-%m-%d")
+            
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
+            
+            expanded_events = []
+            
+            for row in cursor.fetchall():
+                base_event = {
+                    "id": row[0],
+                    "title": row[1],
+                    "start_date": row[2],
+                    "start_time": row[3],
+                    "end_date": row[4],
+                    "end_time": row[5],
+                    "description": row[6],
+                    "category": row[7],
+                    "is_all_day": bool(row[8]),
+                    "rrule": row[9] if len(row) > 9 else None,
+                    "is_recurring": bool(row[9] if len(row) > 9 else None)
+                }
+                
+                event_start = datetime.strptime(row[2], "%Y-%m-%d").date()
+                
+                # If event has no rrule or is outside date range, add as single event
+                if not base_event["rrule"] or not base_event["rrule"].strip():
+                    if start_dt <= event_start <= end_dt:
+                        today = datetime.now().date()
+                        base_event["days_until"] = (event_start - today).days
+                        expanded_events.append(base_event)
+                else:
+                    # Expand recurring event
+                    try:
+                        occurrences = self.expand_rrule(base_event["rrule"], event_start, start_dt, end_dt)
+                        for occurrence_date in occurrences:
+                            occurrence_event = base_event.copy()
+                            occurrence_event["start_date"] = occurrence_date.strftime("%Y-%m-%d")
+                            occurrence_event["end_date"] = occurrence_date.strftime("%Y-%m-%d")
+                            today = datetime.now().date()
+                            occurrence_event["days_until"] = (occurrence_date - today).days
+                            expanded_events.append(occurrence_event)
+                    except Exception as e:
+                        print(f"Error expanding RRULE for event {base_event['id']}: {e}")
+                        # Fall back to single event if RRULE expansion fails
+                        if start_dt <= event_start <= end_dt:
+                            today = datetime.now().date()
+                            base_event["days_until"] = (event_start - today).days
+                            expanded_events.append(base_event)
+            
+            conn.close()
+            
+            # Sort by date and time
+            expanded_events.sort(key=lambda x: (x["start_date"], x["start_time"] or ""))
+            
+            return {
+                "events": expanded_events,
+                "date_range": {"start": start_date, "end": end_date},
+                "total_count": len(expanded_events)
+            }
+        
         # Notes endpoints
-        @self.app.get("/api/v1/notes")
+        @self.app.get("/api/v1/notes", tags=["notes"], summary="Get All Notes", description="Retrieve all notes ordered by creation date")
         async def get_notes():
+            """
+            Get all notes from the database.
+            
+            Returns:
+            - List of all notes
+            - Notes are sorted by creation date (newest first)
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM notes ORDER BY created_at DESC")
@@ -304,8 +643,18 @@ class CalendifierAPI:
             conn.close()
             return {"notes": notes}
         
-        @self.app.post("/api/v1/notes")
+        @self.app.post("/api/v1/notes", tags=["notes"], summary="Create Note", description="Create a new note")
         async def create_note(note: Note):
+            """
+            Create a new note.
+            
+            Parameters:
+            - **note**: Note object with all required fields
+            
+            Returns:
+            - Created note ID
+            - Success message
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute(
@@ -317,8 +666,20 @@ class CalendifierAPI:
             conn.close()
             return {"id": note_id, "message": "Note created successfully"}
         
-        @self.app.delete("/api/v1/notes/{note_id}")
+        @self.app.delete("/api/v1/notes/{note_id}", tags=["notes"], summary="Delete Note", description="Delete a note")
         async def delete_note(note_id: int):
+            """
+            Delete a note.
+            
+            Parameters:
+            - **note_id**: ID of the note to delete
+            
+            Returns:
+            - Success message
+            
+            Raises:
+            - 404: Note not found
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
@@ -330,8 +691,14 @@ class CalendifierAPI:
             return {"message": "Note deleted successfully"}
         
         # Settings endpoints
-        @self.app.get("/api/v1/settings")
+        @self.app.get("/api/v1/settings", tags=["settings"], summary="Get Settings", description="Retrieve all application settings")
         async def get_settings():
+            """
+            Get all application settings.
+            
+            Returns:
+            - Dictionary of all settings with their current values
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT key, value FROM settings")
@@ -341,8 +708,21 @@ class CalendifierAPI:
             conn.close()
             return settings
         
-        @self.app.put("/api/v1/settings")
+        @self.app.put("/api/v1/settings", tags=["settings"], summary="Update Settings", description="Update application settings")
         async def update_settings(settings: dict):
+            """
+            Update application settings.
+            
+            Parameters:
+            - **settings**: Dictionary of settings to update
+            
+            Returns:
+            - Success message
+            
+            Note:
+            - Only provided settings will be updated
+            - Locale changes will clear holiday cache
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
@@ -376,14 +756,42 @@ class CalendifierAPI:
             
             return {"message": "Settings updated successfully"}
         
-        # Holidays endpoints
-        @self.app.get("/api/v1/holidays/{country}/{year}/{month}")
+        @self.app.get("/api/v1/holidays/{country}/{year}/{month}", tags=["holidays"], summary="Get Holidays for Month", description="Get holidays for a specific country, year, and month")
         async def get_holidays(country: str, year: int, month: int):
+            """
+            Get holidays for a specific country, year, and month.
+            
+            Parameters:
+            - **country**: ISO country code (e.g., 'US', 'GB', 'DE')
+            - **year**: Year (e.g., 2025)
+            - **month**: Month (1-12)
+            
+            Returns:
+            - List of holidays for the specified month
+            - Each holiday includes name, date, type, and country
+            """
             return await self.get_holidays_for_period(country, year, month)
         
-        @self.app.get("/api/v1/holidays/auto/{year}")
+        @self.app.get("/api/v1/holidays/auto/{year}", tags=["holidays"], summary="Get Auto-Detected Holidays for Year", description="Get all holidays for a year using locale-based country detection")
         async def get_holidays_auto_year(year: int):
-            """Get all holidays for the current year using backend-determined country - NO FALLBACKS"""
+            """
+            Get all holidays for the current year using backend-determined country.
+            
+            The country is automatically determined from the current locale setting.
+            This ensures users see holidays relevant to their location.
+            
+            Parameters:
+            - **year**: Year to get holidays for
+            
+            Returns:
+            - List of all holidays for the year
+            - Country code used
+            - Locale used for translation
+            - Total count of holidays
+            
+            Raises:
+            - 400: Unsupported locale
+            """
             # Get current locale from settings
             current_locale = await self._get_current_locale_from_settings()
             print(f"🌍 Current locale from settings: {current_locale}")
@@ -438,9 +846,19 @@ class CalendifierAPI:
                 "total_count": len(all_holidays)
             }
 
-        @self.app.get("/api/v1/holidays/auto/{year}/{month}")
+        @self.app.get("/api/v1/holidays/auto/{year}/{month}", tags=["holidays"], summary="Get Auto-Detected Holidays for Month", description="Get holidays for a specific month using locale-based country detection")
         async def get_holidays_auto_month(year: int, month: int):
-            """Get holidays for a specific month using backend-determined country"""
+            """
+            Get holidays for a specific month using backend-determined country.
+            
+            Parameters:
+            - **year**: Year (e.g., 2025)
+            - **month**: Month (1-12)
+            
+            Returns:
+            - List of holidays for the specified month
+            - Country automatically determined from locale
+            """
             # Get current locale from settings
             current_locale = await self._get_current_locale_from_settings()
             
@@ -464,9 +882,23 @@ class CalendifierAPI:
             # Use the existing holiday logic
             return await self.get_holidays_for_period(country, year, month)
 
-        @self.app.get("/api/v1/holidays/{country}/{year}")
+        @self.app.get("/api/v1/holidays/{country}/{year}", tags=["holidays"], summary="Get Holidays for Year", description="Get all holidays for a specific country and year")
         async def get_holidays_year(country: str, year: int):
-            """Get all holidays for a specific country and year - OVERRIDE WITH CURRENT LOCALE"""
+            """
+            Get all holidays for a specific country and year.
+            
+            Note: The country parameter is overridden by the current locale setting
+            to ensure users see holidays relevant to their configured location.
+            
+            Parameters:
+            - **country**: ISO country code (will be overridden by locale)
+            - **year**: Year to get holidays for
+            
+            Returns:
+            - List of all holidays for the year
+            - Actual country used (based on locale)
+            - Locale used for translation
+            """
             # FORCE: Ignore the country parameter and use current locale instead
             current_locale = await self._get_current_locale_from_settings()
             
@@ -509,9 +941,15 @@ class CalendifierAPI:
                 "total_count": len(all_holidays)
             }
         
-        @self.app.get("/api/v1/holidays/countries")
+        @self.app.get("/api/v1/holidays/countries", tags=["holidays"], summary="Get Supported Countries", description="Get list of all supported countries for holiday data")
         async def get_supported_countries():
-            """Get list of supported countries for holidays"""
+            """
+            Get list of supported countries for holidays.
+            
+            Returns:
+            - List of countries with codes, names, and flag emojis
+            - Covers 28+ countries worldwide
+            """
             return {
                 "countries": [
                     {"code": "US", "name": "United States", "flag": "🇺🇸"},
@@ -557,9 +995,15 @@ class CalendifierAPI:
             }
         
         # Translations endpoints
-        @self.app.get("/api/v1/translations")
+        @self.app.get("/api/v1/translations", tags=["translations"], summary="Get Available Translations", description="Get list of all available translation locales")
         async def get_available_translations():
-            """Get list of available translation locales"""
+            """
+            Get list of available translation locales.
+            
+            Returns:
+            - List of supported locales with codes, native names, and flag emojis
+            - Covers 28+ languages worldwide
+            """
             return {
                 "locales": [
                     {"code": "ar_SA", "name": "العربية", "flag": "🇸🇦"},
@@ -605,9 +1049,23 @@ class CalendifierAPI:
                 ]
             }
         
-        @self.app.get("/api/v1/translations/{locale}")
+        @self.app.get("/api/v1/translations/{locale}", tags=["translations"], summary="Get Translations for Locale", description="Get all translations for a specific locale")
         async def get_translations_enhanced(locale: str):
-            """Enhanced translation endpoint with key normalization"""
+            """
+            Get translations for a specific locale.
+            
+            Parameters:
+            - **locale**: Locale code (e.g., 'en_US', 'de_DE', 'ja_JP')
+            
+            Returns:
+            - Locale code
+            - Dictionary of all translations
+            - Format information
+            - Key count and support information
+            
+            The translations support both dot notation (e.g., 'settings.about') 
+            and flattened keys (e.g., 'settings_about') for maximum compatibility.
+            """
             try:
                 # Try to load from calendar_app translations if available
                 translation_file = Path(f"calendar_app/localization/translations/{locale}.json")
@@ -685,9 +1143,21 @@ class CalendifierAPI:
                 return {"locale": locale, "translations": {}, "error": str(e)}
         
         # Import/Export endpoints
-        @self.app.get("/api/v1/export/events")
+        @self.app.get("/api/v1/export/events", tags=["import-export"], summary="Export Events", description="Export all events as JSON")
         async def export_events():
-            """Export all events as JSON"""
+            """
+            Export all events as JSON.
+            
+            Returns:
+            - List of all events
+            - Export timestamp
+            - Total count
+            
+            Useful for:
+            - Data backup
+            - Migration to other systems
+            - Data analysis
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM events ORDER BY start_date, start_time")
@@ -712,9 +1182,16 @@ class CalendifierAPI:
                 "total_count": len(events)
             }
         
-        @self.app.get("/api/v1/export/notes")
+        @self.app.get("/api/v1/export/notes", tags=["import-export"], summary="Export Notes", description="Export all notes as JSON")
         async def export_notes():
-            """Export all notes as JSON"""
+            """
+            Export all notes as JSON.
+            
+            Returns:
+            - List of all notes
+            - Export timestamp
+            - Total count
+            """
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM notes ORDER BY created_at DESC")
@@ -736,9 +1213,20 @@ class CalendifierAPI:
                 "total_count": len(notes)
             }
         
-        @self.app.get("/api/v1/export/all")
+        @self.app.get("/api/v1/export/all", tags=["import-export"], summary="Export All Data", description="Export all data (events, notes, settings) as JSON")
         async def export_all():
-            """Export all data (events, notes, settings) as JSON"""
+            """
+            Export all data (events, notes, settings) as JSON.
+            
+            Returns:
+            - Complete data export including:
+              - All events
+              - All notes  
+              - All settings
+              - Export metadata
+            
+            This is the recommended endpoint for full data backup.
+            """
             # Get events
             events_response = await export_events()
             # Get notes
@@ -761,9 +1249,21 @@ class CalendifierAPI:
                 }
             }
         
-        @self.app.post("/api/v1/import/events")
+        @self.app.post("/api/v1/import/events", tags=["import-export"], summary="Import Events", description="Import events from JSON data")
         async def import_events(import_data: dict):
-            """Import events from JSON data"""
+            """
+            Import events from JSON data.
+            
+            Parameters:
+            - **import_data**: Dictionary containing 'events' array
+            
+            Returns:
+            - Import statistics (imported, skipped, total processed)
+            
+            Notes:
+            - Duplicate events (same title and date) are skipped
+            - Invalid events are skipped with error logging
+            """
             try:
                 events = import_data.get("events", [])
                 if not events:
@@ -817,9 +1317,17 @@ class CalendifierAPI:
             except Exception as e:
                 raise HTTPException(status_code=400, detail=f"Import failed: {str(e)}")
         
-        @self.app.post("/api/v1/import/notes")
+        @self.app.post("/api/v1/import/notes", tags=["import-export"], summary="Import Notes", description="Import notes from JSON data")
         async def import_notes(import_data: dict):
-            """Import notes from JSON data"""
+            """
+            Import notes from JSON data.
+            
+            Parameters:
+            - **import_data**: Dictionary containing 'notes' array
+            
+            Returns:
+            - Import statistics (imported, skipped, total processed)
+            """
             try:
                 notes = import_data.get("notes", [])
                 if not notes:
@@ -833,11 +1341,10 @@ class CalendifierAPI:
                 
                 for note in notes:
                     try:
-                        # Skip if note already exists (by title and content hash)
-                        content_hash = str(hash(note.get("content", "")))
+                        # Skip if note already exists (by title and date)
                         cursor.execute(
-                            "SELECT id FROM notes WHERE title = ? AND content = ?",
-                            (note.get("title"), note.get("content"))
+                            "SELECT id FROM notes WHERE title = ? AND date = ?",
+                            (note.get("title"), note.get("date"))
                         )
                         if cursor.fetchone():
                             skipped_count += 1
@@ -850,7 +1357,7 @@ class CalendifierAPI:
                                 note.get("title"),
                                 note.get("content"),
                                 note.get("category", "general"),
-                                note.get("date", datetime.now().strftime("%Y-%m-%d")),
+                                note.get("date"),
                                 note.get("tags")
                             )
                         )
@@ -871,334 +1378,107 @@ class CalendifierAPI:
             except Exception as e:
                 raise HTTPException(status_code=400, detail=f"Import failed: {str(e)}")
         
-        @self.app.post("/api/v1/import/all")
-        async def import_all(import_data: dict):
-            """Import complete Calendifier data"""
-            try:
-                calendifier_data = import_data.get("calendifier_export", import_data)
-                
-                results = {
-                    "events": {"imported_count": 0, "skipped_count": 0},
-                    "notes": {"imported_count": 0, "skipped_count": 0},
-                    "settings": {"updated": False}
-                }
-                
-                # Import events
-                if "events" in calendifier_data:
-                    events_result = await import_events({"events": calendifier_data["events"]})
-                    results["events"] = events_result
-                
-                # Import notes
-                if "notes" in calendifier_data:
-                    notes_result = await import_notes({"notes": calendifier_data["notes"]})
-                    results["notes"] = notes_result
-                
-                # Import settings (optional)
-                if "settings" in calendifier_data:
-                    try:
-                        settings_data = calendifier_data["settings"]
-                        # Remove read-only fields
-                        settings_data.pop("updated_at", None)
-                        await update_settings(settings_data)
-                        results["settings"]["updated"] = True
-                    except Exception as e:
-                        print(f"Error importing settings: {e}")
-                
-                return {
-                    "success": True,
-                    "import_results": results,
-                    "imported_at": datetime.now().isoformat()
-                }
-            except Exception as e:
-                raise HTTPException(status_code=400, detail=f"Import failed: {str(e)}")
-        
-        @self.app.delete("/api/v1/clear/events")
-        async def clear_events():
-            """Clear all events"""
-            try:
-                conn = sqlite3.connect(self.db_path)
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM events")
-                count = cursor.fetchone()[0]
-                cursor.execute("DELETE FROM events")
-                conn.commit()
-                conn.close()
-                return {
-                    "success": True,
-                    "deleted_count": count,
-                    "message": f"Deleted {count} events"
-                }
-            except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Clear failed: {str(e)}")
-        
-        @self.app.delete("/api/v1/clear/notes")
-        async def clear_notes():
-            """Clear all notes"""
-            try:
-                conn = sqlite3.connect(self.db_path)
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM notes")
-                count = cursor.fetchone()[0]
-                cursor.execute("DELETE FROM notes")
-                conn.commit()
-                conn.close()
-                return {
-                    "success": True,
-                    "deleted_count": count,
-                    "message": f"Deleted {count} notes"
-                }
-            except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Clear failed: {str(e)}")
-        
-        @self.app.delete("/api/v1/clear/all")
-        async def clear_all():
-            """Clear all data (events and notes)"""
-            try:
-                conn = sqlite3.connect(self.db_path)
-                cursor = conn.cursor()
-                
-                # Count before deletion
-                cursor.execute("SELECT COUNT(*) FROM events")
-                events_count = cursor.fetchone()[0]
-                cursor.execute("SELECT COUNT(*) FROM notes")
-                notes_count = cursor.fetchone()[0]
-                
-                # Delete all data
-                cursor.execute("DELETE FROM events")
-                cursor.execute("DELETE FROM notes")
-                
-                conn.commit()
-                conn.close()
-                
-                return {
-                    "success": True,
-                    "deleted_events": events_count,
-                    "deleted_notes": notes_count,
-                    "total_deleted": events_count + notes_count,
-                    "message": f"Deleted {events_count} events and {notes_count} notes"
-                }
-            except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Clear failed: {str(e)}")
-        
         # NTP endpoints
-        async def _try_ntp_server(server: str, timeout: float = 5.0) -> dict:
-            """Try synchronizing with a specific NTP server (async version of Python implementation)"""
-            import asyncio
-            from datetime import timezone
+        @self.app.get("/api/v1/ntp/status", tags=["ntp"], summary="Get NTP Status", description="Get current NTP synchronization status")
+        async def get_ntp_status():
+            """
+            Get current NTP synchronization status.
             
-            try:
-                print(f"🌐 Trying NTP server: {server}")
-                
-                # Run NTP request in thread pool to avoid blocking (like Python implementation)
-                loop = asyncio.get_event_loop()
-                response = await loop.run_in_executor(
-                    None,
-                    lambda: self.ntp_client.request(server, version=3, timeout=int(timeout))
-                )
-                
-                # Calculate time information using the same method as Python implementation
-                ntp_time = datetime.fromtimestamp(response.tx_time, timezone.utc)
-                local_time = datetime.now(timezone.utc)
-                offset = response.offset  # Use the offset directly from NTP response
-                delay = response.delay    # Use the delay directly from NTP response
-                
-                print(f"✅ NTP sync successful: {server} (offset: {offset:.3f}s, delay: {delay:.3f}s)")
-                
-                return {
-                    "success": True,
-                    "server": server,
-                    "offset": offset,
-                    "delay": delay,
-                    "timestamp": ntp_time,
-                    "ntp_time": ntp_time.isoformat(),
-                    "local_time": local_time.isoformat(),
-                    "error": None
-                }
-                
-            except ntplib.NTPException as e:
-                error_msg = f"NTP error: {str(e)}"
-                print(f"❌ NTP error for {server}: {e}")
-                return {
-                    "success": False,
-                    "server": server,
-                    "offset": 0.0,
-                    "delay": 0.0,
-                    "timestamp": datetime.now(timezone.utc),
-                    "error": error_msg
-                }
-            except OSError as e:
-                error_msg = f"Network error: {str(e)}"
-                print(f"❌ Network error for {server}: {e}")
-                return {
-                    "success": False,
-                    "server": server,
-                    "offset": 0.0,
-                    "delay": 0.0,
-                    "timestamp": datetime.now(timezone.utc),
-                    "error": error_msg
-                }
-            except Exception as e:
-                error_msg = f"Unexpected error: {str(e)}"
-                print(f"❌ Unexpected error for {server}: {e}")
-                return {
-                    "success": False,
-                    "server": server,
-                    "offset": 0.0,
-                    "delay": 0.0,
-                    "timestamp": datetime.now(timezone.utc),
-                    "error": error_msg
-                }
-
-        @self.app.post("/api/v1/ntp/sync")
-        async def sync_ntp():
-            """NTP synchronization endpoint - exact implementation of Python NTPClient.sync_time_async()"""
-            print("🌐 Starting NTP synchronization...")
-            
-            # Try last successful server first (like Python implementation)
-            if self._last_successful_server:
-                result = await _try_ntp_server(self._last_successful_server)
-                if result["success"]:
-                    self._last_ntp_result = result
-                    self.last_ntp_sync = datetime.now().isoformat()
-                    self.ntp_synced = True
-                    return {
-                        "success": True,
-                        "ntp_time": result["ntp_time"],
-                        "local_time": result["local_time"],
-                        "offset_seconds": result["offset"],
-                        "delay_seconds": result["delay"],
-                        "synced_at": self.last_ntp_sync,
-                        "server_used": result["server"]
-                    }
-            
-            # Try all servers in order (like Python implementation)
-            errors = []
-            for server in DEFAULT_NTP_SERVERS:
-                if server == self._last_successful_server:
-                    continue  # Already tried
-                
-                result = await _try_ntp_server(server)
-                if result["success"]:
-                    self._last_successful_server = server
-                    self._last_ntp_result = result
-                    self.last_ntp_sync = datetime.now().isoformat()
-                    self.ntp_synced = True
-                    return {
-                        "success": True,
-                        "ntp_time": result["ntp_time"],
-                        "local_time": result["local_time"],
-                        "offset_seconds": result["offset"],
-                        "delay_seconds": result["delay"],
-                        "synced_at": self.last_ntp_sync,
-                        "server_used": result["server"]
-                    }
-                else:
-                    errors.append(f"{server}: {result['error']}")
-            
-            # All servers failed (like Python implementation)
-            self.ntp_synced = False
-            self._last_ntp_result = None
-            error_msg = f"All NTP servers failed (tried {len(DEFAULT_NTP_SERVERS)} servers)"
-            print(f"⚠️ {error_msg}")
-            
+            Returns:
+            - NTP sync status
+            - Last sync time
+            - Last successful server
+            - Time difference information
+            """
             return {
-                "success": False,
-                "error": error_msg,
-                "message": "Could not synchronize with any NTP server. Check network connectivity and firewall settings (NTP uses UDP port 123).",
-                "servers_tried": DEFAULT_NTP_SERVERS,
-                "detailed_errors": errors
+                "ntp_synced": self.ntp_synced,
+                "last_sync": self.last_ntp_sync,
+                "last_successful_server": self._last_successful_server,
+                "sync_result": self._last_ntp_result,
+                "current_time": datetime.now().isoformat()
             }
         
-        @self.app.get("/api/v1/ntp/status")
-        async def get_ntp_status():
-            """Get detailed NTP synchronization status (like Python implementation)"""
-            if self._last_ntp_result:
-                return {
-                    "synced": self._last_ntp_result["success"],
-                    "server": self._last_ntp_result["server"],
-                    "offset": self._last_ntp_result["offset"],
-                    "delay": self._last_ntp_result["delay"],
-                    "last_sync": self.last_ntp_sync,
-                    "error": self._last_ntp_result["error"],
-                    "available_servers": DEFAULT_NTP_SERVERS,
-                    "last_successful_server": self._last_successful_server
-                }
-            else:
-                return {
-                    "synced": False,
-                    "server": None,
-                    "offset": 0.0,
-                    "delay": 0.0,
-                    "last_sync": None,
-                    "error": "No sync attempted yet",
-                    "available_servers": DEFAULT_NTP_SERVERS,
-                    "last_successful_server": self._last_successful_server
-                }
+        @self.app.post("/api/v1/ntp/sync", tags=["ntp"], summary="Sync NTP Time", description="Manually trigger NTP time synchronization")
+        async def sync_ntp():
+            """
+            Manually trigger NTP time synchronization.
+            
+            Returns:
+            - Sync result
+            - Time difference
+            - Server used
+            - Success status
+            
+            This endpoint attempts to synchronize with multiple NTP servers
+            and returns detailed information about the synchronization process.
+            """
+            return await self.sync_time_with_ntp()
+        
+        @self.app.get("/api/v1/ntp/servers", tags=["ntp"], summary="Get NTP Servers", description="Get list of configured NTP servers")
+        async def get_ntp_servers():
+            """
+            Get list of configured NTP servers.
+            
+            Returns:
+            - List of NTP servers
+            - Default servers
+            - Priority order
+            """
+            return {
+                "servers": DEFAULT_NTP_SERVERS,
+                "default_count": len(DEFAULT_NTP_SERVERS),
+                "priority_order": "First available server is used"
+            }
         
         # About endpoint
-        @self.app.get("/api/v1/about")
+        @self.app.get("/api/v1/about", tags=["system"], summary="Get Application Information", description="Get application name, version, and feature information")
         async def get_about():
-            """Get application information"""
+            """
+            Get application information including version, features, and technical details.
+            
+            Returns:
+            - Application name and version
+            - Feature list
+            - Technical specifications
+            - License information
+            """
             return {
                 "app_name": "📅 Calendifier",
                 "version": __version__,
                 "description": "Cross-platform desktop calendar with analog clock, event handling, note taking, and holidays",
-                "author": "Oliver Ernster",
-                "copyright": "© 2025 Oliver Ernster",
-                "license": "GPL3",
-                "about_text": get_about_text(),
                 "features": [
-                    "🕐 Analog and digital clocks with NTP synchronization",
-                    "📋 Event management with categories",
-                    "📅 Full calendar view with navigation",
-                    "📝 Notes with categories and organization",
-                    "🎉 Holiday support for 28 countries",
-                    "🌍 Translation support for 28 languages",
-                    "📤📥 Import/export functionality",
-                    "⚙️ Configurable settings and themes"
+                    "🕐 Analog Clock Display",
+                    "📅 Interactive Calendar View",
+                    "🌍 International Holidays",
+                    "📝 Event Management",
+                    "📋 Note Taking System",
+                    "🌐 NTP Time Synchronization",
+                    "🎨 Multiple Themes",
+                    "📤📥 Data Import/Export",
+                    "💾 Data Persistence",
+                    "💻 Cross-Platform Support"
                 ],
-                "supported_locales": 28,
-                "supported_countries": 28,
-                "api_endpoints": {
-                    "events": "/api/v1/events",
-                    "notes": "/api/v1/notes",
-                    "holidays": "/api/v1/holidays",
-                    "translations": "/api/v1/translations",
-                    "settings": "/api/v1/settings",
-                    "ntp": "/api/v1/ntp",
-                    "import_export": "/api/v1/export, /api/v1/import"
-                }
+                "technical_details": {
+                    "framework": "FastAPI + Home Assistant",
+                    "language": "Python + JavaScript",
+                    "architecture": "REST API + Lovelace Cards",
+                    "database": "SQLite",
+                    "time_sync": "NTP Protocol"
+                },
+                "libraries": {
+                    "FastAPI": "Modern Python web framework",
+                    "SQLite": "Lightweight database engine",
+                    "ntplib": "Network Time Protocol client",
+                    "python-dateutil": "Date/time parsing utilities",
+                    "holidays": "International holiday data"
+                },
+                "license": "MIT License",
+                "copyright": "© 2025 Oliver Ernster",
+                "author": "Oliver Ernster"
             }
-
-    def normalize_translation_keys(self, translations):
-        """Create both dot notation and flattened versions of all keys"""
-        normalized = {}
-        
-        for key, value in translations.items():
-            if key.startswith('_'):  # Skip metadata
-                continue
-                
-            # Skip if value is not a string (avoid nested objects)
-            if not isinstance(value, str):
-                continue
-                
-            # Add original key
-            normalized[key] = value
-            
-            # Add dot notation version if key is flattened
-            if '_' in key and '.' not in key:
-                dot_key = key.replace('_', '.')
-                normalized[dot_key] = value
-            
-            # Add flattened version if key uses dot notation
-            if '.' in key and '_' not in key:
-                flat_key = key.replace('.', '_')
-                normalized[flat_key] = value
-        
-        return normalized
-
-    async def _get_current_locale_from_settings(self) -> str:
-        """Get the current locale from database settings - NO FALLBACKS"""
+    
+    async def _get_current_locale_from_settings(self):
+        """Get current locale from settings database"""
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
@@ -1207,132 +1487,198 @@ class CalendifierAPI:
             conn.close()
             
             if result:
-                locale = json.loads(result[0])
-                print(f"🌍 API Server using locale from settings: {locale}")
-                return locale
+                return json.loads(result[0])
             else:
-                raise Exception("No locale found in settings - this should never happen")
+                return self._current_locale  # Fallback to detected locale
         except Exception as e:
-            print(f"🌍 API Server CRITICAL ERROR getting locale from settings: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to get locale from settings: {e}")
-
-    async def get_holidays_for_period(self, country: str, year: int, month: int = None, add_days_until: bool = True):
-        """Get holidays using ONLY the sophisticated holiday provider - NO FALLBACKS ALLOWED"""
+            print(f"Error getting locale from settings: {e}")
+            return self._current_locale  # Fallback to detected locale
+    
+    def normalize_translation_keys(self, translations):
+        """Normalize translation keys to support both dot notation and flattened keys"""
+        normalized = {}
         
-        print(f"🔍 get_holidays_for_period called: country={country}, year={year}, month={month}")
-        print(f"🔍 HOLIDAY_PROVIDER_AVAILABLE: {HOLIDAY_PROVIDER_AVAILABLE}")
-        print(f"🔍 self.holiday_provider: {self.holiday_provider}")
+        def flatten_dict(d, parent_key='', sep='_'):
+            items = []
+            for k, v in d.items():
+                new_key = f"{parent_key}{sep}{k}" if parent_key else k
+                if isinstance(v, dict):
+                    items.extend(flatten_dict(v, new_key, sep=sep).items())
+                else:
+                    items.append((new_key, v))
+            return dict(items)
         
-        # REQUIRE sophisticated holiday provider - NO FALLBACKS
-        if not self.holiday_provider:
-            raise HTTPException(status_code=500, detail="Sophisticated holiday provider is required but not available")
+        # Add original keys
+        normalized.update(translations)
         
-        print(f"🔍 Using ONLY sophisticated holiday provider for {country} {year}")
+        # Add flattened keys (dot notation to underscore)
+        flattened = flatten_dict(translations, sep='_')
+        normalized.update(flattened)
         
-        # Get current locale from settings for translation
-        current_locale = await self._get_current_locale_from_settings()
-        print(f"🔍 Current locale: {current_locale}")
+        # Add dot notation keys (underscore to dot)
+        for key, value in list(normalized.items()):
+            if '_' in key:
+                dot_key = key.replace('_', '.')
+                normalized[dot_key] = value
         
-        # Import the translation function
-        from calendar_app.core.holiday_translations import get_translated_holiday_name
-        print(f"🔍 Translation function imported successfully")
-        
-        # Use the sophisticated multi-country holiday provider
-        print(f"🔍 Setting holiday provider country to: {country}")
-        self.holiday_provider.set_country(country)
-        
-        # Force clear cache to ensure fresh data for the new country
-        self.holiday_provider.clear_cache()
-        print(f"🔍 Holiday provider country set and cache cleared for: {country}")
-        
-        if month:
-            # Get holidays for specific month
-            holidays_list = self.holiday_provider.get_holidays_for_month(year, month)
-            print(f"🔍 Got {len(holidays_list)} holidays for {year}-{month}")
-        else:
-            # Get all holidays for the year
+        return normalized
+    
+    async def get_holidays_for_period(self, country: str, year: int, month: int, add_days_until: bool = True):
+        """Get holidays for a specific period using the sophisticated holiday provider"""
+        try:
+            if not self.use_sophisticated_provider or not self.holiday_provider:
+                raise Exception("Sophisticated holiday provider not available")
+            
+            # Get current locale for translations
+            current_locale = await self._get_current_locale_from_settings()
+            
+            # Get holidays using the sophisticated provider
+            holidays_data = self.holiday_provider.get_holidays_for_month(
+                country=country.upper(),
+                year=year,
+                month=month,
+                locale=current_locale
+            )
+            
+            # Convert to API format
             holidays_list = []
-            for m in range(1, 13):
-                month_holidays = self.holiday_provider.get_holidays_for_month(year, m)
-                holidays_list.extend(month_holidays)
-            print(f"🔍 Got {len(holidays_list)} holidays for entire year {year}")
-        
-        # Convert Holiday objects to API format with manual translations
-        holidays = []
-        for holiday in holidays_list:
-            # Get the English name first, then translate it
-            english_name = holiday.name
+            for holiday_date, holiday_info in holidays_data.items():
+                holiday_entry = {
+                    "date": holiday_date.strftime("%Y-%m-%d"),
+                    "name": holiday_info.get("name", "Unknown Holiday"),
+                    "type": holiday_info.get("type", "public"),
+                    "country": country.upper(),
+                    "locale": current_locale
+                }
+                
+                # Add days until if requested
+                if add_days_until:
+                    today = datetime.now().date()
+                    holiday_entry["days_until"] = (holiday_date - today).days
+                
+                holidays_list.append(holiday_entry)
             
-            # Apply translation using the locale from settings
-            translated_name = get_translated_holiday_name(english_name, current_locale)
+            # Sort by date
+            holidays_list.sort(key=lambda x: x["date"])
             
-            holiday_dict = {
-                "name": translated_name,  # Now properly translated
-                "date": holiday.date.isoformat(),
-                "type": holiday.type,
-                "country": holiday.country_code
+            return {
+                "holidays": holidays_list,
+                "country": country.upper(),
+                "year": year,
+                "month": month,
+                "locale": current_locale,
+                "total_count": len(holidays_list)
             }
             
-            # Add days until if requested
-            if add_days_until:
-                today = datetime.now().date()
-                holiday_dict["days_until"] = (holiday.date - today).days
-            
-            holidays.append(holiday_dict)
-            
-            # Debug first few holidays
-            if len(holidays) <= 3:
-                print(f"🔍 Holiday: {english_name} -> {translated_name} on {holiday.date}")
-        
-        print(f"✅ Loaded {len(holidays)} holidays for {country} {year} using ONLY sophisticated provider with {current_locale} translations")
-        return {"holidays": holidays}
+        except Exception as e:
+            print(f"Error getting holidays for {country}/{year}/{month}: {e}")
+            return {
+                "holidays": [],
+                "country": country.upper(),
+                "year": year,
+                "month": month,
+                "error": str(e),
+                "total_count": 0
+            }
     
-    # FALLBACK METHODS REMOVED - NO FALLBACKS ALLOWED
-    # The system must use ONLY the sophisticated holiday provider
-
-    async def start_auto_ntp_sync(self):
-        """Start automatic NTP synchronization"""
-        while True:
-            try:
-                # Get sync interval from settings
-                conn = sqlite3.connect(self.db_path)
-                cursor = conn.cursor()
-                cursor.execute("SELECT value FROM settings WHERE key = 'auto_sync'")
-                auto_sync_result = cursor.fetchone()
-                cursor.execute("SELECT value FROM settings WHERE key = 'sync_interval'")
-                interval_result = cursor.fetchone()
-                conn.close()
-                
-                auto_sync = json.loads(auto_sync_result[0]) if auto_sync_result else True
-                interval = json.loads(interval_result[0]) if interval_result else 30
-                
-                if auto_sync:
-                    try:
-                        response = self.ntp_client.request('pool.ntp.org', version=3)
-                        self.last_ntp_sync = datetime.now().isoformat()
-                        self.ntp_synced = True
-                    except:
-                        self.ntp_synced = False
-                
-                await asyncio.sleep(interval * 60)  # Convert minutes to seconds
-            except Exception:
-                await asyncio.sleep(300)  # Wait 5 minutes on error
+    async def sync_time_with_ntp(self):
+        """Synchronize time with NTP servers"""
+        try:
+            for server in DEFAULT_NTP_SERVERS:
+                try:
+                    print(f"🕐 Attempting NTP sync with {server}...")
+                    response = self.ntp_client.request(server, version=3, timeout=5)
+                    
+                    # Calculate time difference
+                    ntp_time = datetime.fromtimestamp(response.tx_time)
+                    local_time = datetime.now()
+                    time_diff = (ntp_time - local_time).total_seconds()
+                    
+                    # Update sync status
+                    self.ntp_synced = True
+                    self.last_ntp_sync = datetime.now().isoformat()
+                    self._last_successful_server = server
+                    self._last_ntp_result = {
+                        "server": server,
+                        "ntp_time": ntp_time.isoformat(),
+                        "local_time": local_time.isoformat(),
+                        "time_difference_seconds": time_diff,
+                        "stratum": response.stratum,
+                        "precision": response.precision
+                    }
+                    
+                    print(f"✅ NTP sync successful with {server}")
+                    print(f"   Time difference: {time_diff:.3f} seconds")
+                    
+                    return {
+                        "success": True,
+                        "server": server,
+                        "ntp_time": ntp_time.isoformat(),
+                        "local_time": local_time.isoformat(),
+                        "time_difference_seconds": time_diff,
+                        "stratum": response.stratum,
+                        "message": f"Successfully synced with {server}"
+                    }
+                    
+                except Exception as server_error:
+                    print(f"❌ Failed to sync with {server}: {server_error}")
+                    continue
+            
+            # All servers failed
+            self.ntp_synced = False
+            error_msg = "Failed to sync with any NTP server"
+            print(f"❌ {error_msg}")
+            
+            return {
+                "success": False,
+                "error": error_msg,
+                "servers_tried": DEFAULT_NTP_SERVERS,
+                "local_time": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            self.ntp_synced = False
+            error_msg = f"NTP sync error: {str(e)}"
+            print(f"❌ {error_msg}")
+            
+            return {
+                "success": False,
+                "error": error_msg,
+                "local_time": datetime.now().isoformat()
+            }
 
 
 def create_app():
-    """Create and configure the FastAPI application"""
+    """Factory function to create the FastAPI application"""
     api = CalendifierAPI()
-    
-    # Add startup event to start auto NTP sync
-    @api.app.on_event("startup")
-    async def startup_event():
-        asyncio.create_task(api.start_auto_ntp_sync())
-    
     return api.app
 
 
-if __name__ == "__main__":
+def run_server():
+    """Run the API server"""
     import uvicorn
     
+    print(f"\n{get_version_string()}")
+    print("🚀 Starting Calendifier API Server...")
+    print("📚 Swagger documentation will be available at: http://localhost:8000/docs")
+    print("🔧 ReDoc documentation will be available at: http://localhost:8000/redoc")
+    print("🌐 API root endpoint: http://localhost:8000/")
+    
     app = create_app()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    
+    try:
+        uvicorn.run(
+            app,
+            host="0.0.0.0",
+            port=8000,
+            log_level="info",
+            access_log=True
+        )
+    except KeyboardInterrupt:
+        print("\n👋 Calendifier API Server stopped")
+    except Exception as e:
+        print(f"❌ Server error: {e}")
+
+
+if __name__ == "__main__":
+    run_server()

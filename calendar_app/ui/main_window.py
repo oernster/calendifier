@@ -82,6 +82,9 @@ class MainWindow(QMainWindow):
         self._apply_theme()
         self._restore_geometry()
         
+        # Create floating language selector in top right
+        self._create_floating_language_selector()
+        
         # Force all widgets to use correct locale
         self._force_initial_localization()
         
@@ -291,7 +294,8 @@ class MainWindow(QMainWindow):
         """🔄 Completely rebuild menu bar with fresh translations."""
         try:
             # Clear existing menu bar
-            self.menuBar().clear()
+            menubar = self.menuBar()
+            menubar.clear()
             
             # Recreate all menus with fresh translations
             self._create_menu_bar()
@@ -309,19 +313,19 @@ class MainWindow(QMainWindow):
         # Enable size grip (the small square in bottom right)
         self.status_bar.setSizeGripEnabled(True)
         
-        # Add language selector to status bar
-        self._create_language_selector()
-        
         # Show ready message
         self.status_bar.showMessage(f"✅ {_('status_ready', app_name=_('app_name'))}")
     
-    def _create_language_selector(self):
-        """🌍 Create language selector in status bar."""
-        # Create language selector widget
-        language_widget = QWidget()
-        language_layout = QHBoxLayout(language_widget)
-        language_layout.setContentsMargins(5, 0, 5, 0)
-        language_layout.setSpacing(5)
+    def _create_floating_language_selector(self):
+        """🌍 Create floating language selector in top right corner."""
+        # Create language selector widget as child of main window
+        self.language_widget = QWidget(self)
+        self.language_widget.setObjectName("floating_language_selector")
+        
+        # Set up layout with reduced margins for menu bar fit
+        language_layout = QHBoxLayout(self.language_widget)
+        language_layout.setContentsMargins(4, 2, 4, 2)  # Reduced margins
+        language_layout.setSpacing(3)  # Reduced spacing
         
         # Language label
         language_label = QLabel("🌍")
@@ -330,8 +334,9 @@ class MainWindow(QMainWindow):
         
         # Language combo box with scroll support for large number of locales
         self.language_combo = QComboBox()
-        self.language_combo.setMinimumWidth(200)
-        self.language_combo.setMaximumWidth(250)
+        self.language_combo.setMinimumWidth(180)
+        self.language_combo.setMaximumWidth(200)
+        self.language_combo.setMaximumHeight(22)  # Limit height to fit in menu bar
         self.language_combo.setToolTip(_("label_language", default="Language"))
         
         # Populate languages with translated names from current locale
@@ -364,8 +369,26 @@ class MainWindow(QMainWindow):
         
         language_layout.addWidget(self.language_combo)
         
-        # Add to status bar (right side)
-        self.status_bar.addPermanentWidget(language_widget)
+        # Style the floating widget with reduced borders for menu bar fit
+        self.language_widget.setStyleSheet("""
+            QWidget#floating_language_selector {
+                background-color: rgba(50, 50, 50, 200);
+                border: 1px solid #666;
+                border-radius: 2px;
+            }
+            QComboBox {
+                padding: 1px 4px;
+                border: 1px solid #666;
+                border-radius: 2px;
+            }
+        """)
+        
+        # Position in top right corner
+        self._position_language_selector()
+        
+        # Show the widget
+        self.language_widget.show()
+        self.language_widget.raise_()  # Bring to front
     
     def _refresh_language_selector(self):
         """🔄 Refresh language selector with translated names."""
@@ -929,6 +952,29 @@ class MainWindow(QMainWindow):
             left_width = min(400, total_width // 3)
             right_width = total_width - left_width
             self.central_splitter.setSizes([left_width, right_width])
+        
+        # Reposition floating language selector
+        if hasattr(self, 'language_widget'):
+            self._position_language_selector()
+    
+    def _position_language_selector(self):
+        """Position the floating language selector in the menu line."""
+        if hasattr(self, 'language_widget') and self.language_widget:
+            # Get window size
+            window_width = self.width()
+            
+            # Get menu bar height and position at the same level
+            menu_bar = self.menuBar()
+            menu_height = menu_bar.height()
+            
+            # Position in top right corner aligned with menu bar
+            widget_size = self.language_widget.sizeHint()
+            x = window_width - widget_size.width() - 10  # 10px margin from right edge
+            y = (menu_height - widget_size.height()) // 2  # Center vertically in menu bar
+            
+            self.language_widget.move(x, y)
+            self.language_widget.resize(widget_size)
+            self.language_widget.raise_()  # Ensure it's on top
     
     # Public methods
     
