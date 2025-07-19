@@ -66,12 +66,24 @@ class CalendarManager:
             # Get events for the extended date range (not just the target month)
             events = self.event_manager.get_events_for_date_range(grid_start_date, grid_end_date)
             
-            # Group events by date
+            # Group events by date, avoiding duplicates for recurring events
             events_by_date: Dict[date, List[Event]] = {}
+            seen_master_ids = set()  # Track master event IDs to avoid duplicates
+            
             for event in events:
                 if event.start_date:
                     if event.start_date not in events_by_date:
                         events_by_date[event.start_date] = []
+                    
+                    # For recurring events, avoid adding both master and occurrence for same date
+                    if event.is_recurring and not event.is_occurrence():
+                        # This is a master recurring event
+                        if event.id:
+                            seen_master_ids.add(event.id)
+                    elif event.recurrence_master_id and event.recurrence_master_id in seen_master_ids:
+                        # Skip occurrences if we've already added the master event for this date
+                        continue
+                    
                     events_by_date[event.start_date].append(event)
                 else:
                     logger.warning(f"⚠️ Event without start_date: {event.id} ({event.title})")
