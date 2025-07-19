@@ -363,7 +363,9 @@ cat > com.calendifier.Calendar.json << 'EOL'
                 "echo 'Installing Calendifier application files to /app...'",
                 "cp -rv main.py ${FLATPAK_DEST}/",
                 "cp -rv calendar_app ${FLATPAK_DEST}/",
-                "if [ -f version.py ]; then cp -rv version.py ${FLATPAK_DEST}/; fi",
+                "echo 'Copying version.py with version information...'",
+                "if [ -f version.py ]; then cp -rv version.py ${FLATPAK_DEST}/; echo 'Version file copied successfully'; fi",
+                "if [ -f ${FLATPAK_DEST}/version.py ]; then echo 'Verifying version in copied file:'; cat ${FLATPAK_DEST}/version.py | grep '__version__' || echo 'Version not found in file!'; fi",
                 "if [ -d assets ]; then cp -rv assets ${FLATPAK_DEST}/; fi",
                 "if [ -f LICENSE ]; then cp -rv LICENSE ${FLATPAK_DEST}/; fi",
                 "if [ -f LGPL3_COMPLIANCE_NOTICE.txt ]; then cp -rv LGPL3_COMPLIANCE_NOTICE.txt ${FLATPAK_DEST}/; fi",
@@ -453,13 +455,27 @@ esac
 
 # Extract version from version.py
 APP_VERSION=""
+echo "Extracting version from version.py..."
 if [ -f "version.py" ]; then
-    APP_VERSION=$(python3 -c "exec(open('version.py').read()); print(__version__)" 2>/dev/null || echo "1.1.0")
+    echo "version.py found, reading content:"
+    cat version.py | grep "__version__"
+    
+    # Extract version with more robust error handling
+    APP_VERSION=$(python3 -c "exec(open('version.py').read()); print(__version__)" 2>/dev/null)
+    
+    # Check if extraction was successful
+    if [ -z "$APP_VERSION" ]; then
+        echo "Failed to extract version from version.py, using fallback version"
+        APP_VERSION="1.1.0"
+    else
+        echo "Successfully extracted version: $APP_VERSION"
+    fi
 else
+    echo "version.py not found, using default version"
     APP_VERSION="1.1.0"
 fi
 
-echo "Using version: $APP_VERSION"
+echo "Using version: $APP_VERSION for metainfo.xml"
 
 # Create metainfo file
 cat > com.calendifier.Calendar.metainfo.xml << EOL
@@ -635,47 +651,102 @@ flatpak-builder --repo=repo --force-clean --user build com.calendifier.Calendar.
 
 echo "Creating single-file bundle..."
 
-# Function to show progress for bundle creation
-show_bundle_progress() {
-    local pid=$1
-    local chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
-    local delay=0.1
-    local count=0
-    
-    while kill -0 $pid 2>/dev/null; do
-        local char=${chars:$((count % ${#chars})):1}
-        local elapsed=$((count / 10))
-        printf "\r%s Creating bundle... %02d:%02d elapsed" "$char" $((elapsed / 60)) $((elapsed % 60))
-        sleep $delay
-        ((count++))
-    done
-    
-    # Clear the progress line
-    printf "\r"
-}
+# Get repository size for estimation
+REPO_SIZE_BYTES=$(du -sb repo 2>/dev/null | cut -f1 || echo "0")
+REPO_SIZE_MB=$(( REPO_SIZE_BYTES / 1048576 ))
+echo "Repository size: ${REPO_SIZE_MB} MB"
 
-# Start bundle creation in background and show progress
-flatpak build-bundle repo calendifier.flatpak com.calendifier.Calendar &
+echo "Running: flatpak build-bundle repo calendifier.flatpak com.calendifier.Calendar"
+echo ""
+
+# Start bundle creation with verbose output
+flatpak build-bundle --verbose repo calendifier.flatpak com.calendifier.Calendar > /tmp/flatpak-bundle.log 2>&1 &
 BUNDLE_PID=$!
 
-# Show progress while bundle is being created
-show_bundle_progress $BUNDLE_PID
+# Monitor progress
+last_milestone=""
+last_size=0
+no_progress_count=0
 
-# Wait for bundle creation to complete
+while kill -0 $BUNDLE_PID 2>/dev/null; do
+    # Check for milestones in the log
+    if [ -f /tmp/flatpak-bundle.log ]; then
+        # Look for key progress indicators with case-insensitive matching
+        if grep -qi "export" /tmp/flatpak-bundle.log && [ "$last_milestone" != "exporting" ]; then
+            echo ""
+            echo "[1/4] Exporting files..."
+            last_milestone="exporting"
+        elif grep -qi "writ" /tmp/flatpak-bundle.log && [ "$last_milestone" != "writing" ]; then
+            echo ""
+            echo "[2/4] Writing bundle data..."
+            last_milestone="writing"
+        elif grep -qi "commit" /tmp/flatpak-bundle.log && [ "$last_milestone" != "committing" ]; then
+            echo ""
+            echo "[3/4] Committing changes..."
+            last_milestone="committing"
+        elif grep -qi "compress\|pack" /tmp/flatpak-bundle.log && [ "$last_milestone" != "compressing" ]; then
+            echo ""
+            echo "[4/4] Compressing bundle..."
+            last_milestone="compressing"
+        fi
+    fi
+    
+    # Monitor bundle file size
+    if [ -f "calendifier.flatpak" ]; then
+        current_size=$(stat -c%s "calendifier.flatpak" 2>/dev/null || echo "0")
+        if [ "$current_size" -gt "$last_size" ]; then
+            size_mb=$(( current_size / 1048576 ))
+            if [ $REPO_SIZE_BYTES -gt 0 ]; then
+                percent=$(( current_size * 100 / REPO_SIZE_BYTES ))
+                printf "\r📦 Bundle progress: %d MB (%d%% of repository size)" "$size_mb" "$percent"
+            else
+                printf "\r📦 Bundle progress: %d MB" "$size_mb"
+            fi
+            last_size=$current_size
+            no_progress_count=0
+        else
+            no_progress_count=$((no_progress_count + 1))
+            if [ $no_progress_count -gt 20 ]; then
+                echo ""
+                echo "⏳ Finalizing bundle..."
+                break
+            fi
+        fi
+    fi
+    
+    sleep 0.5
+done
+
+# Wait for completion
 wait $BUNDLE_PID
 BUNDLE_EXIT_CODE=$?
 
-if [ $BUNDLE_EXIT_CODE -eq 0 ]; then
+echo ""  # New line after progress
+
+# Check result
+if [ $BUNDLE_EXIT_CODE -eq 0 ] && [ -f "calendifier.flatpak" ]; then
     echo "✅ Bundle creation completed successfully!"
+    BUNDLE_SIZE=$(du -h calendifier.flatpak | cut -f1)
+    echo "📦 Final bundle size: $BUNDLE_SIZE"
     
-    # Show bundle size if file exists
-    if [ -f "calendifier.flatpak" ]; then
-        BUNDLE_SIZE=$(du -h calendifier.flatpak | cut -f1)
-        echo "📦 Bundle size: $BUNDLE_SIZE"
+    # If no milestones were shown, display what was in the log
+    if [ "$last_milestone" = "" ] && [ -f /tmp/flatpak-bundle.log ]; then
+        echo ""
+        echo "Note: Progress milestones were not detected. Log tail:"
+        tail -n 5 /tmp/flatpak-bundle.log
     fi
 else
-    echo "❌ Bundle creation failed with exit code $BUNDLE_EXIT_CODE"
-    exit 1
+    echo "❌ Bundle creation failed"
+    echo "You can still install from the repo with: flatpak install --user repo com.calendifier.Calendar"
+    echo "Or try creating the bundle manually with: flatpak build-bundle repo calendifier.flatpak com.calendifier.Calendar"
+    
+    # Show error details from log
+    if [ -f /tmp/flatpak-bundle.log ]; then
+        echo ""
+        echo "Error details from log:"
+        tail -n 10 /tmp/flatpak-bundle.log
+    fi
+    # Don't exit - the repo is still valid
 fi
 
 echo "Done! You can install the Flatpak with:"
@@ -772,6 +843,12 @@ EOL
         echo "🧪 Testing the installation..."
         echo "Running: flatpak run com.calendifier.Calendar --version"
         timeout 10s flatpak run com.calendifier.Calendar --version 2>/dev/null || echo "Version check completed (or timed out)"
+        
+        echo "🔍 Verifying version.py in the Flatpak..."
+        flatpak run --command=sh com.calendifier.Calendar -c "if [ -f /app/version.py ]; then cat /app/version.py | grep '__version__'; else echo 'version.py not found in Flatpak!'; fi" || echo "Failed to check version.py in Flatpak"
+        
+        echo "🔍 Checking Python import of version..."
+        flatpak run --command=python3 com.calendifier.Calendar -c "try: from version import __version__; print(f'Imported version: {__version__}'); except Exception as e: print(f'Error importing version: {e}')" || echo "Failed to import version in Flatpak"
         
     else
         echo "Installation failed. Please try installing manually with: flatpak install --user calendifier.flatpak"
