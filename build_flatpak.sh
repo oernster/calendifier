@@ -3,8 +3,8 @@
 # Exit on error
 set -e
 
-# Enable more verbose output
-set -x
+# Disable verbose output for cleaner progress reporting
+# set -x
 
 # Function to detect Linux distribution
 detect_distro() {
@@ -363,9 +363,7 @@ cat > com.calendifier.Calendar.json << 'EOL'
                 "echo 'Installing Calendifier application files to /app...'",
                 "cp -rv main.py ${FLATPAK_DEST}/",
                 "cp -rv calendar_app ${FLATPAK_DEST}/",
-                "echo 'Copying version.py with version information...'",
-                "if [ -f version.py ]; then cp -rv version.py ${FLATPAK_DEST}/; echo 'Version file copied successfully'; fi",
-                "if [ -f ${FLATPAK_DEST}/version.py ]; then echo 'Verifying version in copied file:'; cat ${FLATPAK_DEST}/version.py | grep '__version__' || echo 'Version not found in file!'; fi",
+                "if [ -f version.py ]; then cp -rv version.py ${FLATPAK_DEST}/; fi",
                 "if [ -d assets ]; then cp -rv assets ${FLATPAK_DEST}/; fi",
                 "if [ -f LICENSE ]; then cp -rv LICENSE ${FLATPAK_DEST}/; fi",
                 "if [ -f LGPL3_COMPLIANCE_NOTICE.txt ]; then cp -rv LGPL3_COMPLIANCE_NOTICE.txt ${FLATPAK_DEST}/; fi",
@@ -455,27 +453,19 @@ esac
 
 # Extract version from version.py
 APP_VERSION=""
-echo "Extracting version from version.py..."
 if [ -f "version.py" ]; then
-    echo "version.py found, reading content:"
-    cat version.py | grep "__version__"
-    
     # Extract version with more robust error handling
     APP_VERSION=$(python3 -c "exec(open('version.py').read()); print(__version__)" 2>/dev/null)
     
     # Check if extraction was successful
     if [ -z "$APP_VERSION" ]; then
-        echo "Failed to extract version from version.py, using fallback version"
         APP_VERSION="1.1.0"
-    else
-        echo "Successfully extracted version: $APP_VERSION"
     fi
 else
-    echo "version.py not found, using default version"
     APP_VERSION="1.1.0"
 fi
 
-echo "Using version: $APP_VERSION for metainfo.xml"
+echo "Using version: $APP_VERSION"
 
 # Create metainfo file
 cat > com.calendifier.Calendar.metainfo.xml << EOL
@@ -843,12 +833,6 @@ EOL
         echo "🧪 Testing the installation..."
         echo "Running: flatpak run com.calendifier.Calendar --version"
         timeout 10s flatpak run com.calendifier.Calendar --version 2>/dev/null || echo "Version check completed (or timed out)"
-        
-        echo "🔍 Verifying version.py in the Flatpak..."
-        flatpak run --command=sh com.calendifier.Calendar -c "if [ -f /app/version.py ]; then cat /app/version.py | grep '__version__'; else echo 'version.py not found in Flatpak!'; fi" || echo "Failed to check version.py in Flatpak"
-        
-        echo "🔍 Checking Python import of version..."
-        flatpak run --command=python3 com.calendifier.Calendar -c "try: from version import __version__; print(f'Imported version: {__version__}'); except Exception as e: print(f'Error importing version: {e}')" || echo "Failed to import version in Flatpak"
         
     else
         echo "Installation failed. Please try installing manually with: flatpak install --user calendifier.flatpak"
