@@ -312,6 +312,7 @@ QPushButton[class="icon"] {{
     max-width: 32px;
     min-height: 32px;
     max-height: 32px;
+    color: {colors['primary']};
 }}
 
 QPushButton[class="icon"]:hover {{
