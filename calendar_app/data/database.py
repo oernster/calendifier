@@ -369,15 +369,20 @@ class DatabaseManager:
             events = []
             for row in cursor.fetchall():
                 event = self._row_to_event(row)
-                events.append(event)
                 logger.debug(f"📆 Found event: {event.id} ({event.title}) - recurring: {event.is_recurring}")
                 
                 # Handle recurring events for the month
                 if event.is_recurring:
+                    # CRITICAL FIX: Only add generated occurrences, never the master event itself
+                    # The master recurring event should not appear on the calendar
                     recurring_events = self._generate_recurring_events_for_range(
                         event, start_date, end_date
                     )
                     events.extend(recurring_events)
+                    logger.debug(f"📆 Generated {len(recurring_events)} recurring occurrences for master event {event.id}")
+                else:
+                    # Non-recurring events should be added normally
+                    events.append(event)
             
             logger.info(f"📆 Total events for {year}-{month:02d}: {len(events)}")
             return events

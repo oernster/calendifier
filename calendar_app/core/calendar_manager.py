@@ -26,6 +26,10 @@ class CalendarManager:
         self.current_month = datetime.now().month
         self.first_day_of_week = 0  # 0 = Monday, 6 = Sunday
         
+        # Enhanced deduplication cache with automatic year-based clearing
+        self._seen_events_cache = set()
+        self._cache_year = None
+        
         logger.info(f"📅 Calendar Manager initialized for {self.current_year}-{self.current_month:02d}")
     
     def get_month_data(self, year: int, month: int) -> CalendarMonth:
@@ -66,25 +70,50 @@ class CalendarManager:
             # Get events for the extended date range (not just the target month)
             events = self.event_manager.get_events_for_date_range(grid_start_date, grid_end_date)
             
+            # Auto-clear cache when year changes (enhanced deduplication)
+            if self._cache_year != year:
+                logger.debug(f"📅 Year changed from {self._cache_year} to {year}, clearing event cache")
+                self._seen_events_cache.clear()
+                self._cache_year = year
+            
             # Group events by date, avoiding duplicates for recurring events
             events_by_date: Dict[date, List[Event]] = {}
-            seen_master_ids = set()  # Track master event IDs to avoid duplicates
             
             for event in events:
                 if event.start_date:
+                    # CRITICAL FIX: Never display master recurring events on calendar
+                    # Only show generated occurrence events (or non-recurring events)
+                    if event.is_recurring and not event.is_occurrence():
+                        # This is a master recurring event - skip it (don't display on calendar)
+                        logger.debug(f"🔄 Skipping master recurring event {event.id} ({event.title}) - only occurrences should be displayed")
+                        continue
+                    
+                    # Create better deduplication key for recurring occurrences
+                    if hasattr(event, 'recurrence_id') and event.recurrence_id:
+                        # Use recurrence_id for recurring occurrences
+                        event_key = event.recurrence_id
+                    elif event.id:
+                        # Use regular ID for non-recurring events
+                        event_key = (event.id, event.start_date)
+                    else:
+                        # Fallback for events without ID (use title + date + master_id)
+                        master_id = getattr(event, 'recurrence_master_id', None)
+                        event_key = (event.title, event.start_date, master_id)
+                    
+                    # Skip if we've already seen this event occurrence (persistent cache)
+                    if event_key in self._seen_events_cache:
+                        logger.debug(f"🔄 Skipping duplicate event occurrence: {event.title} on {event.start_date}")
+                        continue
+                    
+                    self._seen_events_cache.add(event_key)
+                    
+                    # Add to events by date
                     if event.start_date not in events_by_date:
                         events_by_date[event.start_date] = []
                     
-                    # For recurring events, avoid adding both master and occurrence for same date
-                    if event.is_recurring and not event.is_occurrence():
-                        # This is a master recurring event
-                        if event.id:
-                            seen_master_ids.add(event.id)
-                    elif event.recurrence_master_id and event.recurrence_master_id in seen_master_ids:
-                        # Skip occurrences if we've already added the master event for this date
-                        continue
-                    
+                    # Display non-recurring events and occurrence events
                     events_by_date[event.start_date].append(event)
+                    logger.debug(f"📅 Added event to calendar: {event.title} on {event.start_date} (master_id: {getattr(event, 'recurrence_master_id', None)})")
                 else:
                     logger.warning(f"⚠️ Event without start_date: {event.id} ({event.title})")
             
@@ -208,12 +237,16 @@ class CalendarManager:
         """⏭️ Navigate to next year."""
         self.current_year += 1
         logger.debug(f"⏭️ Next year: {self.current_year}")
+        # Clear cache when navigating between years to prevent memory bloat
+        self.clear_event_cache()
         return self.get_month_data(self.current_year, self.current_month)
     
     def navigate_previous_year(self) -> CalendarMonth:
         """⏮️ Navigate to previous year."""
         self.current_year -= 1
         logger.debug(f"⏮️ Previous year: {self.current_year}")
+        # Clear cache when navigating between years to prevent memory bloat
+        self.clear_event_cache()
         return self.get_month_data(self.current_year, self.current_month)
     
     def jump_to_today(self) -> CalendarMonth:
@@ -459,3 +492,9 @@ class CalendarManager:
     def is_leap_year(self, year: int) -> bool:
         """📅 Check if year is leap year."""
         return calendar.isleap(year)
+    
+    def clear_event_cache(self):
+        """🗑️ Clear the event deduplication cache manually."""
+        logger.debug("🗑️ Manually clearing event deduplication cache")
+        self._seen_events_cache.clear()
+        self._cache_year = None

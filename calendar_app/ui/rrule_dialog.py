@@ -416,21 +416,21 @@ class RRuleDialog:
                 self.interval_var.set(components.interval)
             
             # Set weekdays
-            if components.by_weekday:
+            if components.byday:
                 for day in self.weekday_vars:
                     self.weekday_vars[day].set(False)
-                for weekday in components.by_weekday:
-                    if weekday.weekday.value in self.weekday_vars:
-                        self.weekday_vars[weekday.weekday.value].set(True)
+                for weekday in components.byday:
+                    if weekday in self.weekday_vars:
+                        self.weekday_vars[weekday].set(True)
             
             # Set monthly options
-            if components.by_month_day:
+            if components.bymonthday:
                 self.monthly_type_var.set("bymonthday")
-                self.monthday_var.set(components.by_month_day[0])
-            elif components.by_set_pos and components.by_weekday:
+                self.monthday_var.set(components.bymonthday[0])
+            elif components.bysetpos and components.byday:
                 self.monthly_type_var.set("bysetpos")
-                self.setpos_var.set(str(components.by_set_pos[0]))
-                self.setpos_weekday_var.set(components.by_weekday[0].weekday.value)
+                self.setpos_var.set(str(components.bysetpos[0]))
+                self.setpos_weekday_var.set(components.byday[0])
             
             # Set end condition
             if components.count:
@@ -516,8 +516,8 @@ class RRuleDialog:
             occurrences = self.generator.generate_occurrences_for_range(temp_event, self.start_date, end_date)
             
             # Update preview text
-            components = self.parser.parse_rrule(rrule)
-            description = self.parser.get_human_readable_description(components, self.i18n)
+            locale = getattr(self.i18n, 'current_locale', 'en_GB')
+            description = self.parser.get_human_readable_description(rrule, locale)
             self.preview_text.set(description)
             
             # Update preview list
@@ -545,11 +545,9 @@ class RRuleDialog:
                 return
             
             # Validate RRULE
-            components = self.parser.parse_rrule(rrule)
-            errors = self.parser.validate_rrule_components(components)
-            if errors:
-                messagebox.showerror(self.i18n.get("error.title"), 
-                                   f"{self.i18n.get('recurring.error.invalid_rrule')}: {', '.join(errors)}")
+            if not self.parser.validate_rrule(rrule):
+                messagebox.showerror(self.i18n.get("error.title"),
+                                   self.i18n.get("recurring.error.invalid_rrule"))
                 return
             
             self.result_rrule = rrule

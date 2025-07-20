@@ -103,7 +103,17 @@ class EventManager:
             unique_events = []
             seen_ids = set()
             for event in filtered_events:
-                event_key = (event.id, event.start_date) if event.id else (id(event), event.start_date)
+                # CRITICAL FIX: Use recurrence_id for recurring occurrences to properly deduplicate
+                if hasattr(event, 'recurrence_id') and event.recurrence_id:
+                    # Use recurrence_id for recurring occurrences
+                    event_key = event.recurrence_id
+                elif event.id:
+                    # Use regular ID for non-recurring events
+                    event_key = (event.id, event.start_date)
+                else:
+                    # Fallback for events without ID (shouldn't happen for non-recurring)
+                    event_key = (id(event), event.start_date)
+                
                 if event_key not in seen_ids:
                     unique_events.append(event)
                     seen_ids.add(event_key)
