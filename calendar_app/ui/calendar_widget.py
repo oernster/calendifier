@@ -46,8 +46,8 @@ class CalendarDayWidget(QLabel):
         
     def _setup_widget(self):
         """🏗️ Setup day widget properties."""
-        # Set EXACT same size for ALL calendar day widgets
-        self.setFixedSize(100, 80)
+        # Set EXACT same size for ALL calendar day widgets (scaled for 13" MacBook)
+        self.setFixedSize(80, 64)
         self.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.setWordWrap(True)
         self.setFrameStyle(QFrame.Shape.Box)
@@ -384,8 +384,9 @@ class CalendarGridWidget(QWidget):
     
     def _update_grid_size(self):
         """📏 Update grid size - always includes week numbers."""
-        # Width: week numbers column (30px) + 7 widgets * 100px + 7 spacings * 1px = 737px
-        self.grid_widget.setFixedSize(737, 490)
+        # Width: week numbers column (24px) + 7 widgets * 80px + 7 spacings * 1px = 591px
+        # Height: 6 widgets * 64px + 5 spacings * 1px = 389px (scaled for 13" MacBook)
+        self.grid_widget.setFixedSize(591, 389)
     
     def _create_day_headers(self, layout: QVBoxLayout):
         """📅 Create day name headers."""
@@ -415,7 +416,7 @@ class CalendarGridWidget(QWidget):
     
     def _update_header_size(self, header_widget):
         """📏 Update header size - always includes week numbers."""
-        header_widget.setFixedSize(737, 30)  # Same width as grid widget with week numbers
+        header_widget.setFixedSize(591, 24)  # Same width as scaled grid widget with week numbers
     
     def _update_day_headers(self, day_names: List[str] = None):
         """📅 Update day name headers."""
@@ -438,7 +439,7 @@ class CalendarGridWidget(QWidget):
         week_header = QLabel(_("calendar.week_short", default="Wk"))
         week_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         week_header.setProperty("class", "secondary")
-        week_header.setFixedSize(30, 30)
+        week_header.setFixedSize(24, 24)
         week_header.setToolTip(_("calendar.week_number", default="Week Number"))
         self.header_layout.addWidget(week_header, 0, 0)
         col_offset = 1
@@ -448,7 +449,7 @@ class CalendarGridWidget(QWidget):
             label = QLabel(day_name)
             label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             label.setProperty("class", "secondary")
-            label.setFixedSize(100, 30)
+            label.setFixedSize(80, 24)
             self.header_layout.addWidget(label, 0, col + col_offset)  # Row 0, column col + offset
     
     def _create_empty_grid(self):
@@ -468,7 +469,7 @@ class CalendarGridWidget(QWidget):
             week_number_widget = QLabel()
             week_number_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
             week_number_widget.setProperty("class", "week-number")
-            week_number_widget.setFixedSize(30, 80)
+            week_number_widget.setFixedSize(24, 64)
             
             # Always add week number widget to grid
             self.grid_layout.addWidget(week_number_widget, week, 0)
@@ -604,9 +605,10 @@ class CalendarWidget(QWidget):
         
         # Set size policy and fixed size for consistent layout
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        # Set minimum size to accommodate week numbers (largest possible size)
-        # With week numbers: 7*100 + 30 (week numbers) + 14 margins = 744px width
-        self.setMinimumSize(744, 540)
+        # Set minimum size to accommodate scaled week numbers
+        # With week numbers: 7*80 + 24 (week numbers) + 14 margins = 598px width
+        # Height: 389px (grid) + 24px (header) + 16px (margins) = 429px
+        self.setMinimumSize(598, 429)
     
     def _setup_connections(self):
         """🔗 Setup signal connections."""

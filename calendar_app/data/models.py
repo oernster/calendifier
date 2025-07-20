@@ -346,8 +346,8 @@ class AppSettings:
     ntp_servers: List[str] = field(default_factory=lambda: [
         "pool.ntp.org", "time.google.com", "time.cloudflare.com"
     ])
-    window_width: int = 1200
-    window_height: int = 800
+    window_width: int = 956
+    window_height: int = 760
     window_x: int = -1
     window_y: int = -1
     first_day_of_week: int = 0  # 0 = Monday

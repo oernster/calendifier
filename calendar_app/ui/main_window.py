@@ -93,11 +93,11 @@ class MainWindow(QMainWindow):
     def _setup_window(self):
         """🖥️ Setup main window properties."""
         self.setWindowTitle(_("main_window_title", version=get_version_string().split('v')[1]))
-        # Set window size to ensure entire calendar is always fully visible (with week numbers)
-        # Left panel: 400px + Right panel: 773px (with week numbers) + Main layout margins: 16px = 1189px width
-        # Calendar height: 490px + header: 50px + event panel: 250px + margins: 150px = 940px minimum height
-        self.setMinimumSize(1189, 940)
-        self.setMaximumSize(1189, 16777215)  # Fixed width, flexible height
+        # Set window size optimized for 13" MacBook screens (1440x900 effective space)
+        # Left panel: 320px + Right panel: 620px (scaled calendar) + Main layout margins: 16px = 956px width
+        # Calendar height: 390px + header: 50px + event panel: 200px + margins: 120px = 760px minimum height
+        self.setMinimumSize(956, 760)
+        self.setMaximumSize(956, 16777215)  # Fixed width, flexible height
         
         # Create app icon from emoji
         self._create_app_icon()
@@ -628,8 +628,8 @@ class MainWindow(QMainWindow):
         self.central_splitter.addWidget(left_panel)
         self.central_splitter.addWidget(right_panel)
         
-        # Set splitter proportions (400px : 800px)
-        self.central_splitter.setSizes([400, 800])
+        # Set splitter proportions (320px : 620px)
+        self.central_splitter.setSizes([320, 620])
         self.central_splitter.setCollapsible(0, False)
         self.central_splitter.setCollapsible(1, False)
         
@@ -641,7 +641,7 @@ class MainWindow(QMainWindow):
     def _create_left_panel(self) -> QWidget:
         """🕐 Create left panel with clock and notes."""
         left_panel = QWidget()
-        left_panel.setFixedWidth(400)
+        left_panel.setFixedWidth(320)
         
         layout = QVBoxLayout(left_panel)
         layout.setSpacing(16)
@@ -661,9 +661,9 @@ class MainWindow(QMainWindow):
         """📅 Create right panel with calendar and events."""
         right_panel = QWidget()
         
-        # Set maximum width to accommodate week numbers when enabled
-        # Calendar width: 737px (with week numbers) + margins: 16px + some padding: 20px = 773px
-        right_panel.setMaximumWidth(773)
+        # Set maximum width for scaled calendar (approximately 80% of original)
+        # Scaled calendar width: ~590px + margins: 16px + some padding: 14px = 620px
+        right_panel.setMaximumWidth(620)
         
         layout = QVBoxLayout(right_panel)
         layout.setSpacing(8)
@@ -735,7 +735,7 @@ class MainWindow(QMainWindow):
             geometry = self.settings_manager.get_window_geometry()
             
             # Set size to our fixed dimensions
-            self.resize(1159, geometry['height'])
+            self.resize(936, geometry['height'])
             
             # Always center on screen for optimal positioning
             self._center_on_screen()
@@ -745,7 +745,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.warning(f"⚠️ Failed to restore geometry: {e}")
             # Set default size and center
-            self.resize(1159, 940)
+            self.resize(936, 760)
             self._center_on_screen()
     
     def _center_on_screen(self):

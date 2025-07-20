@@ -36,7 +36,7 @@ class AnalogClockWidget(QWidget):
         super().__init__(parent)
         
         self.current_time = datetime.now()
-        self.setFixedSize(300, 300)
+        self.setFixedSize(240, 240)
         
         # Clock appearance
         self.face_color = QColor("#2d2d2d")
@@ -444,7 +444,7 @@ class ClockWidget(QWidget):
         
         # Analog clock - force it to take up proper space
         self.analog_clock = AnalogClockWidget()
-        self.analog_clock.setMinimumHeight(320)  # Force minimum height to prevent overlap
+        self.analog_clock.setMinimumHeight(256)  # Force minimum height to prevent overlap (scaled)
         layout.addWidget(self.analog_clock, 0, Qt.AlignmentFlag.AlignCenter)
         
         # Add significant spacing to force separation

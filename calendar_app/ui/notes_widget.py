@@ -97,10 +97,10 @@ class NotesWidget(QWidget):
         import platform
         if platform.system() == "Linux":
             # Smaller height for Linux to ensure buttons are visible on smaller screens
-            self.setFixedHeight(220)
+            self.setFixedHeight(176)
         else:
-            # Standard height for Windows/macOS
-            self.setFixedHeight(280)
+            # Standard height for Windows/macOS (scaled for 13" MacBook)
+            self.setFixedHeight(224)
     
     def _apply_styling(self):
         """🎨 Apply post-it note styling."""
