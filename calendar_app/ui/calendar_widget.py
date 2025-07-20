@@ -231,13 +231,13 @@ class CalendarHeaderWidget(QWidget):
         self.prev_month_btn.clicked.connect(self.previous_month.emit)
         layout.addWidget(self.prev_month_btn)
         
-        # Month/Year label (clickable)
-        self.month_year_label = QLabel()
-        self.month_year_label.setProperty("class", "title")
-        self.month_year_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.month_year_label.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.month_year_label.mousePressEvent = self._month_year_clicked
-        layout.addWidget(self.month_year_label, 1)
+        # Month label only (clickable)
+        self.month_label = QLabel()
+        self.month_label.setProperty("class", "title")
+        self.month_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.month_label.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.month_label.mousePressEvent = self._month_year_clicked
+        layout.addWidget(self.month_label, 1)
         
         # Next month button
         self.next_month_btn = QPushButton(UI_EMOJIS['navigation_next'])
@@ -255,12 +255,21 @@ class CalendarHeaderWidget(QWidget):
         self.today_btn.clicked.connect(self.today_clicked.emit)
         layout.addWidget(self.today_btn)
         
-        # Year navigation buttons
+        # Year navigation buttons with year label in between
         self.prev_year_btn = QPushButton("◀◀")
         self.prev_year_btn.setProperty("class", "icon")
         self.prev_year_btn.setToolTip(_("toolbar.previous", default="Previous"))
         self.prev_year_btn.clicked.connect(self.previous_year.emit)
         layout.addWidget(self.prev_year_btn)
+        
+        # Year label (clickable)
+        self.year_label = QLabel()
+        self.year_label.setProperty("class", "title")
+        self.year_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.year_label.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.year_label.mousePressEvent = self._month_year_clicked
+        self.year_label.setMinimumWidth(60)  # Ensure enough width for 4-digit year
+        layout.addWidget(self.year_label)
         
         self.next_year_btn = QPushButton("▶▶")
         self.next_year_btn.setProperty("class", "icon")
@@ -283,7 +292,12 @@ class CalendarHeaderWidget(QWidget):
         
         month_name = month_names[self.current_month - 1]
         converted_year = convert_numbers(str(self.current_year))
-        self.month_year_label.setText(f"📅 {month_name} {converted_year}")
+        
+        # Set month label (left side)
+        self.month_label.setText(f"📅 {month_name}")
+        
+        # Set year label (right side between year arrows)
+        self.year_label.setText(converted_year)
     
     def set_month_year(self, year: int, month: int):
         """📅 Set current month and year."""
@@ -317,7 +331,8 @@ class CalendarHeaderWidget(QWidget):
             self.next_month_btn.update()
             self.prev_year_btn.update()
             self.next_year_btn.update()
-            self.month_year_label.update()
+            self.month_label.update()
+            self.year_label.update()
             
             logger.debug("🔄 Calendar header UI text refreshed")
             
