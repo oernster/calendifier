@@ -593,6 +593,7 @@
   "tech_themes_value": "Qt Style Sheets",
   "tech_time_sync": "Tidssynkronisering",
   "tech_time_sync_value": "NTP-protokoll",
+  "testing": "Testning",
   "theme": "Tema",
   "theme_control_widget_initialized": "🎨 Temakontrollwidget initialiserad",
   "theme_control_widget_ui_text_refreshed": "🔄 Temakontrollwidget UI-text uppdaterad",

@@ -592,6 +592,7 @@
   "tech_themes_value": "Qt Style Sheets",
   "tech_time_sync": "Ajan synkronointi",
   "tech_time_sync_value": "NTP-protokolla",
+  "testing": "Testaus",
   "theme": "Teema",
   "theme_control_widget_initialized": "🎨 Teemanhallintawidget alustettu",
   "theme_control_widget_ui_text_refreshed": "🔄 Teemanhallintawidgetin käyttöliittymäteksti päivitetty",

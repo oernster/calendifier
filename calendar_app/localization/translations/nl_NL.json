@@ -593,6 +593,7 @@
   "tech_themes_value": "Qt Style Sheets",
   "tech_time_sync": "Tijd Synchronisatie",
   "tech_time_sync_value": "NTP Protocol",
+  "testing": "Testen",
   "theme": "Thema",
   "theme_control_widget_initialized": "[theme_control_widget_initialized]",
   "theme_control_widget_ui_text_refreshed": "🔄 Thema controle widget UI tekst vernieuwd",

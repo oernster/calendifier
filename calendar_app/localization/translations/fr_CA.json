@@ -585,6 +585,7 @@
   "tech_themes_value": "Feuilles de style Qt",
   "tech_time_sync": "Synchronisation temporelle",
   "tech_time_sync_value": "Protocole NTP",
+  "testing": "Tests",
   "theme": "Thème",
   "theme_control_widget_initialized": "🎨 Widget de contrôle de thème initialisé",
   "theme_control_widget_ui_text_refreshed": "🔄 Texte de l'interface du widget de contrôle de thème actualisé",

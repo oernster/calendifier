@@ -585,6 +585,7 @@
   "tech_themes_value": "Qt Style Sheets",
   "tech_time_sync": "Đồng Bộ Thời Gian",
   "tech_time_sync_value": "Giao Thức NTP",
+  "testing": "Kiểm thử",
   "theme": "Chủ đề",
   "theme_control_widget_initialized": "🎨 Widget điều khiển chủ đề đã được khởi tạo",
   "theme_control_widget_ui_text_refreshed": "🔄 Đã làm mới văn bản UI widget điều khiển chủ đề",

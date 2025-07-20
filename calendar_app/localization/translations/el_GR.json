@@ -590,6 +590,7 @@
   "tech_themes_value": "Qt Style Sheets",
   "tech_time_sync": "Συγχρονισμός Ώρας",
   "tech_time_sync_value": "Πρωτόκολλο NTP",
+  "testing": "Δοκιμές",
   "theme": "Θέμα",
   "theme_control_widget_initialized": "🎨 Το widget ελέγχου θέματος αρχικοποιήθηκε",
   "theme_control_widget_ui_text_refreshed": "🔄 Το κείμενο UI του widget ελέγχου θέματος ανανεώθηκε",

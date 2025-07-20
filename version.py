@@ -137,6 +137,9 @@ Version: {__version__}
 {__copyright__}
 License: {__license__}
 
+Author: {__author__}
+Testing: Ramon Rodriguez
+
 Built with FastAPI, Home Assistant & Python
 Deploy as web dashboard or desktop application
 """

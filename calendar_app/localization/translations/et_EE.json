@@ -591,6 +591,7 @@
   "tech_themes_value": "Qt stiililehti",
   "tech_time_sync": "Aja sünkroniseerimine",
   "tech_time_sync_value": "NTP protokoll",
+  "testing": "Testimine",
   "theme": "Teema",
   "theme_control_widget_initialized": "🎨 Teema juhtimise vidin lähtestatud",
   "theme_control_widget_ui_text_refreshed": "🔄 Teema juhtimise vidina kasutajaliidese tekst värskendatud",

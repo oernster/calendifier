@@ -631,6 +631,7 @@
   "tech_themes_value": "Qtスタイルシート",
   "tech_time_sync": "時間同期",
   "tech_time_sync_value": "NTPプロトコル",
+  "testing": "テスト",
   "theme": "テーマ",
   "theme_control_widget_initialized": "🎨 テーマコントロールウィジェットの初期化",
   "theme_control_widget_ui_text_refreshed": "ᔄ テーマコントロールウィジェットのUIテキストがリフレッシュされた",

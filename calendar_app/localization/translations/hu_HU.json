@@ -551,6 +551,7 @@
   "tech_themes_value": "Qt stíluslapok",
   "tech_time_sync": "Időszinkronizáció",
   "tech_time_sync_value": "NTP protokoll",
+  "testing": "Tesztelés",
   "theme": "Téma",
   "theme_control_widget_initialized": "🎨 Téma vezérlő widget inicializálva",
   "theme_control_widget_ui_text_refreshed": "🔄 Téma vezérlő widget UI szöveg frissítve",

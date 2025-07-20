@@ -585,6 +585,7 @@
   "tech_themes_value": "Qt Style Sheets",
   "tech_time_sync": "Sinkronisasi Waktu",
   "tech_time_sync_value": "Protokol NTP",
+  "testing": "Pengujian",
   "theme": "Tema",
   "theme_control_widget_initialized": "🎨 Widget kontrol tema diinisialisasi",
   "theme_control_widget_ui_text_refreshed": "🔄 Teks UI widget kontrol tema disegarkan",

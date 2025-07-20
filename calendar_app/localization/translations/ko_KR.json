@@ -633,6 +633,7 @@
   "tech_themes_value": "Qt 스타일 시트",
   "tech_time_sync": "시간 동기화",
   "tech_time_sync_value": "NTP 프로토콜",
+  "testing": "테스트",
   "theme": "테마",
   "theme_control_widget_initialized": "🎨 테마 컨트롤 위젯 초기화됨",
   "theme_control_widget_ui_text_refreshed": "🔄 테마 컨트롤 위젯 UI 텍스트 새로 고침",

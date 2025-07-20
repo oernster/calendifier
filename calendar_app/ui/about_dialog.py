@@ -168,6 +168,7 @@ class AboutDialog(QDialog):
 
 <h3>👨‍💻 {_('about_development')}</h3>
 <p><b>{_('dev_author')}</b> {__author__}</p>
+<p><b>{_('dev_testing')}</b> {_('dev_testing_value')}</p>
 <p><b>{_('dev_built_with')}</b> {_('dev_built_with_value')}</p>
 
 <h3>🐛 {_('about_support')}</h3>

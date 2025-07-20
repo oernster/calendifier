@@ -1045,7 +1045,7 @@ class AppBundleBuilder:
 
     def create_info_plist(self) -> bool:
         """
-        Create the Info.plist file for the app bundle.
+        Create the Info.plist file for the app bundle with enhanced menu bar support.
 
         Returns:
             bool: True if successful, False otherwise
@@ -1069,6 +1069,8 @@ class AppBundleBuilder:
     <string>6.0</string>
     <key>CFBundleName</key>
     <string>{self.app_name}</string>
+    <key>CFBundleDisplayName</key>
+    <string>{self.app_name}</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -1080,11 +1082,15 @@ class AppBundleBuilder:
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>LSMinimumSystemVersion</key>
-    <string>10.10</string>
+    <string>10.12</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.productivity</string>
+    <key>LSUIElement</key>
+    <false/>
 </dict>
 </plist>"""
                 )
-            print("Info.plist created successfully.")
+            print("Info.plist created successfully with enhanced menu bar support.")
             return True
         except Exception as e:
             print(f"Error creating Info.plist: {str(e)}")
@@ -1700,10 +1706,10 @@ class BuildFacade:
 
 def main():
     """
-    Build the DMG installer for Stellody.
+    Build the DMG installer for Calendifier.
     """
     print("=" * 60)
-    print("STELLODY DMG BUILDER")
+    print("CALENDIFIER DMG BUILDER")
     print("=" * 60)
 
     # Ensure PIL package is installed for background image creation

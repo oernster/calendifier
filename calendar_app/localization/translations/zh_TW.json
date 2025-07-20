@@ -634,6 +634,7 @@
   "tech_themes_value": "Qt 樣式表",
   "tech_time_sync": "時間同步",
   "tech_time_sync_value": "NTP 通訊協定",
+  "testing": "測試",
   "theme": "主題",
   "theme_control_widget_initialized": "🎨 已初始化主题控制 widget",
   "theme_control_widget_ui_text_refreshed": "🔄 主题控制 widget UI 文本已刷新",

@@ -165,6 +165,12 @@ class MainWindow(QMainWindow):
         """📋 Create menu bar with fresh translations."""
         menubar = self.menuBar()
         
+        # Enable native menu bar on macOS to show Calendifier menus in system bar
+        import platform
+        if platform.system() == "Darwin":  # macOS
+            menubar.setNativeMenuBar(True)
+            print("🍎 Enabled native menu bar - relying on Objective-C wrapper for correct process name")
+        
         # File menu
         self.file_menu = menubar.addMenu(f"📁 {_('menu_file')}")
         
@@ -958,19 +964,19 @@ class MainWindow(QMainWindow):
             self._position_language_selector()
     
     def _position_language_selector(self):
-        """Position the floating language selector in the menu line."""
+        """Position the floating language selector below the menu bar to avoid truncation."""
         if hasattr(self, 'language_widget') and self.language_widget:
             # Get window size
             window_width = self.width()
             
-            # Get menu bar height and position at the same level
+            # Get menu bar height and position below it to avoid truncation
             menu_bar = self.menuBar()
             menu_height = menu_bar.height()
             
-            # Position in top right corner aligned with menu bar
+            # Position in top right corner below the menu bar
             widget_size = self.language_widget.sizeHint()
             x = window_width - widget_size.width() - 10  # 10px margin from right edge
-            y = (menu_height - widget_size.height()) // 2  # Center vertically in menu bar
+            y = menu_height + 2  # Position 2px below menu bar to avoid overlap/truncation
             
             self.language_widget.move(x, y)
             self.language_widget.resize(widget_size)
