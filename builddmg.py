@@ -1104,8 +1104,9 @@ class AppBundleBuilder:
             bool: True if successful, False otherwise
         """
         try:
-            # Copy essential Python files
-            essential_files = ["main.py", "version.py", "requirements.txt"]
+            # Copy essential Python files and license files
+            essential_files = ["main.py", "version.py", "requirements.txt",
+                             "LICENSE", "LGPL3_LICENSE.txt", "LGPL3_COMPLIANCE_NOTICE.txt"]
             for file in essential_files:
                 source_file = self.source_path / file
                 dest_file = self.resources_path / file
