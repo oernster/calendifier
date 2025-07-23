@@ -200,13 +200,10 @@ class DigitalDisplayWidget(QWidget):
         self.status_label.setProperty("class", "secondary")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        # Set platform-specific font size for status label
-        import platform
-        if platform.system() == "Linux":
-            # Smaller font for Linux to prevent truncation
-            font = self.status_label.font()
-            font.setPointSize(8)  # Reduced from default
-            self.status_label.setFont(font)
+        # Set smaller font size for status label on all platforms to prevent truncation
+        font = self.status_label.font()
+        font.setPointSize(8)  # Reduced from default for better fit
+        self.status_label.setFont(font)
         
         layout.addWidget(self.status_label)
         
