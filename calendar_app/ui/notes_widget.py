@@ -182,10 +182,9 @@ class NotesWidget(QWidget):
                     notes_data = json.load(f)
                     self.notes = [Note.from_dict(note_data) for note_data in notes_data]
             
-            # If no notes exist, create the first default note
+            # If no notes exist, create the first default note with empty content
             if not self.notes:
-                default_content = _("notes.placeholder_notes", default="You can keep your notes here.")
-                self.notes = [Note(id=1, title="1", content=default_content)]
+                self.notes = [Note(id=1, title="1", content="")]
             
             # Create tabs for all notes
             self._refresh_tabs()
@@ -366,20 +365,7 @@ class NotesWidget(QWidget):
             # Update tab titles with locale-appropriate numerals
             self._refresh_tab_titles()
             
-            # Update placeholder content in first note if it's still the default
-            if self.notes and len(self.notes) > 0:
-                first_note = self.notes[0]
-                default_en = "You can keep your notes here."
-                if first_note.content == default_en or first_note.content == _("notes.placeholder_notes", default=default_en):
-                    # Update with new localized placeholder
-                    new_placeholder = _("notes.placeholder_notes", default=default_en)
-                    first_note.content = new_placeholder
-                    
-                    # Update the text widget if it's currently displayed
-                    if self.tab_widget.count() > 0:
-                        first_widget = self.tab_widget.widget(0)
-                        if isinstance(first_widget, QTextEdit):
-                            first_widget.setPlainText(new_placeholder)
+            # Don't update note content during language changes - keep notes as user entered them
             
             # Force button updates
             self.add_note_btn.update()
