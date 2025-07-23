@@ -35,6 +35,10 @@ class CalendarManager:
     def get_month_data(self, year: int, month: int) -> CalendarMonth:
         """📆 Get calendar data for specified month."""
         try:
+            # Clear event cache for each month load to prevent incorrect filtering
+            self._seen_events_cache.clear()
+            logger.debug(f"📅 Cleared event cache for month load: {year}-{month:02d}")
+            
             # Get the actual calendar grid date range (includes previous/next month days)
             cal = calendar.Calendar(firstweekday=self.first_day_of_week)
             month_calendar = cal.monthdatescalendar(year, month)
@@ -114,6 +118,7 @@ class CalendarManager:
                     # Display non-recurring events and occurrence events
                     events_by_date[event.start_date].append(event)
                     logger.debug(f"📅 Added event to calendar: {event.title} on {event.start_date} (master_id: {getattr(event, 'recurrence_master_id', None)})")
+                    logger.info(f"📅 Events for {event.start_date}: {len(events_by_date[event.start_date])} total")
                 else:
                     logger.warning(f"⚠️ Event without start_date: {event.id} ({event.title})")
             
