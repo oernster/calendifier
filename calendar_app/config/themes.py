@@ -13,17 +13,17 @@ logger = logging.getLogger(__name__)
 
 class ThemeManager:
     """🎨 Manages application themes and styling."""
-    
+
     def __init__(self):
         """Initialize theme manager with default themes."""
         self.current_theme = "dark"
         self.themes = {
             "dark": self._create_dark_theme(),
-            "light": self._create_light_theme()
+            "light": self._create_light_theme(),
         }
-        
+
         logger.info("🎨 Theme Manager initialized")
-    
+
     def _create_dark_theme(self) -> Dict[str, Any]:
         """🌙 Create dark theme configuration."""
         return {
@@ -38,19 +38,16 @@ class ThemeManager:
                 "primary_variant": "#106ebe",
                 "secondary": "#6b6b6b",
                 "secondary_variant": "#5a5a5a",
-                
                 # Text colors
                 "text_primary": "#ffffff",
                 "text_secondary": "#cccccc",
                 "text_disabled": "#6b6b6b",
                 "text_on_primary": "#ffffff",
-                
                 # Status colors
                 "success": "#16c60c",
                 "warning": "#ffb900",
                 "error": "#d13438",
                 "info": "#0078d4",
-                
                 # Calendar specific
                 "today": "#0078d4",
                 "today_bg": "#1a4a6b",
@@ -61,53 +58,40 @@ class ThemeManager:
                 "other_month": "#4a4a4a",
                 "selected": "#0078d4",
                 "selected_bg": "#1a4a6b",
-                
                 # Event colors
                 "event_work": "#0078d4",
                 "event_personal": "#16c60c",
                 "event_meeting": "#ffb900",
                 "event_meal": "#8a8a8a",
                 "event_holiday": "#d13438",
-                
                 # UI elements
                 "border": "#4a4a4a",
                 "border_light": "#5a5a5a",
                 "hover": "#3d3d3d",
                 "pressed": "#4d4d4d",
                 "focus": "#0078d4",
-                
                 # Clock colors
                 "clock_face": "#2d2d2d",
                 "clock_border": "#4a4a4a",
                 "clock_numbers": "#ffffff",
                 "clock_hands": "#0078d4",
-                "clock_center": "#ffffff"
+                "clock_center": "#ffffff",
             },
             "fonts": {
-                "family": "system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
-                "family_mono": "\"SF Mono\", Monaco, \"Cascadia Code\", \"Roboto Mono\", Consolas, \"Courier New\", monospace",
+                "family": 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                "family_mono": '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
                 "size_small": 10,
                 "size_normal": 12,
                 "size_large": 14,
                 "size_xlarge": 16,
                 "size_clock": 24,
                 "weight_normal": "normal",
-                "weight_bold": "bold"
+                "weight_bold": "bold",
             },
-            "spacing": {
-                "xs": 4,
-                "sm": 8,
-                "md": 16,
-                "lg": 24,
-                "xl": 32
-            },
-            "borders": {
-                "radius": 4,
-                "width": 1,
-                "width_thick": 2
-            }
+            "spacing": {"xs": 4, "sm": 8, "md": 16, "lg": 24, "xl": 32},
+            "borders": {"radius": 4, "width": 1, "width_thick": 2},
         }
-    
+
     def _create_light_theme(self) -> Dict[str, Any]:
         """☀️ Create light theme configuration."""
         return {
@@ -122,19 +106,16 @@ class ThemeManager:
                 "primary_variant": "#106ebe",
                 "secondary": "#8a8a8a",
                 "secondary_variant": "#7a7a7a",
-                
                 # Text colors
                 "text_primary": "#000000",
                 "text_secondary": "#333333",
                 "text_disabled": "#8a8a8a",
                 "text_on_primary": "#ffffff",
-                
                 # Status colors
                 "success": "#107c10",
                 "warning": "#ff8c00",
                 "error": "#d13438",
                 "info": "#0078d4",
-                
                 # Calendar specific
                 "today": "#0078d4",
                 "today_bg": "#e6f3ff",
@@ -145,96 +126,85 @@ class ThemeManager:
                 "other_month": "#cccccc",
                 "selected": "#0078d4",
                 "selected_bg": "#e6f3ff",
-                
                 # Event colors
                 "event_work": "#0078d4",
                 "event_personal": "#107c10",
                 "event_meeting": "#ff8c00",
                 "event_meal": "#666666",
                 "event_holiday": "#d13438",
-                
                 # UI elements
                 "border": "#cccccc",
                 "border_light": "#e0e0e0",
                 "hover": "#f0f0f0",
                 "pressed": "#e0e0e0",
                 "focus": "#0078d4",
-                
                 # Clock colors
                 "clock_face": "#ffffff",
                 "clock_border": "#cccccc",
                 "clock_numbers": "#000000",
                 "clock_hands": "#0078d4",
-                "clock_center": "#000000"
+                "clock_center": "#000000",
             },
             "fonts": {
-                "family": "system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
-                "family_mono": "\"SF Mono\", Monaco, \"Cascadia Code\", \"Roboto Mono\", Consolas, \"Courier New\", monospace",
+                "family": 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                "family_mono": '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
                 "size_small": 10,
                 "size_normal": 12,
                 "size_large": 14,
                 "size_xlarge": 16,
                 "size_clock": 24,
                 "weight_normal": "normal",
-                "weight_bold": "bold"
+                "weight_bold": "bold",
             },
-            "spacing": {
-                "xs": 4,
-                "sm": 8,
-                "md": 16,
-                "lg": 24,
-                "xl": 32
-            },
-            "borders": {
-                "radius": 4,
-                "width": 1,
-                "width_thick": 2
-            }
+            "spacing": {"xs": 4, "sm": 8, "md": 16, "lg": 24, "xl": 32},
+            "borders": {"radius": 4, "width": 1, "width_thick": 2},
         }
-    
+
     def get_theme(self, theme_name: str) -> Optional[Dict[str, Any]]:
         """📋 Get theme configuration by name."""
         return self.themes.get(theme_name)
-    
+
     def get_current_theme(self) -> Dict[str, Any]:
         """📋 Get current theme configuration."""
         return self.themes[self.current_theme]
-    
+
     def set_theme(self, theme_name: str) -> bool:
         """🎨 Set current theme."""
         if theme_name in self.themes:
             self.current_theme = theme_name
-            logger.info(f"🎨 Theme changed to: {self.themes[theme_name]['display_name']}")
+            logger.info(
+                f"🎨 Theme changed to: {self.themes[theme_name]['display_name']}"
+            )
             return True
         else:
             logger.warning(f"⚠️ Unknown theme: {theme_name}")
             return False
-    
+
     def get_available_themes(self) -> Dict[str, str]:
         """📋 Get list of available themes."""
         return {name: theme["display_name"] for name, theme in self.themes.items()}
-    
+
     def toggle_theme(self) -> str:
         """🔄 Toggle between dark and light themes."""
         new_theme = "light" if self.current_theme == "dark" else "dark"
         self.set_theme(new_theme)
         return new_theme
-    
+
     def get_color(self, color_name: str, fallback: str = "#000000") -> str:
         """🎨 Get color value from current theme."""
         theme = self.get_current_theme()
         return theme["colors"].get(color_name, fallback)
-    
+
     def get_font(self, font_property: str, fallback: Any = None) -> Any:
         """🔤 Get font property from current theme."""
         theme = self.get_current_theme()
         return theme["fonts"].get(font_property, fallback)
-    
+
     def get_spacing(self, size: str, fallback: int = 8) -> int:
         """📏 Get spacing value from current theme."""
         theme = self.get_current_theme()
         return theme["spacing"].get(size, fallback)
-    
+
     def generate_qss_stylesheet(self) -> str:
         """🎨 Generate Qt stylesheet (QSS) for current theme."""
         theme = self.get_current_theme()
@@ -242,7 +212,7 @@ class ThemeManager:
         fonts = theme["fonts"]
         spacing = theme["spacing"]
         borders = theme["borders"]
-        
+
         qss = f"""
 /* 📅 Calendar Application - {theme['display_name']} */
 
@@ -651,9 +621,9 @@ QWidget[class="event-holiday"] {{
     background-color: {colors['event_holiday']};
 }}
 """
-        
+
         return qss
-    
+
     def get_theme_icon(self, theme_name: str) -> str:
         """🎨 Get emoji icon for theme."""
         if theme_name == "dark":
@@ -662,84 +632,86 @@ QWidget[class="event-holiday"] {{
             return THEME_LIGHT_ICON
         else:
             return "🎨"
-    
-    def create_custom_theme(self, name: str, base_theme: str, color_overrides: Dict[str, str]) -> bool:
+
+    def create_custom_theme(
+        self, name: str, base_theme: str, color_overrides: Dict[str, str]
+    ) -> bool:
         """🎨 Create custom theme based on existing theme."""
         try:
             if base_theme not in self.themes:
                 logger.error(f"❌ Base theme not found: {base_theme}")
                 return False
-            
+
             # Copy base theme
             custom_theme = self.themes[base_theme].copy()
             custom_theme["name"] = name
             custom_theme["display_name"] = f"🎨 {name.title()}"
-            
+
             # Apply color overrides
             custom_theme["colors"].update(color_overrides)
-            
+
             # Add to themes
             self.themes[name] = custom_theme
-            
+
             logger.info(f"🎨 Created custom theme: {name}")
             return True
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to create custom theme: {e}")
             return False
-    
+
     def export_theme(self, theme_name: str, export_path: str) -> bool:
         """📤 Export theme to file."""
         try:
             if theme_name not in self.themes:
                 logger.error(f"❌ Theme not found: {theme_name}")
                 return False
-            
+
             import json
             from pathlib import Path
-            
+
             theme_data = {
                 "calendar_app_theme": True,
                 "version": __version__,
-                "theme": self.themes[theme_name]
+                "theme": self.themes[theme_name],
             }
-            
-            with open(Path(export_path), 'w', encoding='utf-8') as f:
+
+            with open(Path(export_path), "w", encoding="utf-8") as f:
                 json.dump(theme_data, f, indent=2, ensure_ascii=False)
-            
+
             logger.info(f"📤 Exported theme {theme_name} to {export_path}")
             return True
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to export theme: {e}")
             return False
-    
+
     def import_theme(self, import_path: str) -> Optional[str]:
         """📥 Import theme from file."""
         try:
             import json
             from pathlib import Path
-            
+
             path_obj = Path(import_path)
             if not path_obj.exists():
                 logger.error(f"❌ Theme file not found: {import_path}")
                 return None
-            
-            with open(path_obj, 'r', encoding='utf-8') as f:
+
+            with open(path_obj, "r", encoding="utf-8") as f:
                 theme_data = json.load(f)
-            
+
             if not theme_data.get("calendar_app_theme"):
                 logger.error("❌ Invalid theme file format")
                 return None
-            
+
             theme = theme_data["theme"]
             theme_name = theme["name"]
-            
+
             self.themes[theme_name] = theme
-            
+
             logger.info(f"📥 Imported theme: {theme_name}")
             return theme_name
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to import theme: {e}")
             return None

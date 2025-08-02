@@ -36,16 +36,20 @@ MAIN_SCRIPT = "main.py"
 OUTPUT_DIR = "dist"
 SPEC_FILE = "calendifier.spec"
 
+
 def ensure_pyinstaller_installed():
     """Check if PyInstaller is installed, and install it if not."""
     try:
         import PyInstaller
+
         print("✅ PyInstaller is already installed")
         return True
     except ImportError:
         print("⚠️ PyInstaller not found. Attempting to install...")
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "pyinstaller"]
+            )
             print("✅ PyInstaller installed successfully")
             return True
         except Exception as e:
@@ -53,10 +57,11 @@ def ensure_pyinstaller_installed():
             print("Please install PyInstaller manually: pip install pyinstaller")
             return False
 
+
 def clean_output_directory():
     """Ensure output directory exists and is empty."""
     output_path = Path(OUTPUT_DIR)
-    
+
     # Remove if exists
     if output_path.exists():
         try:
@@ -67,11 +72,11 @@ def clean_output_directory():
             print(f"   This is likely because the executable is still running.")
             print(f"   Please close the application and try again.")
             sys.exit(1)
-    
+
     # Create fresh directory
     output_path.mkdir(parents=True)
     print(f"📁 Created output directory: {OUTPUT_DIR}")
-    
+
     # Also clean build directory and spec file
     build_path = Path("build")
     if build_path.exists():
@@ -80,7 +85,7 @@ def clean_output_directory():
             print(f"🧹 Cleaned build directory")
         except PermissionError:
             print(f"⚠️ Could not clean build directory (permission denied)")
-    
+
     spec_path = Path(SPEC_FILE)
     if spec_path.exists():
         try:
@@ -89,34 +94,39 @@ def clean_output_directory():
         except PermissionError:
             print(f"⚠️ Could not remove spec file (permission denied)")
 
+
 def copy_license_files():
     """Copy LGPL3 license files to output directory."""
     output_path = Path(OUTPUT_DIR)
-    
+
     # Ensure output directory exists
     if not output_path.exists():
         output_path.mkdir(parents=True)
-    
+
     # Copy main license
     if Path("LICENSE").exists():
         shutil.copy2("LICENSE", output_path / "CALENDIFIER_LICENSE.txt")
         print("📄 Copied Calendifier license")
-    
+
     # Copy LGPL3 license
     if Path("LGPL3_LICENSE.txt").exists():
         shutil.copy2("LGPL3_LICENSE.txt", output_path / "LGPL3_LICENSE.txt")
         print("📄 Copied LGPL3 license")
-    
+
     # Copy or create LGPL3 compliance notice
     if Path("LGPL3_COMPLIANCE_NOTICE.txt").exists():
         with open("LGPL3_COMPLIANCE_NOTICE.txt", "r", encoding="utf-8") as f:
             notice = f.read()
-        
+
         # Update placeholders
-        notice = notice.replace("{build_date}", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        notice = notice.replace(
+            "{build_date}", datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
         notice = notice.replace("{version}", __version__)
-        
-        with open(output_path / "LGPL3_COMPLIANCE_NOTICE.txt", "w", encoding="utf-8") as f:
+
+        with open(
+            output_path / "LGPL3_COMPLIANCE_NOTICE.txt", "w", encoding="utf-8"
+        ) as f:
             f.write(notice)
         print("📄 Updated and copied LGPL3 compliance notice")
     else:
@@ -152,9 +162,12 @@ In compliance with LGPL3 requirements:
 Generated on: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Calendifier Version: {__version__}
 """
-        with open(output_path / "LGPL3_COMPLIANCE_NOTICE.txt", "w", encoding="utf-8") as f:
+        with open(
+            output_path / "LGPL3_COMPLIANCE_NOTICE.txt", "w", encoding="utf-8"
+        ) as f:
             f.write(notice.strip())
         print("📄 Created LGPL3 compliance notice")
+
 
 def build_with_pyinstaller(debug=False, console=False):
     """Build the application using PyInstaller."""
@@ -162,15 +175,16 @@ def build_with_pyinstaller(debug=False, console=False):
     print(f"📦 Platform: {platform.system()} {platform.machine()}")
     print(f"🐍 Python: {sys.version.split()[0]}")
     print(f"🖥️ Console mode: {'Enabled' if console else 'Disabled'}")
-    
+
     # Basic PyInstaller options
     options = [
-        "--name", APP_NAME,
-        "--onefile",                          # Create a single executable
-        "--clean",                            # Clean PyInstaller cache
-        "--noconfirm",                        # Replace output directory without asking
+        "--name",
+        APP_NAME,
+        "--onefile",  # Create a single executable
+        "--clean",  # Clean PyInstaller cache
+        "--noconfirm",  # Replace output directory without asking
     ]
-    
+
     # Check if data files exist before adding them
     data_files = [
         "calendar_app/localization/translations;calendar_app/localization/translations",
@@ -178,19 +192,19 @@ def build_with_pyinstaller(debug=False, console=False):
         "calendar_app/localization/country_translations;calendar_app/localization/country_translations",
         "assets;assets",
     ]
-    
+
     for data_file in data_files:
-        source_path = data_file.split(';')[0]
+        source_path = data_file.split(";")[0]
         if Path(source_path).exists():
             options.extend(["--add-data", data_file])
             print(f"📁 Adding data: {source_path}")
         else:
             print(f"⚠️ Skipping missing data: {source_path}")
-    
+
     # Debug options
     if debug:
         options.extend(["-d", "all"])  # PyInstaller debug requires an argument
-    
+
     # Console options - Create a windowed wrapper for main.py
     if platform.system() == "Windows":
         if not console:
@@ -202,7 +216,7 @@ def build_with_pyinstaller(debug=False, console=False):
                 print("📝 Using windowed wrapper script")
             else:
                 main_to_build = MAIN_SCRIPT
-            
+
             options.append("--windowed")  # This prevents the console window
             print("🚫 Console window disabled for Windows build")
         else:
@@ -210,7 +224,7 @@ def build_with_pyinstaller(debug=False, console=False):
             print("🖥️ Console window enabled (debug mode)")
     else:
         main_to_build = MAIN_SCRIPT
-    
+
     # Platform-specific options
     if platform.system() == "Windows":
         if Path("assets/calendar_icon.ico").exists():
@@ -221,36 +235,36 @@ def build_with_pyinstaller(debug=False, console=False):
     elif platform.system() == "Linux":
         if Path("assets/calendar_icon.png").exists():
             options.extend(["--icon", "assets/calendar_icon.png"])
-    
+
     # Essential hidden imports
     hidden_imports = [
         "holidays",
-        "holidays.countries", 
+        "holidays.countries",
         "PySide6.QtCore",
-        "PySide6.QtGui", 
+        "PySide6.QtGui",
         "PySide6.QtWidgets",
         "calendar_app",
         "calendar_app.main_window",
     ]
-    
+
     for import_name in hidden_imports:
         options.extend(["--hidden-import", import_name])
-    
+
     # Additional options for better compatibility
     options.append("--collect-all=PySide6")
     options.append("--collect-all=shiboken6")
     options.append("--collect-all=holidays")
-    
+
     # Add paths that might be needed
     options.extend(["--paths", "."])
-    
+
     # Build command
     cmd = [sys.executable, "-m", "PyInstaller"] + options + [main_to_build]
-    
+
     print(f"🔨 Running PyInstaller compilation...")
     if debug:
         print(f"Command: {' '.join(cmd)}")
-    
+
     try:
         # Run PyInstaller compilation
         process = subprocess.Popen(
@@ -259,27 +273,28 @@ def build_with_pyinstaller(debug=False, console=False):
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
-            universal_newlines=True
+            universal_newlines=True,
         )
-        
+
         # Read output line by line
         for line in process.stdout:
             line = line.rstrip()
             print(line)
-        
+
         # Wait for process to complete
         return_code = process.wait()
-        
+
         if return_code == 0:
             print("✅ Compilation successful!")
             return True
         else:
             print(f"❌ Compilation failed with exit code {return_code}")
             return False
-    
+
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
         return False
+
 
 def create_windowed_wrapper():
     """Create a wrapper script that properly handles windowed mode."""
@@ -340,31 +355,33 @@ def main():
 if __name__ == "__main__":
     main()
 '''
-        
+
         wrapper_path = Path("_windowed_main.py")
         with open(wrapper_path, "w", encoding="utf-8") as f:
             f.write(wrapper_content)
-        
+
         print("📝 Created windowed wrapper script with encoding fixes")
         return str(wrapper_path)
     except Exception as e:
         print(f"⚠️ Could not create windowed wrapper: {e}")
         return None
 
+
 def launch_executable():
     """Launch the built executable."""
     exe_name = f"{APP_NAME}{'.exe' if platform.system() == 'Windows' else ''}"
     exe_path = Path(OUTPUT_DIR) / exe_name
-    
+
     if not exe_path.exists():
         print(f"❌ Executable not found at {exe_path}")
         return False
-    
+
     print(f"🚀 Launching {exe_path}...")
     try:
         if platform.system() == "Windows":
             # Use startfile for Windows to launch properly without console
             import os
+
             os.startfile(str(exe_path))
         else:
             # For macOS and Linux
@@ -379,33 +396,38 @@ def launch_executable():
             print(f"📏 File size: {exe_path.stat().st_size} bytes")
         return False
 
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description=f"Build {APP_NAME} using PyInstaller")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-    parser.add_argument("--console", action="store_true", help="Enable console window on Windows")
-    parser.add_argument("--launch", action="store_true", help="Launch the application after building")
-    
+    parser.add_argument(
+        "--console", action="store_true", help="Enable console window on Windows"
+    )
+    parser.add_argument(
+        "--launch", action="store_true", help="Launch the application after building"
+    )
+
     args = parser.parse_args()
-    
+
     print(f"🏗️ {APP_NAME} Build Script")
     print("=" * 50)
-    
+
     # Check if PyInstaller is installed
     if not ensure_pyinstaller_installed():
         sys.exit(1)
-    
+
     # Check if main script exists
     if not Path(MAIN_SCRIPT).exists():
         print(f"❌ Main script not found: {MAIN_SCRIPT}")
         sys.exit(1)
-    
+
     # Clean output directory
     clean_output_directory()
-    
+
     # Build executable
     success = build_with_pyinstaller(debug=args.debug, console=args.console)
-    
+
     # Clean up wrapper file if it was created
     wrapper_file = Path("_windowed_main.py")
     if wrapper_file.exists():
@@ -414,28 +436,28 @@ def main():
             print("🧹 Cleaned up wrapper script")
         except:
             pass
-    
+
     if success:
         # Copy license files
         copy_license_files()
-        
+
         print("\n🎉 Build completed successfully!")
-        
+
         exe_name = f"{APP_NAME}{'.exe' if platform.system() == 'Windows' else ''}"
         exe_path = Path(OUTPUT_DIR) / exe_name
-        
+
         if exe_path.exists():
             size_mb = exe_path.stat().st_size / (1024 * 1024)
             print(f"📦 Output file: {exe_path}")
             print(f"📏 File size: {size_mb:.1f} MB")
-            
+
             # List files in dist directory
             print("\n📁 Files in dist directory:")
             for root, dirs, files in os.walk(OUTPUT_DIR):
                 for file in files:
                     rel_path = os.path.relpath(os.path.join(root, file), OUTPUT_DIR)
                     print(f"   • {rel_path}")
-            
+
             # Debugging instructions
             print("\n🔍 DEBUGGING INSTRUCTIONS:")
             print("If the exe doesn't run when double-clicked, try this:")
@@ -446,7 +468,7 @@ def main():
             print("\nAlternatively, build with console enabled:")
             print("   python build.py --console")
             print("This will keep the console window visible to see errors.")
-            
+
             # Launch the executable if requested
             if args.launch:
                 if launch_executable():
@@ -455,14 +477,17 @@ def main():
                     print("⚠️ Application could not be launched automatically.")
                     print("💡 Try running from command prompt to see error details.")
             else:
-                print("ℹ️ Application built successfully but not launched (use --launch to launch)")
+                print(
+                    "ℹ️ Application built successfully but not launched (use --launch to launch)"
+                )
         else:
             print(f"⚠️ Expected executable not found: {exe_path}")
-        
+
         sys.exit(0)
     else:
         print("\n💥 Build failed!")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
