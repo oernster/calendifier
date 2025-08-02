@@ -1,6 +1,5 @@
 # 📅 Calendifier
 
-
 **Author: Oliver Ernster**
 
 <!-- Multi-language summary -->
