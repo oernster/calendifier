@@ -250,12 +250,16 @@ EOL
         cp "$SOURCE_DIR/assets/calendar_icon.svg" ~/.local/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg
     fi
     
-    # 5. Create or modify desktop files in all relevant locations for XFCE
+    # 5. Create a simple desktop file for XFCE - minimal approach
+    echo "Creating simple desktop file for XFCE..."
+    
     # Main desktop file
     DESKTOP_FILE=~/.local/share/applications/com.calendifier.Calendar.desktop
     
-    # Create desktop file content
-    DESKTOP_CONTENT="[Desktop Entry]
+    # Create or update main desktop file with minimal content
+    mkdir -p ~/.local/share/applications
+    cat > "$DESKTOP_FILE" << EOL
+[Desktop Entry]
 Version=1.0
 Type=Application
 Name=Calendifier
@@ -268,45 +272,21 @@ Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
 StartupNotify=true
 StartupWMClass=calendifier
-X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
 MimeType=text/calendar;application/ics;
-TryExec=flatpak
-"
-    
-    # Create or update main desktop file
-    echo "Creating/updating main desktop file..."
-    mkdir -p ~/.local/share/applications
-    echo "$DESKTOP_CONTENT" > "$DESKTOP_FILE"
+EOL
     chmod +x "$DESKTOP_FILE"
-    
-    # Create desktop file in XFCE-specific locations
-    echo "Creating desktop files in XFCE-specific locations..."
-    
-    # XFCE applications directory
-    mkdir -p ~/.config/xfce4/desktop
-    echo "$DESKTOP_CONTENT" > ~/.config/xfce4/desktop/com.calendifier.Calendar.desktop
-    chmod +x ~/.config/xfce4/desktop/com.calendifier.Calendar.desktop
-    
-    # XFCE panel launcher directories
-    if [ -d ~/.config/xfce4/panel ]; then
-        find ~/.config/xfce4/panel -name "launcher-*" -type d | while read launcher_dir; do
-            echo "Creating launcher in $launcher_dir"
-            echo "$DESKTOP_CONTENT" > "$launcher_dir/com.calendifier.Calendar.desktop"
-            chmod +x "$launcher_dir/com.calendifier.Calendar.desktop"
-        done
-    fi
     
     # Create desktop shortcut for XFCE
     if [ -d ~/Desktop ]; then
         echo "Creating desktop shortcut for XFCE..."
-        echo "$DESKTOP_CONTENT" > ~/Desktop/Calendifier.desktop
+        cp "$DESKTOP_FILE" ~/Desktop/Calendifier.desktop
         chmod +x ~/Desktop/Calendifier.desktop
     fi
     
     # Update desktop database
     update-desktop-database ~/.local/share/applications 2>/dev/null || true
     
-    echo "Desktop files created/updated for XFCE."
+    echo "Simple desktop file created for XFCE."
     
     # 6. Update icon cache
     if command -v gtk-update-icon-cache &> /dev/null; then
@@ -1098,123 +1078,21 @@ EOL
             echo "Applying XFCE-specific overrides..."
             fix_xfce_ui
             
-            # Additional XFCE-specific setup
-            echo "Performing additional XFCE-specific setup..."
+            # Additional XFCE-specific setup - NO SUDO COMMANDS
+            echo "Performing additional XFCE-specific setup (user-level only)..."
             
-            # Create MIME associations
-            mkdir -p ~/.local/share/mime/packages
-            cat > ~/.local/share/mime/packages/com.calendifier.Calendar.xml << EOL
-<?xml version="1.0" encoding="UTF-8"?>
-<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-  <mime-type type="text/calendar">
-    <comment>Calendar file</comment>
-    <glob pattern="*.ics"/>
-    <glob pattern="*.ical"/>
-    <glob pattern="*.icalendar"/>
-    <glob pattern="*.calendar"/>
-  </mime-type>
-</mime-info>
-EOL
-            update-mime-database ~/.local/share/mime 2>/dev/null || true
-            
-            # Create XFCE menu entry with absolute path
-            mkdir -p ~/.config/menus/applications-merged
-            cat > ~/.config/menus/applications-merged/calendifier.menu << EOL
-<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
-<Menu>
-  <Name>Applications</Name>
-  <Menu>
-    <Name>Office</Name>
-    <Include>
-      <Filename>com.calendifier.Calendar.desktop</Filename>
-    </Include>
-  </Menu>
-</Menu>
-EOL
-            
-            # Create direct menu entry for Whisker Menu
-            mkdir -p ~/.local/share/applications
-            cat > ~/.local/share/applications/calendifier-direct.desktop << EOL
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Calendifier (Direct)
-GenericName=Calendar Application
-Comment=A sophisticated cross-platform desktop calendar application
-Icon=com.calendifier.Calendar
-Exec=bash -c "flatpak run com.calendifier.Calendar"
-Terminal=false
-Categories=Office;Calendar;Qt;
-Keywords=calendar;event;schedule;appointment;reminder;date;time;
-StartupNotify=true
-StartupWMClass=calendifier
-MimeType=text/calendar;application/ics;
-TryExec=flatpak
-EOL
-            chmod +x ~/.local/share/applications/calendifier-direct.desktop
-            
-            # Special handling for Fedora + XFCE
-            if [[ "$DISTRO" == "fedora" ]]; then
-                echo "Applying Fedora + XFCE specific fixes..."
-                
-                # Create a trusted desktop entry in the system location with bash wrapper
-                sudo mkdir -p /usr/share/applications
-                cat > /tmp/com.calendifier.Calendar.desktop << EOL
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Calendifier
-GenericName=Calendar Application
-Comment=A sophisticated cross-platform desktop calendar application
-Icon=com.calendifier.Calendar
-Exec=bash -c "flatpak run com.calendifier.Calendar"
-Terminal=false
-Categories=Office;Calendar;Qt;
-Keywords=calendar;event;schedule;appointment;reminder;date;time;
-StartupNotify=true
-StartupWMClass=calendifier
-X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
-MimeType=text/calendar;application/ics;
-TryExec=flatpak
-EOL
-                sudo cp /tmp/com.calendifier.Calendar.desktop /usr/share/applications/
-                sudo chmod 755 /usr/share/applications/com.calendifier.Calendar.desktop
-                
-                # Create a shell script wrapper for the application
-                cat > /tmp/calendifier-launcher.sh << EOL
+            # Create a simple launcher script in user's bin directory
+            mkdir -p ~/bin
+            cat > ~/bin/calendifier << EOL
 #!/bin/bash
+# Simple launcher for Calendifier
 flatpak run com.calendifier.Calendar
 EOL
-                sudo cp /tmp/calendifier-launcher.sh /usr/local/bin/
-                sudo chmod 755 /usr/local/bin/calendifier-launcher.sh
-                
-                # Create another desktop entry using the shell script
-                cat > /tmp/calendifier-script.desktop << EOL
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Calendifier (Script)
-GenericName=Calendar Application
-Comment=A sophisticated cross-platform desktop calendar application
-Icon=com.calendifier.Calendar
-Exec=/usr/local/bin/calendifier-launcher.sh
-Terminal=false
-Categories=Office;Calendar;Qt;
-Keywords=calendar;event;schedule;appointment;reminder;date;time;
-StartupNotify=true
-StartupWMClass=calendifier
-MimeType=text/calendar;application/ics;
-TryExec=/usr/local/bin/calendifier-launcher.sh
-EOL
-                sudo cp /tmp/calendifier-script.desktop /usr/share/applications/
-                sudo chmod 755 /usr/share/applications/calendifier-script.desktop
-                
-                # Update system desktop database
-                sudo update-desktop-database /usr/share/applications/ 2>/dev/null || true
-                
-                # Create a direct launcher in the XFCE applications menu
-                mkdir -p ~/.config/xfce4/panel/launcher-10
-                cat > ~/.config/xfce4/panel/launcher-10/calendifier.desktop << EOL
+            chmod +x ~/bin/calendifier
+            
+            # Create a simple desktop entry that uses the launcher script
+            mkdir -p ~/.local/share/applications
+            cat > ~/.local/share/applications/calendifier-launcher.desktop << EOL
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -1222,49 +1100,31 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=bash -c "flatpak run com.calendifier.Calendar"
+Exec=~/bin/calendifier
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
 StartupNotify=true
 StartupWMClass=calendifier
-X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
 MimeType=text/calendar;application/ics;
-TryExec=flatpak
 EOL
-                chmod +x ~/.config/xfce4/panel/launcher-10/calendifier.desktop
-                
-                # Create a direct launcher in the Whisker Menu favorites
-                mkdir -p ~/.config/xfce4/panel/whiskermenu-1.rc.d
-                echo "favorites=calendifier-direct.desktop,calendifier-script.desktop,com.calendifier.Calendar.desktop" > ~/.config/xfce4/panel/whiskermenu-1.rc.d/favorites
-                
-                # Set SELinux context if available
-                if command -v restorecon &> /dev/null; then
-                    echo "Setting SELinux context for desktop files..."
-                    sudo restorecon -Rv /usr/share/applications/com.calendifier.Calendar.desktop 2>/dev/null || true
-                    sudo restorecon -Rv /usr/share/applications/calendifier-script.desktop 2>/dev/null || true
-                    sudo restorecon -Rv /usr/local/bin/calendifier-launcher.sh 2>/dev/null || true
-                    restorecon -Rv ~/.local/share/applications/com.calendifier.Calendar.desktop 2>/dev/null || true
-                    restorecon -Rv ~/.local/share/applications/calendifier-direct.desktop 2>/dev/null || true
-                fi
-                
-                # Create a symlink in the applications directory
-                sudo ln -sf /usr/local/bin/calendifier-launcher.sh /usr/local/bin/calendifier 2>/dev/null || true
-            fi
+            chmod +x ~/.local/share/applications/calendifier-launcher.desktop
+            
+            # Update desktop database
+            update-desktop-database ~/.local/share/applications 2>/dev/null || true
             
             # Force refresh XFCE menu cache
             rm -rf ~/.cache/xfce4/xfce4-applications.menu 2>/dev/null || true
             rm -rf ~/.cache/xfce4/desktop-directories 2>/dev/null || true
             
-            # Restart XFCE panel if running
+            # Restart XFCE panel if running - safely
             if command -v xfce4-panel &> /dev/null && pgrep -x "xfce4-panel" > /dev/null; then
                 echo "Restarting XFCE panel..."
                 xfce4-panel --restart &>/dev/null || true
-                
-                # Additional panel refresh commands
-                xfdesktop --reload &>/dev/null || true
-                xfce4-panel --quit && xfce4-panel &>/dev/null || true
             fi
+            
+            echo "XFCE setup completed with user-level changes only."
+            echo "NOTE: You may need to log out and log back in for menu changes to take effect."
         fi
         
         # Apply custom overrides for Hyprland
