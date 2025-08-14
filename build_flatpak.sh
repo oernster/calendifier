@@ -1117,7 +1117,7 @@ EOL
 EOL
             update-mime-database ~/.local/share/mime 2>/dev/null || true
             
-            # Create XFCE menu entry
+            # Create XFCE menu entry with absolute path
             mkdir -p ~/.config/menus/applications-merged
             cat > ~/.config/menus/applications-merged/calendifier.menu << EOL
 <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
@@ -1132,11 +1132,32 @@ EOL
 </Menu>
 EOL
             
+            # Create direct menu entry for Whisker Menu
+            mkdir -p ~/.local/share/applications
+            cat > ~/.local/share/applications/calendifier-direct.desktop << EOL
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Calendifier (Direct)
+GenericName=Calendar Application
+Comment=A sophisticated cross-platform desktop calendar application
+Icon=com.calendifier.Calendar
+Exec=bash -c "flatpak run com.calendifier.Calendar"
+Terminal=false
+Categories=Office;Calendar;Qt;
+Keywords=calendar;event;schedule;appointment;reminder;date;time;
+StartupNotify=true
+StartupWMClass=calendifier
+MimeType=text/calendar;application/ics;
+TryExec=flatpak
+EOL
+            chmod +x ~/.local/share/applications/calendifier-direct.desktop
+            
             # Special handling for Fedora + XFCE
             if [[ "$DISTRO" == "fedora" ]]; then
                 echo "Applying Fedora + XFCE specific fixes..."
                 
-                # Create a trusted desktop entry in the system location
+                # Create a trusted desktop entry in the system location with bash wrapper
                 sudo mkdir -p /usr/share/applications
                 cat > /tmp/com.calendifier.Calendar.desktop << EOL
 [Desktop Entry]
@@ -1146,7 +1167,7 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=flatpak run com.calendifier.Calendar
+Exec=bash -c "flatpak run com.calendifier.Calendar"
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -1158,6 +1179,35 @@ TryExec=flatpak
 EOL
                 sudo cp /tmp/com.calendifier.Calendar.desktop /usr/share/applications/
                 sudo chmod 755 /usr/share/applications/com.calendifier.Calendar.desktop
+                
+                # Create a shell script wrapper for the application
+                cat > /tmp/calendifier-launcher.sh << EOL
+#!/bin/bash
+flatpak run com.calendifier.Calendar
+EOL
+                sudo cp /tmp/calendifier-launcher.sh /usr/local/bin/
+                sudo chmod 755 /usr/local/bin/calendifier-launcher.sh
+                
+                # Create another desktop entry using the shell script
+                cat > /tmp/calendifier-script.desktop << EOL
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Calendifier (Script)
+GenericName=Calendar Application
+Comment=A sophisticated cross-platform desktop calendar application
+Icon=com.calendifier.Calendar
+Exec=/usr/local/bin/calendifier-launcher.sh
+Terminal=false
+Categories=Office;Calendar;Qt;
+Keywords=calendar;event;schedule;appointment;reminder;date;time;
+StartupNotify=true
+StartupWMClass=calendifier
+MimeType=text/calendar;application/ics;
+TryExec=/usr/local/bin/calendifier-launcher.sh
+EOL
+                sudo cp /tmp/calendifier-script.desktop /usr/share/applications/
+                sudo chmod 755 /usr/share/applications/calendifier-script.desktop
                 
                 # Update system desktop database
                 sudo update-desktop-database /usr/share/applications/ 2>/dev/null || true
@@ -1172,7 +1222,7 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=flatpak run com.calendifier.Calendar
+Exec=bash -c "flatpak run com.calendifier.Calendar"
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -1184,18 +1234,36 @@ TryExec=flatpak
 EOL
                 chmod +x ~/.config/xfce4/panel/launcher-10/calendifier.desktop
                 
+                # Create a direct launcher in the Whisker Menu favorites
+                mkdir -p ~/.config/xfce4/panel/whiskermenu-1.rc.d
+                echo "favorites=calendifier-direct.desktop,calendifier-script.desktop,com.calendifier.Calendar.desktop" > ~/.config/xfce4/panel/whiskermenu-1.rc.d/favorites
+                
                 # Set SELinux context if available
                 if command -v restorecon &> /dev/null; then
                     echo "Setting SELinux context for desktop files..."
                     sudo restorecon -Rv /usr/share/applications/com.calendifier.Calendar.desktop 2>/dev/null || true
+                    sudo restorecon -Rv /usr/share/applications/calendifier-script.desktop 2>/dev/null || true
+                    sudo restorecon -Rv /usr/local/bin/calendifier-launcher.sh 2>/dev/null || true
                     restorecon -Rv ~/.local/share/applications/com.calendifier.Calendar.desktop 2>/dev/null || true
+                    restorecon -Rv ~/.local/share/applications/calendifier-direct.desktop 2>/dev/null || true
                 fi
+                
+                # Create a symlink in the applications directory
+                sudo ln -sf /usr/local/bin/calendifier-launcher.sh /usr/local/bin/calendifier 2>/dev/null || true
             fi
+            
+            # Force refresh XFCE menu cache
+            rm -rf ~/.cache/xfce4/xfce4-applications.menu 2>/dev/null || true
+            rm -rf ~/.cache/xfce4/desktop-directories 2>/dev/null || true
             
             # Restart XFCE panel if running
             if command -v xfce4-panel &> /dev/null && pgrep -x "xfce4-panel" > /dev/null; then
                 echo "Restarting XFCE panel..."
                 xfce4-panel --restart &>/dev/null || true
+                
+                # Additional panel refresh commands
+                xfdesktop --reload &>/dev/null || true
+                xfce4-panel --quit && xfce4-panel &>/dev/null || true
             fi
         fi
         
