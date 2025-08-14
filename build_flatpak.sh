@@ -146,12 +146,17 @@ fix_fedora_cinnamon_icon() {
         echo "Desktop file not found in expected location"
     fi
     
-    # 5. Create an additional desktop file in the specific Cinnamon location
-    echo "Creating additional desktop file for Cinnamon..."
+    # 5. Create a symlink to the desktop file in the Cinnamon menu location
+    echo "Creating symlink to desktop file for Cinnamon menu..."
     mkdir -p ~/.local/share/cinnamon/applets/menu@cinnamon.org
     
-    # Copy desktop file
-    cp ~/.local/share/applications/com.calendifier.Calendar.desktop ~/.local/share/cinnamon/applets/menu@cinnamon.org/com.calendifier.Calendar.desktop 2>/dev/null || true
+    # Create symlink instead of copying to avoid duplication
+    if [ -f ~/.local/share/applications/com.calendifier.Calendar.desktop ]; then
+        ln -sf ~/.local/share/applications/com.calendifier.Calendar.desktop ~/.local/share/cinnamon/applets/menu@cinnamon.org/com.calendifier.Calendar.desktop 2>/dev/null || true
+        echo "Created symlink to desktop file in Cinnamon menu location."
+    else
+        echo "Desktop file not found, skipping symlink creation."
+    fi
     
     # 6. Refresh icon cache
     echo "Refreshing icon cache..."
@@ -159,26 +164,18 @@ fix_fedora_cinnamon_icon() {
         gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor 2>/dev/null || true
     fi
     
-    # 7. Create desktop shortcut as fallback if Desktop directory exists
-    if [ -d ~/Desktop ]; then
-        echo "Creating desktop shortcut..."
-        cat > ~/Desktop/Calendifier.desktop << EOL
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Calendifier
-GenericName=Calendar Application
-Comment=A sophisticated cross-platform desktop calendar application
-Icon=com.calendifier.Calendar
-Exec=flatpak run com.calendifier.Calendar
-Terminal=false
-Categories=Office;Calendar;Qt;
-Keywords=calendar;event;schedule;appointment;reminder;date;time;
-StartupNotify=true
-X-GNOME-UsesNotifications=true
-X-Cinnamon-UsesNotifications=true
-EOL
-        chmod +x ~/Desktop/Calendifier.desktop
+    # 7. Create desktop shortcut as symlink if Desktop directory exists and no shortcut exists
+    if [ -d ~/Desktop ] && [ ! -f ~/Desktop/Calendifier.desktop ]; then
+        echo "Creating desktop shortcut as symlink..."
+        if [ -f ~/.local/share/applications/com.calendifier.Calendar.desktop ]; then
+            ln -sf ~/.local/share/applications/com.calendifier.Calendar.desktop ~/Desktop/Calendifier.desktop
+            chmod +x ~/Desktop/Calendifier.desktop
+            echo "Created desktop shortcut as symlink."
+        else
+            echo "Desktop file not found, skipping desktop shortcut creation."
+        fi
+    elif [ -f ~/Desktop/Calendifier.desktop ]; then
+        echo "Desktop shortcut already exists, skipping creation."
     fi
     
     # 8. Try to refresh Cinnamon menu
@@ -222,24 +219,23 @@ EOL
         cp "$SOURCE_DIR/assets/calendar_icon.svg" ~/.local/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg
     fi
     
-    # 5. Create XFCE-specific desktop file
-    mkdir -p ~/.local/share/applications
-    cat > ~/.local/share/applications/com.calendifier.Calendar-xfce.desktop << EOL
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Calendifier
-GenericName=Calendar Application
-Comment=A sophisticated cross-platform desktop calendar application
-Icon=com.calendifier.Calendar
-Exec=env QT_QPA_PLATFORMTHEME=gtk3 flatpak run com.calendifier.Calendar
-Terminal=false
-Categories=Office;Calendar;Qt;
-Keywords=calendar;event;schedule;appointment;reminder;date;time;
-StartupNotify=true
-StartupWMClass=calendifier
-X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
-EOL
+    # 5. Modify existing desktop file instead of creating a new one
+    DESKTOP_FILE=~/.local/share/applications/com.calendifier.Calendar.desktop
+    if [ -f "$DESKTOP_FILE" ]; then
+        echo "Modifying existing desktop file for XFCE..."
+        # Make a backup
+        cp "$DESKTOP_FILE" "$DESKTOP_FILE.bak"
+        
+        # Update the Exec line to include XFCE-specific environment variables
+        sed -i "s|^Exec=.*|Exec=env QT_QPA_PLATFORMTHEME=gtk3 flatpak run com.calendifier.Calendar|g" "$DESKTOP_FILE"
+        
+        # Add XFCE-specific entries
+        grep -q "X-XFCE-Source" "$DESKTOP_FILE" || echo "X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop" >> "$DESKTOP_FILE"
+        
+        echo "Desktop file updated for XFCE."
+    else
+        echo "Desktop file not found, it will be created by Flatpak installation."
+    fi
     
     # 6. Update icon cache
     if command -v gtk-update-icon-cache &> /dev/null; then
