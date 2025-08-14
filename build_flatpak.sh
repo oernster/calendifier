@@ -340,6 +340,21 @@ echo "Detected desktop environment: $DESKTOP"
 SOURCE_DIR="$(pwd)"
 echo "Building from source directory: $SOURCE_DIR"
 
+# Create wrapper script for main.py
+cat > wrapper.py << 'EOL'
+#!/usr/bin/env python3
+
+# Import style initialization first
+import style_init
+style_init.set_style_for_desktop()
+
+# Then import and run the main application
+import main
+
+if __name__ == "__main__":
+    main.main()
+EOL
+
 # Create runner script to start calendifier directly with enhanced environment detection
 cat > calendifier-runner.sh << 'EOL'
 #!/bin/bash
@@ -368,6 +383,9 @@ if [[ "$DESKTOP_ENV_UPPER" == *"XFCE"* ]]; then
     export QT_QPA_PLATFORMTHEME=gtk3
     export QT_STYLE_OVERRIDE=gtk2
     export QT_SCALE_FACTOR=1
+    # Additional XFCE-specific settings
+    export QT_QPA_PLATFORM_PLUGIN=gtk3
+    export QT_QPA_PLATFORM_THEME_PATH=/app/lib/python3.12/site-packages/PySide6/Qt/plugins/platformthemes
 fi
 
 # Hyprland-specific settings
@@ -397,11 +415,85 @@ export QT_ENABLE_HIGHDPI_SCALING=1
 
 # Change to app directory and run Calendifier
 cd /app
-exec python3 main.py "$@"
+exec python3 wrapper.py "$@"
 EOL
 
 # Make runner script executable
 chmod +x calendifier-runner.sh
+
+# Create Qt configuration files for better XFCE integration
+mkdir -p qt-config
+cat > qt-config/qt.conf << 'EOL'
+[Paths]
+Plugins = plugins
+Imports = imports
+Qml2Imports = qml
+EOL
+
+# Create Qt style configuration
+mkdir -p qt-config/qt5
+cat > qt-config/qt5/qtbase.conf << 'EOL'
+[Appearance]
+Style=GTK+
+EOL
+
+# Create Qt platform theme configuration
+mkdir -p qt-config/qt5/qt5ct
+cat > qt-config/qt5/qt5ct/qt5ct.conf << 'EOL'
+[Appearance]
+custom_palette=false
+icon_theme=elementary-xfce
+standard_dialogs=default
+style=gtk2
+
+[Fonts]
+fixed=@Variant(\0\0\0@\0\0\0\x12\0\x44\0\x65\0j\0\x61\0V\0u\0 \0S\0\x61\0n\0s@$\0\0\0\0\0\0\xff\xff\xff\xff\x5\x1\0\x32\x10)
+general=@Variant(\0\0\0@\0\0\0\x12\0\x44\0\x65\0j\0\x61\0V\0u\0 \0S\0\x61\0n\0s@$\0\0\0\0\0\0\xff\xff\xff\xff\x5\x1\0\x32\x10)
+
+[Interface]
+activate_item_on_single_click=1
+buttonbox_layout=0
+cursor_flash_time=1000
+dialog_buttons_have_icons=1
+double_click_interval=400
+gui_effects=@Invalid()
+keyboard_scheme=2
+menus_have_icons=true
+show_shortcuts_in_context_menus=true
+stylesheets=@Invalid()
+toolbutton_style=4
+underline_shortcut=1
+wheel_scroll_lines=3
+EOL
+
+# Create Qt6 configuration
+mkdir -p qt-config/qt6/qt6ct
+cat > qt-config/qt6/qt6ct/qt6ct.conf << 'EOL'
+[Appearance]
+custom_palette=false
+icon_theme=elementary-xfce
+standard_dialogs=default
+style=gtk2
+
+[Fonts]
+fixed=@Variant(\0\0\0@\0\0\0\x12\0\x44\0\x65\0j\0\x61\0V\0u\0 \0S\0\x61\0n\0s@$\0\0\0\0\0\0\xff\xff\xff\xff\x5\x1\0\x32\x10)
+general=@Variant(\0\0\0@\0\0\0\x12\0\x44\0\x65\0j\0\x61\0V\0u\0 \0S\0\x61\0n\0s@$\0\0\0\0\0\0\xff\xff\xff\xff\x5\x1\0\x32\x10)
+
+[Interface]
+activate_item_on_single_click=1
+buttonbox_layout=0
+cursor_flash_time=1000
+dialog_buttons_have_icons=1
+double_click_interval=400
+gui_effects=@Invalid()
+keyboard_scheme=2
+menus_have_icons=true
+show_shortcuts_in_context_menus=true
+stylesheets=@Invalid()
+toolbutton_style=4
+underline_shortcut=1
+wheel_scroll_lines=3
+EOL
 
 # Create Flatpak manifest with KDE Platform for better Qt6/PySide6 support
 cat > com.calendifier.Calendar.json << 'EOL'
@@ -425,7 +517,11 @@ cat > com.calendifier.Calendar.json << 'EOL'
         "--talk-name=org.kde.StatusNotifierWatcher",
         "--own-name=com.calendifier.Calendar",
         "--env=QT_QPA_PLATFORMTHEME=gtk3",
-        "--env=GDK_BACKEND=x11,wayland"
+        "--env=GDK_BACKEND=x11,wayland",
+        "--filesystem=xdg-config/gtk-3.0:ro",
+        "--filesystem=xdg-config/gtk-2.0:ro",
+        "--filesystem=xdg-config/Trolltech.conf:ro",
+        "--filesystem=/usr/share/themes:ro"
     ],
     "build-options": {
         "env": {
@@ -436,6 +532,17 @@ cat > com.calendifier.Calendar.json << 'EOL'
         ]
     },
     "modules": [
+        {
+            "name": "gtk-integration",
+            "buildsystem": "simple",
+            "build-commands": [
+                "echo 'Installing GTK integration packages...'",
+                "apt-get update -y && apt-get install -y --no-install-recommends libgtk-3-dev libgtk-3-0 adwaita-icon-theme-full || true",
+                "dnf install -y gtk3-devel adwaita-icon-theme || true",
+                "pacman -S --noconfirm gtk3 adwaita-icon-theme || true",
+                "echo 'GTK integration packages installed'"
+            ]
+        },
         {
             "name": "python3-pip",
             "buildsystem": "simple",
@@ -466,8 +573,50 @@ cat > com.calendifier.Calendar.json << 'EOL'
             "name": "calendifier",
             "buildsystem": "simple",
             "build-commands": [
+                "echo 'Creating PySide6 style initialization script...'",
+                "cat > style_init.py << 'EOPY'
+# PySide6 style initialization script
+import os
+import sys
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QCoreApplication, Qt
+
+def set_style_for_desktop():
+    desktop_env = os.environ.get('XDG_CURRENT_DESKTOP', '').upper()
+    
+    # Set application attributes before creating QApplication
+    QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    
+    # Force the style for XFCE
+    if 'XFCE' in desktop_env:
+        print('Detected XFCE environment, applying GTK style')
+        os.environ['QT_QPA_PLATFORMTHEME'] = 'gtk3'
+        os.environ['QT_STYLE_OVERRIDE'] = 'gtk2'
+        try:
+            QApplication.setStyle('gtk2')
+        except:
+            try:
+                QApplication.setStyle('fusion')  # Fallback to Fusion style
+            except:
+                pass
+        
+        # Try to force font rendering
+        from PySide6.QtGui import QFont
+        font = QFont("Sans Serif", 9)
+        QApplication.setFont(font)
+    
+    # Force the style for Wayland/Hyprland
+    if 'HYPRLAND' in desktop_env or os.environ.get('WAYLAND_DISPLAY'):
+        print('Detected Wayland/Hyprland environment')
+        os.environ['QT_QPA_PLATFORM'] = 'wayland'
+        os.environ['QT_WAYLAND_DISABLE_WINDOWDECORATION'] = '1'
+EOPY",
                 "echo 'Installing Calendifier application files to /app...'",
                 "cp -rv main.py ${FLATPAK_DEST}/",
+                "cp -rv style_init.py ${FLATPAK_DEST}/",
+                "cp -rv wrapper.py ${FLATPAK_DEST}/",
+                "chmod +x ${FLATPAK_DEST}/wrapper.py",
                 "cp -rv calendar_app ${FLATPAK_DEST}/",
                 "if [ -f version.py ]; then cp -rv version.py ${FLATPAK_DEST}/; fi",
                 "if [ -d assets ]; then cp -rv assets ${FLATPAK_DEST}/; fi",
