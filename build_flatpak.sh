@@ -42,10 +42,26 @@ detect_desktop() {
             DESKTOP="GNOME"
         elif pgrep -x "plasmashell" > /dev/null; then
             DESKTOP="KDE"
+        elif pgrep -x "xfce4-session" > /dev/null || pgrep -x "xfwm4" > /dev/null; then
+            DESKTOP="XFCE"
+        elif pgrep -x "Hyprland" > /dev/null; then
+            DESKTOP="Hyprland"
         else
             DESKTOP="unknown"
         fi
     fi
+    
+    # Convert to uppercase for easier comparison
+    DESKTOP_UPPER=$(echo "$DESKTOP" | tr '[:lower:]' '[:upper:]')
+    
+    # Check for XFCE in different formats
+    if [[ "$DESKTOP_UPPER" == *"XFCE"* ]]; then
+        DESKTOP="XFCE"
+    # Check for Hyprland in different formats
+    elif [[ "$DESKTOP_UPPER" == *"HYPRLAND"* ]]; then
+        DESKTOP="Hyprland"
+    fi
+    
     echo $DESKTOP
 }
 
@@ -174,6 +190,66 @@ EOL
     return 0
 }
 
+# Function to apply XFCE UI fixes
+fix_xfce_ui() {
+    echo "===== Applying XFCE UI Fixes ====="
+    
+    # 1. Create necessary directories
+    mkdir -p ~/.config/gtk-3.0
+    mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml
+    
+    # 2. Create a Qt configuration file for XFCE
+    mkdir -p ~/.config/qt5ct
+    cat > ~/.config/qt5ct/qt5ct.conf << EOL
+[Appearance]
+icon_theme=elementary-xfce
+style=gtk2
+EOL
+
+    # 3. Create a Qt6 configuration file for XFCE
+    mkdir -p ~/.config/qt6ct
+    cat > ~/.config/qt6ct/qt6ct.conf << EOL
+[Appearance]
+icon_theme=elementary-xfce
+style=gtk2
+EOL
+
+    # 4. Fix icon paths
+    mkdir -p ~/.local/share/icons/hicolor/scalable/apps
+    
+    # Copy icons to XFCE-specific locations
+    if [ -f "$SOURCE_DIR/assets/calendar_icon.svg" ]; then
+        cp "$SOURCE_DIR/assets/calendar_icon.svg" ~/.local/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg
+    fi
+    
+    # 5. Create XFCE-specific desktop file
+    mkdir -p ~/.local/share/applications
+    cat > ~/.local/share/applications/com.calendifier.Calendar-xfce.desktop << EOL
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Calendifier
+GenericName=Calendar Application
+Comment=A sophisticated cross-platform desktop calendar application
+Icon=com.calendifier.Calendar
+Exec=env QT_QPA_PLATFORMTHEME=gtk3 flatpak run com.calendifier.Calendar
+Terminal=false
+Categories=Office;Calendar;Qt;
+Keywords=calendar;event;schedule;appointment;reminder;date;time;
+StartupNotify=true
+StartupWMClass=calendifier
+X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
+EOL
+    
+    # 6. Update icon cache
+    if command -v gtk-update-icon-cache &> /dev/null; then
+        gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor 2>/dev/null || true
+    fi
+    
+    echo "XFCE UI fixes applied successfully!"
+    return 0
+}
+
 # Function to display installation instructions for flatpak-builder
 install_instructions() {
     DISTRO=$(detect_distro)
@@ -264,18 +340,46 @@ echo "Detected desktop environment: $DESKTOP"
 SOURCE_DIR="$(pwd)"
 echo "Building from source directory: $SOURCE_DIR"
 
-# Create simple runner script to start calendifier directly
+# Create runner script to start calendifier directly with enhanced environment detection
 cat > calendifier-runner.sh << 'EOL'
 #!/bin/bash
 
 # Set Python path to include app directory and site-packages
 export PYTHONPATH="/app:/app/lib/python3.12/site-packages:$PYTHONPATH"
 
-# PySide6/Qt6 Configuration for KDE Platform
+# Detect desktop environment
+DESKTOP_ENV="unknown"
+if [ -n "$XDG_CURRENT_DESKTOP" ]; then
+    DESKTOP_ENV="$XDG_CURRENT_DESKTOP"
+elif [ -n "$DESKTOP_SESSION" ]; then
+    DESKTOP_ENV="$DESKTOP_SESSION"
+fi
+
+# Convert to uppercase for easier comparison
+DESKTOP_ENV_UPPER=$(echo "$DESKTOP_ENV" | tr '[:lower:]' '[:upper:]')
+
+# PySide6/Qt6 Configuration
 export QT_PLUGIN_PATH="/app/lib/python3.12/site-packages/PySide6/Qt/plugins"
 export QT_QPA_PLATFORM_PLUGIN_PATH="/app/lib/python3.12/site-packages/PySide6/Qt/plugins/platforms"
 
-# Platform detection for PySide6 on KDE runtime
+# XFCE-specific settings
+if [[ "$DESKTOP_ENV_UPPER" == *"XFCE"* ]]; then
+    echo 'Calendifier: Detected XFCE environment, applying specific settings'
+    export QT_QPA_PLATFORMTHEME=gtk3
+    export QT_STYLE_OVERRIDE=gtk2
+    export QT_SCALE_FACTOR=1
+fi
+
+# Hyprland-specific settings
+if [[ "$DESKTOP_ENV_UPPER" == *"HYPRLAND"* ]]; then
+    echo 'Calendifier: Detected Hyprland environment, applying specific settings'
+    export QT_QPA_PLATFORM=wayland
+    export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+    export QT_AUTO_SCREEN_SCALE_FACTOR=1
+    export QT_ENABLE_HIGHDPI_SCALING=1
+fi
+
+# Platform detection for Wayland/X11
 if [ -n "$WAYLAND_DISPLAY" ] && [ -z "$FORCE_X11" ]; then
     export QT_QPA_PLATFORM=wayland
     echo 'Calendifier: Using Wayland platform'
@@ -319,7 +423,9 @@ cat > com.calendifier.Calendar.json << 'EOL'
         "--filesystem=xdg-download",
         "--talk-name=org.freedesktop.Notifications",
         "--talk-name=org.kde.StatusNotifierWatcher",
-        "--own-name=com.calendifier.Calendar"
+        "--own-name=com.calendifier.Calendar",
+        "--env=QT_QPA_PLATFORMTHEME=gtk3",
+        "--env=GDK_BACKEND=x11,wayland"
     ],
     "build-options": {
         "env": {
@@ -441,6 +547,20 @@ EOL
         cat >> com.calendifier.Calendar.desktop << 'EOL'
 X-KDE-FormFactor=desktop,tablet,handset
 X-KDE-StartupNotify=true
+EOL
+        ;;
+    *"XFCE"* | *"Xfce"*)
+        echo "Adding XFCE-specific desktop entries..."
+        cat >> com.calendifier.Calendar.desktop << 'EOL'
+X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
+Exec=env QT_QPA_PLATFORMTHEME=gtk3 flatpak run com.calendifier.Calendar
+EOL
+        ;;
+    *"Hyprland"* | *"HYPRLAND"*)
+        echo "Adding Hyprland-specific desktop entries..."
+        cat >> com.calendifier.Calendar.desktop << 'EOL'
+X-GNOME-UsesNotifications=true
+Exec=env QT_QPA_PLATFORM=wayland QT_WAYLAND_DISABLE_WINDOWDECORATION=1 flatpak run com.calendifier.Calendar
 EOL
         ;;
     *)
@@ -773,6 +893,31 @@ devices=dri;
 filesystems=xdg-documents:ro;xdg-download:ro;~/.config/cinnamon:ro;~/.local/share/cinnamon:ro;
 EOL
             echo "Fedora+Cinnamon overrides applied."
+        fi
+        
+        # Apply custom overrides for XFCE
+        if [[ "$DESKTOP" == *"XFCE"* || "$DESKTOP" == *"Xfce"* ]]; then
+            echo "Applying XFCE-specific overrides..."
+            fix_xfce_ui
+        fi
+        
+        # Apply custom overrides for Hyprland
+        if [[ "$DESKTOP" == *"Hyprland"* || "$DESKTOP" == *"HYPRLAND"* ]]; then
+            echo "Applying Hyprland-specific overrides..."
+            mkdir -p ~/.local/share/flatpak/overrides
+            cat > ~/.local/share/flatpak/overrides/com.calendifier.Calendar << EOL
+[Context]
+shared=network;ipc;
+sockets=wayland;x11;
+devices=dri;
+filesystems=xdg-documents:ro;xdg-download:ro;
+[Environment]
+QT_QPA_PLATFORM=wayland
+QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+QT_AUTO_SCREEN_SCALE_FACTOR=1
+QT_ENABLE_HIGHDPI_SCALING=1
+EOL
+            echo "Hyprland overrides applied."
         fi
         
         echo "You can run it with: flatpak run com.calendifier.Calendar"
