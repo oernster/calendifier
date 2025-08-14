@@ -250,15 +250,15 @@ EOL
         cp "$SOURCE_DIR/assets/calendar_icon.svg" ~/.local/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg
     fi
     
-    # 5. Create desktop file for XFCE using the exact working format
-    echo "Creating desktop file for XFCE using verified working format..."
+    # 5. Create desktop file for XFCE using the corrected format
+    echo "Creating desktop file for XFCE using the corrected format..."
     
     # Main desktop file
     DESKTOP_FILE=~/.local/share/applications/com.calendifier.Calendar.desktop
     
-    # Create or update main desktop file with the exact format that works
+    # Create or update main desktop file with the corrected format
     mkdir -p ~/.local/share/applications
-    cat > "$DESKTOP_FILE" << EOL
+    cat > "$DESKTOP_FILE" << 'EOL'
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -266,7 +266,6 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 com.calendifier.Calendar
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -274,13 +273,18 @@ StartupNotify=true
 StartupWMClass=calendifier
 MimeType=text/calendar;application/ics;
 X-Flatpak=com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 com.calendifier.Calendar
 EOL
     chmod +x "$DESKTOP_FILE"
+    
+    # Verify the desktop file content
+    echo "Verifying desktop file content:"
+    cat "$DESKTOP_FILE"
     
     # Update desktop database
     update-desktop-database ~/.local/share/applications 2>/dev/null || true
     
-    echo "Desktop file created for XFCE using verified working format."
+    echo "Desktop file created for XFCE using the corrected format."
     
     # 6. Update icon cache
     if command -v gtk-update-icon-cache &> /dev/null; then
@@ -680,8 +684,8 @@ with open("com.calendifier.Calendar.json", "w") as f:
 print("Flatpak manifest created successfully: com.calendifier.Calendar.json")
 '
 
-# Create desktop file following Flatpak conventions with verified working format
-cat > com.calendifier.Calendar.desktop << EOL
+# Create desktop file following Flatpak conventions with the corrected format
+cat > com.calendifier.Calendar.desktop << 'EOL'
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -689,7 +693,6 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 com.calendifier.Calendar
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -697,7 +700,12 @@ StartupNotify=true
 StartupWMClass=calendifier
 MimeType=text/calendar;application/ics;
 X-Flatpak=com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 com.calendifier.Calendar
 EOL
+
+# Verify the desktop file content
+echo "Verifying desktop file content:"
+cat com.calendifier.Calendar.desktop
 
 # Add desktop environment specific entries
 case "$DESKTOP" in
