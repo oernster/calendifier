@@ -250,13 +250,13 @@ EOL
         cp "$SOURCE_DIR/assets/calendar_icon.svg" ~/.local/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg
     fi
     
-    # 5. Create a simple desktop file for XFCE - minimal approach
-    echo "Creating simple desktop file for XFCE..."
+    # 5. Create desktop file for XFCE using the exact working format
+    echo "Creating desktop file for XFCE using verified working format..."
     
     # Main desktop file
     DESKTOP_FILE=~/.local/share/applications/com.calendifier.Calendar.desktop
     
-    # Create or update main desktop file with minimal content
+    # Create or update main desktop file with the exact format that works
     mkdir -p ~/.local/share/applications
     cat > "$DESKTOP_FILE" << EOL
 [Desktop Entry]
@@ -266,27 +266,21 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=flatpak run com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 com.calendifier.Calendar
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
 StartupNotify=true
 StartupWMClass=calendifier
 MimeType=text/calendar;application/ics;
+X-Flatpak=com.calendifier.Calendar
 EOL
     chmod +x "$DESKTOP_FILE"
-    
-    # Create desktop shortcut for XFCE
-    if [ -d ~/Desktop ]; then
-        echo "Creating desktop shortcut for XFCE..."
-        cp "$DESKTOP_FILE" ~/Desktop/Calendifier.desktop
-        chmod +x ~/Desktop/Calendifier.desktop
-    fi
     
     # Update desktop database
     update-desktop-database ~/.local/share/applications 2>/dev/null || true
     
-    echo "Simple desktop file created for XFCE."
+    echo "Desktop file created for XFCE using verified working format."
     
     # 6. Update icon cache
     if command -v gtk-update-icon-cache &> /dev/null; then
@@ -686,7 +680,7 @@ with open("com.calendifier.Calendar.json", "w") as f:
 print("Flatpak manifest created successfully: com.calendifier.Calendar.json")
 '
 
-# Create desktop file following Flatpak conventions
+# Create desktop file following Flatpak conventions with verified working format
 cat > com.calendifier.Calendar.desktop << EOL
 [Desktop Entry]
 Version=1.0
@@ -695,7 +689,7 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=flatpak run com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 com.calendifier.Calendar
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -1080,38 +1074,6 @@ EOL
             
             # Additional XFCE-specific setup - NO SUDO COMMANDS
             echo "Performing additional XFCE-specific setup (user-level only)..."
-            
-            # Create a simple launcher script in user's bin directory
-            mkdir -p ~/bin
-            cat > ~/bin/calendifier << EOL
-#!/bin/bash
-# Simple launcher for Calendifier
-flatpak run com.calendifier.Calendar
-EOL
-            chmod +x ~/bin/calendifier
-            
-            # Create a simple desktop entry that uses the launcher script
-            mkdir -p ~/.local/share/applications
-            cat > ~/.local/share/applications/calendifier-launcher.desktop << EOL
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Calendifier
-GenericName=Calendar Application
-Comment=A sophisticated cross-platform desktop calendar application
-Icon=com.calendifier.Calendar
-Exec=~/bin/calendifier
-Terminal=false
-Categories=Office;Calendar;Qt;
-Keywords=calendar;event;schedule;appointment;reminder;date;time;
-StartupNotify=true
-StartupWMClass=calendifier
-MimeType=text/calendar;application/ics;
-EOL
-            chmod +x ~/.local/share/applications/calendifier-launcher.desktop
-            
-            # Update desktop database
-            update-desktop-database ~/.local/share/applications 2>/dev/null || true
             
             # Force refresh XFCE menu cache
             rm -rf ~/.cache/xfce4/xfce4-applications.menu 2>/dev/null || true
