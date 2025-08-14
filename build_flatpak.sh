@@ -496,8 +496,10 @@ wheel_scroll_lines=3
 EOL
 
 # Create Flatpak manifest with KDE Platform for better Qt6/PySide6 support
-cat > com.calendifier.Calendar.json << 'EOL'
-{
+python3 -c '
+import json
+
+manifest = {
     "app-id": "com.calendifier.Calendar",
     "runtime": "org.kde.Platform",
     "runtime-version": "6.8",
@@ -536,10 +538,8 @@ cat > com.calendifier.Calendar.json << 'EOL'
             "name": "gtk-integration",
             "buildsystem": "simple",
             "build-commands": [
-                "echo \"Installing GTK integration packages...\"",
                 "mkdir -p ${FLATPAK_DEST}/lib/gtk-3.0",
-                "mkdir -p ${FLATPAK_DEST}/lib/gtk-2.0",
-                "echo \"GTK integration directories created\""
+                "mkdir -p ${FLATPAK_DEST}/lib/gtk-2.0"
             ]
         },
         {
@@ -553,98 +553,30 @@ cat > com.calendifier.Calendar.json << 'EOL'
             "name": "python-dependencies",
             "buildsystem": "simple",
             "build-commands": [
-                "echo 'Installing PySide6 and dependencies for Calendifier...'",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} PySide6>=6.5.0",
-                "echo 'Verifying PySide6 installation...'",
-                "python3 -c 'import PySide6; print(\"PySide6 version:\", PySide6.__version__)'",
-                "echo 'Installing other Python dependencies...'",
+                "python3 -c \"import PySide6; print(\\\"PySide6 version:\\\", PySide6.__version__)\"",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} ntplib>=0.4.0",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} python-dateutil>=2.8.0",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} holidays>=0.34",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} icalendar>=5.0.0",
                 "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} tzdata>=2025.2",
-                "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} psutil>=5.9.0",
-                "echo 'Checking PySide6 Qt plugins...'",
-                "find ${FLATPAK_DEST}/lib/python3.12/site-packages/PySide6/Qt/plugins -name '*platform*' -type d || echo 'Platform plugins not found in expected location'"
+                "pip3 install --no-cache-dir --prefix=${FLATPAK_DEST} psutil>=5.9.0"
             ]
         },
         {
             "name": "calendifier",
             "buildsystem": "simple",
             "build-commands": [
-                "echo 'Creating PySide6 style initialization script...'",
-                "cat > style_init.py << 'EOPY'
-# PySide6 style initialization script
-import os
-import sys
-from PySide6.QtWidgets import QApplication, QStyleFactory
-from PySide6.QtCore import QCoreApplication, Qt
-
-def set_style_for_desktop():
-    desktop_env = os.environ.get('XDG_CURRENT_DESKTOP', '').upper()
-    
-    # Set application attributes before creating QApplication
-    QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
-    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    
-    # Print available styles for debugging
-    print('Available styles:', QStyleFactory.keys())
-    
-    # Force the style for XFCE
-    if 'XFCE' in desktop_env:
-        print('Detected XFCE environment, applying GTK style')
-        os.environ['QT_QPA_PLATFORMTHEME'] = 'gtk3'
-        os.environ['QT_STYLE_OVERRIDE'] = 'gtk2'
-        
-        # Try different styles in order of preference
-        styles_to_try = ['gtk2', 'gtk+', 'cleanlooks', 'fusion']
-        for style in styles_to_try:
-            if style in QStyleFactory.keys():
-                print(f'Setting style to {style}')
-                QApplication.setStyle(style)
-                break
-        
-        # Try to force font rendering
-        from PySide6.QtGui import QFont
-        font = QFont("Sans Serif", 9)
-        QApplication.setFont(font)
-        
-        # Set palette to match GTK
-        from PySide6.QtGui import QPalette
-        palette = QPalette()
-        QApplication.setPalette(palette)
-    
-    # Force the style for Wayland/Hyprland
-    if 'HYPRLAND' in desktop_env or os.environ.get('WAYLAND_DISPLAY'):
-        print('Detected Wayland/Hyprland environment')
-        os.environ['QT_QPA_PLATFORM'] = 'wayland'
-        os.environ['QT_WAYLAND_DISABLE_WINDOWDECORATION'] = '1'
-EOPY",
-                "echo 'Installing Calendifier application files to /app...'",
                 "cp -rv main.py ${FLATPAK_DEST}/",
                 "cp -rv style_init.py ${FLATPAK_DEST}/",
                 "cp -rv wrapper.py ${FLATPAK_DEST}/",
                 "chmod +x ${FLATPAK_DEST}/wrapper.py",
-                "cp -rv calendar_app ${FLATPAK_DEST}/",
-                "if [ -f version.py ]; then cp -rv version.py ${FLATPAK_DEST}/; fi",
-                "if [ -d assets ]; then cp -rv assets ${FLATPAK_DEST}/; fi",
-                "if [ -f LICENSE ]; then cp -rv LICENSE ${FLATPAK_DEST}/; fi",
-                "if [ -f LGPL3_COMPLIANCE_NOTICE.txt ]; then cp -rv LGPL3_COMPLIANCE_NOTICE.txt ${FLATPAK_DEST}/; fi",
-                "if [ -f LGPL3_LICENSE.txt ]; then cp -rv LGPL3_LICENSE.txt ${FLATPAK_DEST}/; fi",
-                "echo 'Verifying main.py exists:'",
-                "test -f ${FLATPAK_DEST}/main.py && echo 'main.py successfully copied' || (echo 'ERROR: main.py not found!' && exit 1)",
-                "echo 'Verifying calendar_app directory exists:'",
-                "test -d ${FLATPAK_DEST}/calendar_app && echo 'calendar_app directory successfully copied' || (echo 'ERROR: calendar_app directory not found!' && exit 1)",
-                "echo 'Installing launcher script...'",
+                "test -f ${FLATPAK_DEST}/main.py && echo \"main.py successfully copied\" || (echo \"ERROR: main.py not found!\" && exit 1)",
+                "test -d ${FLATPAK_DEST}/calendar_app && echo \"calendar_app directory successfully copied\" || (echo \"ERROR: calendar_app directory not found!\" && exit 1)",
                 "mkdir -p ${FLATPAK_DEST}/bin",
                 "cp calendifier-runner.sh ${FLATPAK_DEST}/bin/calendifier",
                 "chmod +x ${FLATPAK_DEST}/bin/calendifier",
-                "echo 'Verifying launcher script:'",
-                "test -x ${FLATPAK_DEST}/bin/calendifier && echo 'Launcher script created successfully' || (echo 'ERROR: Launcher script creation failed!' && exit 1)",
-                "echo 'Final verification - listing /app contents:'",
-                "ls -la ${FLATPAK_DEST}/",
-                "echo 'Testing Python can find main.py:'",
-                "cd ${FLATPAK_DEST} && python3 -c 'import os; print(\"main.py exists:\", os.path.exists(\"main.py\"))'",
+                "test -x ${FLATPAK_DEST}/bin/calendifier && echo \"Launcher script created successfully\" || (echo \"ERROR: Launcher script creation failed!\" && exit 1)",
                 "install -Dm644 com.calendifier.Calendar.desktop ${FLATPAK_DEST}/share/applications/com.calendifier.Calendar.desktop",
                 "install -Dm644 com.calendifier.Calendar.metainfo.xml ${FLATPAK_DEST}/share/metainfo/com.calendifier.Calendar.metainfo.xml",
                 "if [ -f assets/calendar_icon.svg ]; then install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg; fi",
@@ -652,7 +584,35 @@ EOPY",
                 "if [ -f assets/calendar_icon_64x64.png ]; then install -Dm644 assets/calendar_icon_64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/com.calendifier.Calendar.png; fi",
                 "if [ -f assets/calendar_icon_48x48.png ]; then install -Dm644 assets/calendar_icon_48x48.png ${FLATPAK_DEST}/share/icons/hicolor/48x48/apps/com.calendifier.Calendar.png; fi",
                 "if [ -f assets/calendar_icon_32x32.png ]; then install -Dm644 assets/calendar_icon_32x32.png ${FLATPAK_DEST}/share/icons/hicolor/32x32/apps/com.calendifier.Calendar.png; fi",
-                "if [ -f assets/calendar_icon_16x16.png ]; then install -Dm644 assets/calendar_icon_16x16.png ${FLATPAK_DEST}/share/icons/hicolor/16x16/apps/com.calendifier.Calendar.png; fi"
+                "if [ -f assets/calendar_icon_16x16.png ]; then install -Dm644 assets/calendar_icon_16x16.png ${FLATPAK_DEST}/share/icons/hicolor/16x16/apps/com.calendifier.Calendar.png; fi",
+                "cp -rv calendar_app ${FLATPAK_DEST}/",
+                "if [ -f version.py ]; then cp -rv version.py ${FLATPAK_DEST}/; fi",
+                "if [ -d assets ]; then cp -rv assets ${FLATPAK_DEST}/; fi",
+                "if [ -f LICENSE ]; then cp -rv LICENSE ${FLATPAK_DEST}/; fi",
+                "if [ -f LGPL3_COMPLIANCE_NOTICE.txt ]; then cp -rv LGPL3_COMPLIANCE_NOTICE.txt ${FLATPAK_DEST}/; fi",
+                "if [ -f LGPL3_LICENSE.txt ]; then cp -rv LGPL3_LICENSE.txt ${FLATPAK_DEST}/; fi",
+                "echo \"Verifying main.py exists:\"",
+                "test -f ${FLATPAK_DEST}/main.py && echo \"main.py successfully copied\" || (echo \"ERROR: main.py not found!\" && exit 1)",
+                "echo \"Verifying calendar_app directory exists:\"",
+                "test -d ${FLATPAK_DEST}/calendar_app && echo \"calendar_app directory successfully copied\" || (echo \"ERROR: calendar_app directory not found!\" && exit 1)",
+                "echo \"Installing launcher script...\"",
+                "mkdir -p ${FLATPAK_DEST}/bin",
+                "cp calendifier-runner.sh ${FLATPAK_DEST}/bin/calendifier",
+                "chmod +x ${FLATPAK_DEST}/bin/calendifier",
+                "echo \"Verifying launcher script:\"",
+                "test -x ${FLATPAK_DEST}/bin/calendifier && echo \"Launcher script created successfully\" || (echo \"ERROR: Launcher script creation failed!\" && exit 1)",
+                "echo \"Final verification - listing /app contents:\"",
+                "ls -la ${FLATPAK_DEST}/",
+                "echo \"Testing Python can find main.py:\"",
+                "cd ${FLATPAK_DEST} && python3 -c \"import os; print(\\\"main.py exists:\\\", os.path.exists(\\\"main.py\\\"))\"",
+                "install -Dm644 com.calendifier.Calendar.desktop ${FLATPAK_DEST}/share/applications/com.calendifier.Calendar.desktop",
+                "install -Dm644 com.calendifier.Calendar.metainfo.xml ${FLATPAK_DEST}/share/metainfo/com.calendifier.Calendar.metainfo.xml",
+                "if [ -f assets/calendar_icon.svg ]; then install -Dm644 assets/calendar_icon.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg; fi",
+                "if [ -f assets/calendar_icon_128x128.png ]; then install -Dm644 assets/calendar_icon_128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/com.calendifier.Calendar.png; fi",
+                "if [ -f assets/calendar_icon_64x64.png ]; then install -Dm644 assets/calendar_icon_64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/com.calendifier.Calendar.png; fi",
+                "if [ -f assets/calendar_icon_48x48.png ]; then install -Dm644 assets/calendar_icon_48x48.png ${FLATPAK_DEST}/share/icons/hicolor/48x48/apps/com.calendifier.Calendar.png; fi",
+                "if [ -f assets/calendar_icon_32x32.png ]; then install -Dm644 assets/calendar_icon_32x32.png ${FLATPAK_DEST}/share/icons/hicolor/32x32/apps/com.calendifier.Calendar.png; fi",
+                "if [ -f assets/calendar_icon_16x16.png ]; then install -Dm644 assets/calendar_icon_16x16.png ${FLATPAK_DEST}/share/icons/hicolor/16x16/apps/com.calendifier.Calendar.png; fi",
             ],
             "sources": [
                 {
@@ -663,7 +623,13 @@ EOPY",
         }
     ]
 }
-EOL
+
+# Write the manifest to a file with proper JSON formatting
+with open("com.calendifier.Calendar.json", "w") as f:
+    json.dump(manifest, f, indent=4)
+
+print("Flatpak manifest created successfully: com.calendifier.Calendar.json")
+'
 
 # Create desktop file following Flatpak conventions
 cat > com.calendifier.Calendar.desktop << EOL
