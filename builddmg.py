@@ -120,7 +120,11 @@ class BuildCleaner:
                     print(f"Error removing {directory}: {str(e)}. Continuing anyway.")
 
         # Remove temporary files
-        for temp_file in ["dmg_background.png", "dmg_background.txt", "calendifier.dmg"]:
+        for temp_file in [
+            "dmg_background.png",
+            "dmg_background.txt",
+            "calendifier.dmg",
+        ]:
             if os.path.exists(temp_file):
                 try:
                     os.remove(temp_file)
@@ -890,16 +894,23 @@ class PackageManager:
                         print(f"✅ Found critical dependency: {pkg_name}")
                     else:
                         print(f"⚠️ Missing critical dependency: {pkg_name}")
-                        
+
                 # Validate rrule_parser and recurring_event_generator are properly copied
-                rrule_parser_path = os.path.join(site_packages_path, "calendar_app", "core", "rrule_parser.py")
-                rec_gen_path = os.path.join(site_packages_path, "calendar_app", "core", "recurring_event_generator.py")
-                
+                rrule_parser_path = os.path.join(
+                    site_packages_path, "calendar_app", "core", "rrule_parser.py"
+                )
+                rec_gen_path = os.path.join(
+                    site_packages_path,
+                    "calendar_app",
+                    "core",
+                    "recurring_event_generator.py",
+                )
+
                 if os.path.exists(rrule_parser_path) and os.path.exists(rec_gen_path):
                     print("✅ Recurring event core modules properly copied")
                 else:
                     print("⚠️ Recurring event core modules may be missing")
-                    
+
             except Exception as e:
                 print(f"Warning: Error checking recurring event dependencies: {str(e)}")
                 traceback.print_exc()
@@ -991,7 +1002,6 @@ class AppBundleBuilder:
         self.frameworks_path = self.contents_path / "Frameworks"
         self.site_packages_path = self.resources_path / "site-packages"
 
-
     def check_required_files(self) -> bool:
         """
         Check that essential files exist for Calendifier.
@@ -1004,9 +1014,9 @@ class AppBundleBuilder:
             "version.py",
             "requirements.txt",
             "calendar_app",
-            "assets/calendar_icon.png"
+            "assets/calendar_icon.png",
         ]
-        
+
         missing_files = []
         for file in essential_files:
             file_path = self.source_path / file
@@ -1105,8 +1115,14 @@ class AppBundleBuilder:
         """
         try:
             # Copy essential Python files and license files
-            essential_files = ["main.py", "version.py", "requirements.txt",
-                             "LICENSE", "LGPL3_LICENSE.txt", "LGPL3_COMPLIANCE_NOTICE.txt"]
+            essential_files = [
+                "main.py",
+                "version.py",
+                "requirements.txt",
+                "LICENSE",
+                "LGPL3_LICENSE.txt",
+                "LGPL3_COMPLIANCE_NOTICE.txt",
+            ]
             for file in essential_files:
                 source_file = self.source_path / file
                 dest_file = self.resources_path / file
@@ -1118,8 +1134,12 @@ class AppBundleBuilder:
             calendar_app_source = self.source_path / "calendar_app"
             calendar_app_dest = self.resources_path / "calendar_app"
             if calendar_app_source.exists():
-                shutil.copytree(calendar_app_source, calendar_app_dest, dirs_exist_ok=True)
-                print("Copied calendar_app directory with all subdirectories and JSON files")
+                shutil.copytree(
+                    calendar_app_source, calendar_app_dest, dirs_exist_ok=True
+                )
+                print(
+                    "Copied calendar_app directory with all subdirectories and JSON files"
+                )
 
             # Copy assets directory
             assets_source = self.source_path / "assets"
@@ -1135,10 +1155,11 @@ class AppBundleBuilder:
                     "app_name": "Calendifier",
                     "version": "1.0.0",
                     "bundle_id": "com.calendifier.app",
-                    "data_dir": "~/.calendar_app"
+                    "data_dir": "~/.calendar_app",
                 }
                 import json
-                with open(config_json_path, 'w') as f:
+
+                with open(config_json_path, "w") as f:
                     json.dump(basic_config, f, indent=2)
                 print("Created accessible config.json")
 
@@ -1474,7 +1495,9 @@ class DMGCreator:
             if os.path.exists("assets/calendar_icon.png"):
                 # Use the DMGIconSetter class from the current script instead of importing
                 try:
-                    DMGIconSetter.set_dmg_icon(self.final_dmg, "assets/calendar_icon.png")
+                    DMGIconSetter.set_dmg_icon(
+                        self.final_dmg, "assets/calendar_icon.png"
+                    )
                     print("Set custom icon for DMG.")
                 except Exception as e:
                     print(f"Warning: Could not set DMG icon: {e}")

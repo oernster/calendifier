@@ -22,10 +22,10 @@ THEME_LIGHT_ICON = "☀️"
 # 🌐 NTP Configuration
 DEFAULT_NTP_SERVERS = [
     "pool.ntp.org",
-    "time.google.com", 
+    "time.google.com",
     "time.cloudflare.com",
     "time.windows.com",
-    "time.apple.com"
+    "time.apple.com",
 ]
 
 # 🇬🇧 UK Holiday Configuration
@@ -37,14 +37,12 @@ UI_EMOJIS = {
     # 🏠 Main application
     "app_icon": "📅",
     "window_title": "📅",
-    
-    # 🕐 Time components  
+    # 🕐 Time components
     "clock": "🕐",
     "time_display": "🕐",
     "ntp_status": "🌐",
     "sync_success": "✅",
     "sync_failed": "❌",
-    
     # 📅 Calendar components
     "calendar": "📅",
     "today": "📅",
@@ -52,7 +50,6 @@ UI_EMOJIS = {
     "holiday": "🇬🇧",
     "navigation_prev": "◀",
     "navigation_next": "▶",
-    
     # 📝 Event management
     "event": "📝",
     "add_event": "➕",
@@ -62,30 +59,27 @@ UI_EMOJIS = {
     "event_meeting": "👥",
     "event_meal": "🍽️",
     "event_personal": "🏠",
-    
     # 🎨 Theme and settings
     "theme_dark": "🌙",
     "theme_light": "☀️",
     "settings": "⚙️",
     "about": "ℹ️",
-    
     # 📤📥 Import/Export
     "export": "📤",
     "import": "📥",
     "file": "📄",
-    
     # 🔧 Status indicators
     "success": "✅",
     "error": "❌",
     "warning": "⚠️",
     "info": "ℹ️",
-    "loading": "⏳"
+    "loading": "⏳",
 }
 
 # Event category emoji system
 EVENT_CATEGORY_EMOJIS = {
     "work": "💼",
-    "meeting": "👥", 
+    "meeting": "👥",
     "personal": "🏠",
     "meal": "🍽️",
     "travel": "🚗",
@@ -94,34 +88,33 @@ EVENT_CATEGORY_EMOJIS = {
     "celebration": "🎉",
     "reminder": "🎯",
     "holiday": "🇬🇧",
-    "default": "📝"
+    "default": "📝",
 }
 
 # Status and feedback emojis
 STATUS_EMOJIS = {
     # 🌐 Network status
     "ntp_connected": "✅",
-    "ntp_disconnected": "❌", 
+    "ntp_disconnected": "❌",
     "ntp_syncing": "⏳",
-    
     # 💾 Database status
     "db_connected": "✅",
     "db_error": "❌",
     "db_saving": "💾",
-    
     # 📁 File operations
     "file_saved": "✅",
     "file_error": "❌",
     "file_loading": "⏳",
-    
     # 🎨 Theme status
     "theme_applied": "✅",
-    "theme_error": "❌"
+    "theme_error": "❌",
 }
+
 
 def get_version_string() -> str:
     """Get formatted version string for display."""
     return f"📅 Calendar Application v{__version__}"
+
 
 def get_about_text() -> str:
     """Get formatted about text for dialog."""
