@@ -76,45 +76,31 @@ def set_style_for_desktop():
     print(f"Detected desktop environment: {desktop}")
     print(f"Running under Wayland: {is_wayland}")
     
-    # Create Qt application if it doesn't exist yet
-    if not QtWidgets.QApplication.instance():
-        # This is just for style initialization, the real app will be created in main.py
-        app = QtWidgets.QApplication([])
-    else:
-        app = QtWidgets.QApplication.instance()
-    
-    # Set application attributes
+    # Set application attributes - these will be applied when QApplication is created
     QtCore.QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     QtCore.QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     
-    # Set common style properties
-    app.setStyle('Fusion')  # Use Fusion as a fallback style
+    # Get available styles without creating QApplication
+    available_styles = QtWidgets.QStyleFactory.keys()
+    print(f"Available styles: {', '.join(available_styles)}")
+    
+    # Set environment variables for style - these will be used when QApplication is created
+    os.environ['QT_STYLE_OVERRIDE'] = 'Fusion'  # Use Fusion as a fallback style
     
     # Desktop-specific style settings
     if desktop == 'XFCE':
         print("Applying XFCE-specific style settings")
         
         # Try to use GTK style if available
-        available_styles = QtWidgets.QStyleFactory.keys()
-        print(f"Available styles: {', '.join(available_styles)}")
-        
         if 'gtk2' in available_styles:
-            app.setStyle('gtk2')
+            os.environ['QT_STYLE_OVERRIDE'] = 'gtk2'
             print("Using gtk2 style")
         elif 'GTK+' in available_styles:
-            app.setStyle('GTK+')
+            os.environ['QT_STYLE_OVERRIDE'] = 'GTK+'
             print("Using GTK+ style")
         
         # Set platform theme
         os.environ['QT_QPA_PLATFORMTHEME'] = 'gtk3'
-        
-        # Set palette to match GTK
-        palette = app.palette()
-        app.setPalette(palette)
-        
-        # Set font to match system
-        font = app.font()
-        app.setFont(font)
         
     elif desktop == 'HYPRLAND' or is_wayland:
         print("Applying Wayland/Hyprland-specific style settings")
@@ -124,34 +110,33 @@ def set_style_for_desktop():
         os.environ['QT_WAYLAND_DISABLE_WINDOWDECORATION'] = '1'
         
         # Use breeze style if available for KDE integration
-        if 'breeze' in QtWidgets.QStyleFactory.keys():
-            app.setStyle('breeze')
+        if 'breeze' in available_styles:
+            os.environ['QT_STYLE_OVERRIDE'] = 'breeze'
             print("Using breeze style")
     
     elif desktop == 'KDE':
         print("Applying KDE-specific style settings")
         
         # Use breeze style if available
-        if 'breeze' in QtWidgets.QStyleFactory.keys():
-            app.setStyle('breeze')
+        if 'breeze' in available_styles:
+            os.environ['QT_STYLE_OVERRIDE'] = 'breeze'
             print("Using breeze style")
     
     elif desktop == 'GNOME':
         print("Applying GNOME-specific style settings")
         
         # Use Adwaita style if available
-        if 'Adwaita' in QtWidgets.QStyleFactory.keys():
-            app.setStyle('Adwaita')
+        if 'Adwaita' in available_styles:
+            os.environ['QT_STYLE_OVERRIDE'] = 'Adwaita'
             print("Using Adwaita style")
         
         # Set platform theme
         os.environ['QT_QPA_PLATFORMTHEME'] = 'gnome'
     
-    # Print final style information
-    print(f"Final style: {app.style().objectName()}")
+    print(f"Final style set to: {os.environ.get('QT_STYLE_OVERRIDE', 'system default')}")
     
-    # Return the app instance in case it's needed
-    return app
+    # Return the style name for reference
+    return os.environ.get('QT_STYLE_OVERRIDE', 'Fusion')
 
 
 if __name__ == "__main__":
