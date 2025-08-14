@@ -161,7 +161,7 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=flatpak run com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -190,7 +190,7 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=flatpak run com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -204,7 +204,7 @@ EOL
     elif [ -f ~/Desktop/Calendifier.desktop ]; then
         echo "Desktop shortcut already exists, updating it..."
         # Update the Exec line to ensure it works
-        sed -i "s|^Exec=.*|Exec=flatpak run com.calendifier.Calendar|g" ~/Desktop/Calendifier.desktop
+        sed -i "s|^Exec=.*|Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar|g" ~/Desktop/Calendifier.desktop
         chmod +x ~/Desktop/Calendifier.desktop
         echo "Updated desktop shortcut."
     fi
@@ -258,7 +258,7 @@ EOL
         cp "$DESKTOP_FILE" "$DESKTOP_FILE.bak"
         
         # Update the Exec line to include XFCE-specific environment variables
-        sed -i "s|^Exec=.*|Exec=flatpak run --env=QT_QPA_PLATFORMTHEME=gtk3 com.calendifier.Calendar|g" "$DESKTOP_FILE"
+        sed -i "s|^Exec=.*|Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --env=QT_QPA_PLATFORMTHEME=gtk3 --command=calendifier com.calendifier.Calendar|g" "$DESKTOP_FILE"
         
         # Add XFCE-specific entries
         grep -q "X-XFCE-Source" "$DESKTOP_FILE" || echo "X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop" >> "$DESKTOP_FILE"
@@ -285,7 +285,7 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=flatpak run --env=QT_QPA_PLATFORMTHEME=gtk3 com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --env=QT_QPA_PLATFORMTHEME=gtk3 --command=calendifier com.calendifier.Calendar
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -679,7 +679,7 @@ Name=Calendifier
 GenericName=Calendar Application
 Comment=A sophisticated cross-platform desktop calendar application
 Icon=com.calendifier.Calendar
-Exec=calendifier
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar
 Terminal=false
 Categories=Office;Calendar;Qt;
 Keywords=calendar;event;schedule;appointment;reminder;date;time;
@@ -715,14 +715,14 @@ EOL
         echo "Adding XFCE-specific desktop entries..."
         cat >> com.calendifier.Calendar.desktop << 'EOL'
 X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
-Exec=env QT_QPA_PLATFORMTHEME=gtk3 flatpak run com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --env=QT_QPA_PLATFORMTHEME=gtk3 --command=calendifier com.calendifier.Calendar
 EOL
         ;;
     *"Hyprland"* | *"HYPRLAND"*)
         echo "Adding Hyprland-specific desktop entries..."
         cat >> com.calendifier.Calendar.desktop << 'EOL'
 X-GNOME-UsesNotifications=true
-Exec=env QT_QPA_PLATFORM=wayland QT_WAYLAND_DISABLE_WINDOWDECORATION=1 flatpak run com.calendifier.Calendar
+Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --env=QT_QPA_PLATFORM=wayland --env=QT_WAYLAND_DISABLE_WINDOWDECORATION=1 --command=calendifier com.calendifier.Calendar
 EOL
         ;;
     *)
@@ -1099,15 +1099,15 @@ EOL
             case "$DESKTOP" in
                 *"GNOME"* | *"UBUNTU"*)
                     echo "Updating desktop file for GNOME..."
-                    sed -i "s|^Exec=.*|Exec=flatpak run com.calendifier.Calendar|g" "$DESKTOP_FILE"
+                    sed -i "s|^Exec=.*|Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar|g" "$DESKTOP_FILE"
                     ;;
                 *"KDE"* | *"PLASMA"*)
                     echo "Updating desktop file for KDE..."
-                    sed -i "s|^Exec=.*|Exec=flatpak run com.calendifier.Calendar|g" "$DESKTOP_FILE"
+                    sed -i "s|^Exec=.*|Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar|g" "$DESKTOP_FILE"
                     ;;
                 *"Hyprland"* | *"HYPRLAND"*)
                     echo "Updating desktop file for Hyprland..."
-                    sed -i "s|^Exec=.*|Exec=flatpak run --env=QT_QPA_PLATFORM=wayland --env=QT_WAYLAND_DISABLE_WINDOWDECORATION=1 com.calendifier.Calendar|g" "$DESKTOP_FILE"
+                    sed -i "s|^Exec=.*|Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --env=QT_QPA_PLATFORM=wayland --env=QT_WAYLAND_DISABLE_WINDOWDECORATION=1 --command=calendifier com.calendifier.Calendar|g" "$DESKTOP_FILE"
                     ;;
             esac
             
@@ -1155,29 +1155,29 @@ EOL
             # Add desktop-specific Exec line
             case "$DESKTOP" in
                 *"XFCE"* | *"Xfce"*)
-                    echo "Exec=flatpak run --env=QT_QPA_PLATFORMTHEME=gtk3 com.calendifier.Calendar" >> "$DESKTOP_FILE"
+                    echo "Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --env=QT_QPA_PLATFORMTHEME=gtk3 --command=calendifier com.calendifier.Calendar" >> "$DESKTOP_FILE"
                     echo "X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop" >> "$DESKTOP_FILE"
                     ;;
                 *"GNOME"* | *"UBUNTU"*)
-                    echo "Exec=flatpak run com.calendifier.Calendar" >> "$DESKTOP_FILE"
+                    echo "Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar" >> "$DESKTOP_FILE"
                     echo "X-GNOME-UsesNotifications=true" >> "$DESKTOP_FILE"
                     ;;
                 *"KDE"* | *"PLASMA"*)
-                    echo "Exec=flatpak run com.calendifier.Calendar" >> "$DESKTOP_FILE"
+                    echo "Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar" >> "$DESKTOP_FILE"
                     echo "X-KDE-FormFactor=desktop,tablet,handset" >> "$DESKTOP_FILE"
                     echo "X-KDE-StartupNotify=true" >> "$DESKTOP_FILE"
                     ;;
                 *"Hyprland"* | *"HYPRLAND"*)
-                    echo "Exec=flatpak run --env=QT_QPA_PLATFORM=wayland --env=QT_WAYLAND_DISABLE_WINDOWDECORATION=1 com.calendifier.Calendar" >> "$DESKTOP_FILE"
+                    echo "Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --env=QT_QPA_PLATFORM=wayland --env=QT_WAYLAND_DISABLE_WINDOWDECORATION=1 --command=calendifier com.calendifier.Calendar" >> "$DESKTOP_FILE"
                     echo "X-GNOME-UsesNotifications=true" >> "$DESKTOP_FILE"
                     ;;
                 *"Cinnamon"* | *"CINNAMON"* | *"X-Cinnamon"*)
-                    echo "Exec=flatpak run com.calendifier.Calendar" >> "$DESKTOP_FILE"
+                    echo "Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar" >> "$DESKTOP_FILE"
                     echo "X-Cinnamon-UsesNotifications=true" >> "$DESKTOP_FILE"
                     echo "X-GNOME-UsesNotifications=true" >> "$DESKTOP_FILE"
                     ;;
                 *)
-                    echo "Exec=flatpak run com.calendifier.Calendar" >> "$DESKTOP_FILE"
+                    echo "Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 --command=calendifier com.calendifier.Calendar" >> "$DESKTOP_FILE"
                     echo "X-GNOME-UsesNotifications=true" >> "$DESKTOP_FILE"
                     ;;
             esac
