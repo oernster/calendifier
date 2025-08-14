@@ -250,13 +250,13 @@ EOL
         cp "$SOURCE_DIR/assets/calendar_icon.svg" ~/.local/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg
     fi
     
-    # 5. Create desktop file for XFCE using the corrected format
-    echo "Creating desktop file for XFCE using the corrected format..."
+    # 5. Create desktop file for XFCE using the exact format that works
+    echo "Creating desktop file for XFCE..."
     
     # Main desktop file
     DESKTOP_FILE=~/.local/share/applications/com.calendifier.Calendar.desktop
     
-    # Create or update main desktop file with the corrected format
+    # Create or update main desktop file with the exact format that works
     mkdir -p ~/.local/share/applications
     cat > "$DESKTOP_FILE" << 'EOL'
 [Desktop Entry]
@@ -264,11 +264,7 @@ Version=1.0
 Type=Application
 Name=Calendifier
 GenericName=Calendar Application
-Comment=A sophisticated cross-platform desktop calendar application
-Icon=com.calendifier.Calendar
-Terminal=false
-Categories=Office;Calendar;Qt;
-Keywords=calendar;event;schedule;appointment;reminder;date;time;
+Comment=A sophisticated cross-platform desktop calendar application Icon=com.calendifier.Calendar Terminal=false Categories=Office;Calendar;Qt; Keywords=calendar;event;schedule;appointment;reminder;date;time;
 StartupNotify=true
 StartupWMClass=calendifier
 MimeType=text/calendar;application/ics;
@@ -277,14 +273,10 @@ Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 com.calendifier.Calendar
 EOL
     chmod +x "$DESKTOP_FILE"
     
-    # Verify the desktop file content
-    echo "Verifying desktop file content:"
-    cat "$DESKTOP_FILE"
-    
     # Update desktop database
     update-desktop-database ~/.local/share/applications 2>/dev/null || true
     
-    echo "Desktop file created for XFCE using the corrected format."
+    echo "Desktop file created for XFCE."
     
     # 6. Update icon cache
     if command -v gtk-update-icon-cache &> /dev/null; then
@@ -684,28 +676,20 @@ with open("com.calendifier.Calendar.json", "w") as f:
 print("Flatpak manifest created successfully: com.calendifier.Calendar.json")
 '
 
-# Create desktop file following Flatpak conventions with the corrected format
+# Create desktop file following Flatpak conventions
 cat > com.calendifier.Calendar.desktop << 'EOL'
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=Calendifier
 GenericName=Calendar Application
-Comment=A sophisticated cross-platform desktop calendar application
-Icon=com.calendifier.Calendar
-Terminal=false
-Categories=Office;Calendar;Qt;
-Keywords=calendar;event;schedule;appointment;reminder;date;time;
+Comment=A sophisticated cross-platform desktop calendar application Icon=com.calendifier.Calendar Terminal=false Categories=Office;Calendar;Qt; Keywords=calendar;event;schedule;appointment;reminder;date;time;
 StartupNotify=true
 StartupWMClass=calendifier
 MimeType=text/calendar;application/ics;
 X-Flatpak=com.calendifier.Calendar
 Exec=/usr/bin/flatpak run --branch=master --arch=x86_64 com.calendifier.Calendar
 EOL
-
-# Verify the desktop file content
-echo "Verifying desktop file content:"
-cat com.calendifier.Calendar.desktop
 
 # Add desktop environment specific entries
 case "$DESKTOP" in
@@ -1080,21 +1064,7 @@ EOL
             echo "Applying XFCE-specific overrides..."
             fix_xfce_ui
             
-            # Additional XFCE-specific setup - NO SUDO COMMANDS
-            echo "Performing additional XFCE-specific setup (user-level only)..."
-            
-            # Force refresh XFCE menu cache
-            rm -rf ~/.cache/xfce4/xfce4-applications.menu 2>/dev/null || true
-            rm -rf ~/.cache/xfce4/desktop-directories 2>/dev/null || true
-            
-            # Restart XFCE panel if running - safely
-            if command -v xfce4-panel &> /dev/null && pgrep -x "xfce4-panel" > /dev/null; then
-                echo "Restarting XFCE panel..."
-                xfce4-panel --restart &>/dev/null || true
-            fi
-            
-            echo "XFCE setup completed with user-level changes only."
-            echo "NOTE: You may need to log out and log back in for menu changes to take effect."
+            echo "XFCE setup completed."
         fi
         
         # Apply custom overrides for Hyprland
