@@ -250,35 +250,12 @@ EOL
         cp "$SOURCE_DIR/assets/calendar_icon.svg" ~/.local/share/icons/hicolor/scalable/apps/com.calendifier.Calendar.svg
     fi
     
-    # 5. Modify existing desktop file instead of creating a new one
+    # 5. Create or modify desktop files in all relevant locations for XFCE
+    # Main desktop file
     DESKTOP_FILE=~/.local/share/applications/com.calendifier.Calendar.desktop
-    if [ -f "$DESKTOP_FILE" ]; then
-        echo "Modifying existing desktop file for XFCE..."
-        # Make a backup
-        cp "$DESKTOP_FILE" "$DESKTOP_FILE.bak"
-        
-        # Update the Exec line to include XFCE-specific environment variables
-        sed -i "s|^Exec=.*|Exec=flatpak run com.calendifier.Calendar|g" "$DESKTOP_FILE"
-        
-        # Add XFCE-specific entries
-        grep -q "X-XFCE-Source" "$DESKTOP_FILE" || echo "X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop" >> "$DESKTOP_FILE"
-        
-        # Ensure proper permissions
-        chmod +x "$DESKTOP_FILE"
-        
-        # Update desktop database
-        update-desktop-database ~/.local/share/applications 2>/dev/null || true
-        
-        echo "Desktop file updated for XFCE."
-        
-        # Verify the desktop file
-        echo "Verifying desktop file content:"
-        cat "$DESKTOP_FILE"
-    else
-        echo "Desktop file not found, creating a new one..."
-        mkdir -p ~/.local/share/applications
-        cat > "$DESKTOP_FILE" << EOL
-[Desktop Entry]
+    
+    # Create desktop file content
+    DESKTOP_CONTENT="[Desktop Entry]
 Version=1.0
 Type=Application
 Name=Calendifier
@@ -292,15 +269,73 @@ Keywords=calendar;event;schedule;appointment;reminder;date;time;
 StartupNotify=true
 StartupWMClass=calendifier
 X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
-EOL
-        chmod +x "$DESKTOP_FILE"
-        update-desktop-database ~/.local/share/applications 2>/dev/null || true
-        echo "Created new desktop file for XFCE."
+MimeType=text/calendar;application/ics;
+"
+    
+    # Create or update main desktop file
+    echo "Creating/updating main desktop file..."
+    mkdir -p ~/.local/share/applications
+    echo "$DESKTOP_CONTENT" > "$DESKTOP_FILE"
+    chmod +x "$DESKTOP_FILE"
+    
+    # Create desktop file in XFCE-specific locations
+    echo "Creating desktop files in XFCE-specific locations..."
+    
+    # XFCE applications directory
+    mkdir -p ~/.config/xfce4/desktop
+    echo "$DESKTOP_CONTENT" > ~/.config/xfce4/desktop/com.calendifier.Calendar.desktop
+    chmod +x ~/.config/xfce4/desktop/com.calendifier.Calendar.desktop
+    
+    # XFCE panel launcher directories
+    if [ -d ~/.config/xfce4/panel ]; then
+        find ~/.config/xfce4/panel -name "launcher-*" -type d | while read launcher_dir; do
+            echo "Creating launcher in $launcher_dir"
+            echo "$DESKTOP_CONTENT" > "$launcher_dir/com.calendifier.Calendar.desktop"
+            chmod +x "$launcher_dir/com.calendifier.Calendar.desktop"
+        done
     fi
+    
+    # Create desktop shortcut for XFCE
+    if [ -d ~/Desktop ]; then
+        echo "Creating desktop shortcut for XFCE..."
+        echo "$DESKTOP_CONTENT" > ~/Desktop/Calendifier.desktop
+        chmod +x ~/Desktop/Calendifier.desktop
+    fi
+    
+    # Update desktop database
+    update-desktop-database ~/.local/share/applications 2>/dev/null || true
+    
+    echo "Desktop files created/updated for XFCE."
     
     # 6. Update icon cache
     if command -v gtk-update-icon-cache &> /dev/null; then
         gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor 2>/dev/null || true
+    fi
+    
+    # 7. Refresh XFCE menu cache
+    echo "Refreshing XFCE menu cache..."
+    if command -v xfce4-panel &> /dev/null; then
+        # Try to restart XFCE panel to refresh menu
+        xfce4-panel --restart &>/dev/null || true
+    fi
+    
+    # Alternative method to refresh menu cache
+    if [ -d ~/.cache/xfce4 ]; then
+        echo "Clearing XFCE cache..."
+        rm -rf ~/.cache/xfce4/xfce4-applications.menu &>/dev/null || true
+    fi
+    
+    # Update desktop database again to ensure changes are registered
+    update-desktop-database ~/.local/share/applications 2>/dev/null || true
+    
+    # Create a symlink in XFCE-specific locations if they exist
+    if [ -d ~/.config/xfce4/panel/launcher-* ]; then
+        echo "Creating symlinks in XFCE panel launcher directories..."
+        for launcher_dir in ~/.config/xfce4/panel/launcher-*; do
+            if [ -d "$launcher_dir" ]; then
+                ln -sf ~/.local/share/applications/com.calendifier.Calendar.desktop "$launcher_dir/" 2>/dev/null || true
+            fi
+        done
     fi
     
     echo "XFCE UI fixes applied successfully!"
@@ -1061,6 +1096,46 @@ EOL
         if [[ "$DESKTOP" == *"XFCE"* || "$DESKTOP" == *"Xfce"* ]]; then
             echo "Applying XFCE-specific overrides..."
             fix_xfce_ui
+            
+            # Additional XFCE-specific setup
+            echo "Performing additional XFCE-specific setup..."
+            
+            # Create MIME associations
+            mkdir -p ~/.local/share/mime/packages
+            cat > ~/.local/share/mime/packages/com.calendifier.Calendar.xml << EOL
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="text/calendar">
+    <comment>Calendar file</comment>
+    <glob pattern="*.ics"/>
+    <glob pattern="*.ical"/>
+    <glob pattern="*.icalendar"/>
+    <glob pattern="*.calendar"/>
+  </mime-type>
+</mime-info>
+EOL
+            update-mime-database ~/.local/share/mime 2>/dev/null || true
+            
+            # Create XFCE menu entry
+            mkdir -p ~/.config/menus/applications-merged
+            cat > ~/.config/menus/applications-merged/calendifier.menu << EOL
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<Menu>
+  <Name>Applications</Name>
+  <Menu>
+    <Name>Office</Name>
+    <Include>
+      <Filename>com.calendifier.Calendar.desktop</Filename>
+    </Include>
+  </Menu>
+</Menu>
+EOL
+            
+            # Restart XFCE panel if running
+            if command -v xfce4-panel &> /dev/null && pgrep -x "xfce4-panel" > /dev/null; then
+                echo "Restarting XFCE panel..."
+                xfce4-panel --restart &>/dev/null || true
+            fi
         fi
         
         # Apply custom overrides for Hyprland
