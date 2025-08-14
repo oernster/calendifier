@@ -270,6 +270,7 @@ StartupNotify=true
 StartupWMClass=calendifier
 X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
 MimeType=text/calendar;application/ics;
+TryExec=flatpak
 "
     
     # Create or update main desktop file
@@ -1130,6 +1131,66 @@ EOL
   </Menu>
 </Menu>
 EOL
+            
+            # Special handling for Fedora + XFCE
+            if [[ "$DISTRO" == "fedora" ]]; then
+                echo "Applying Fedora + XFCE specific fixes..."
+                
+                # Create a trusted desktop entry in the system location
+                sudo mkdir -p /usr/share/applications
+                cat > /tmp/com.calendifier.Calendar.desktop << EOL
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Calendifier
+GenericName=Calendar Application
+Comment=A sophisticated cross-platform desktop calendar application
+Icon=com.calendifier.Calendar
+Exec=flatpak run com.calendifier.Calendar
+Terminal=false
+Categories=Office;Calendar;Qt;
+Keywords=calendar;event;schedule;appointment;reminder;date;time;
+StartupNotify=true
+StartupWMClass=calendifier
+X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
+MimeType=text/calendar;application/ics;
+TryExec=flatpak
+EOL
+                sudo cp /tmp/com.calendifier.Calendar.desktop /usr/share/applications/
+                sudo chmod 755 /usr/share/applications/com.calendifier.Calendar.desktop
+                
+                # Update system desktop database
+                sudo update-desktop-database /usr/share/applications/ 2>/dev/null || true
+                
+                # Create a direct launcher in the XFCE applications menu
+                mkdir -p ~/.config/xfce4/panel/launcher-10
+                cat > ~/.config/xfce4/panel/launcher-10/calendifier.desktop << EOL
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Calendifier
+GenericName=Calendar Application
+Comment=A sophisticated cross-platform desktop calendar application
+Icon=com.calendifier.Calendar
+Exec=flatpak run com.calendifier.Calendar
+Terminal=false
+Categories=Office;Calendar;Qt;
+Keywords=calendar;event;schedule;appointment;reminder;date;time;
+StartupNotify=true
+StartupWMClass=calendifier
+X-XFCE-Source=file:///usr/share/applications/com.calendifier.Calendar.desktop
+MimeType=text/calendar;application/ics;
+TryExec=flatpak
+EOL
+                chmod +x ~/.config/xfce4/panel/launcher-10/calendifier.desktop
+                
+                # Set SELinux context if available
+                if command -v restorecon &> /dev/null; then
+                    echo "Setting SELinux context for desktop files..."
+                    sudo restorecon -Rv /usr/share/applications/com.calendifier.Calendar.desktop 2>/dev/null || true
+                    restorecon -Rv ~/.local/share/applications/com.calendifier.Calendar.desktop 2>/dev/null || true
+                fi
+            fi
             
             # Restart XFCE panel if running
             if command -v xfce4-panel &> /dev/null && pgrep -x "xfce4-panel" > /dev/null; then
