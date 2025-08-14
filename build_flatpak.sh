@@ -536,11 +536,10 @@ cat > com.calendifier.Calendar.json << 'EOL'
             "name": "gtk-integration",
             "buildsystem": "simple",
             "build-commands": [
-                "echo 'Installing GTK integration packages...'",
-                "apt-get update -y && apt-get install -y --no-install-recommends libgtk-3-dev libgtk-3-0 adwaita-icon-theme-full || true",
-                "dnf install -y gtk3-devel adwaita-icon-theme || true",
-                "pacman -S --noconfirm gtk3 adwaita-icon-theme || true",
-                "echo 'GTK integration packages installed'"
+                "echo \"Installing GTK integration packages...\"",
+                "mkdir -p ${FLATPAK_DEST}/lib/gtk-3.0",
+                "mkdir -p ${FLATPAK_DEST}/lib/gtk-2.0",
+                "echo \"GTK integration directories created\""
             ]
         },
         {
@@ -578,7 +577,7 @@ cat > com.calendifier.Calendar.json << 'EOL'
 # PySide6 style initialization script
 import os
 import sys
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QStyleFactory
 from PySide6.QtCore import QCoreApplication, Qt
 
 def set_style_for_desktop():
@@ -588,23 +587,32 @@ def set_style_for_desktop():
     QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     
+    # Print available styles for debugging
+    print('Available styles:', QStyleFactory.keys())
+    
     # Force the style for XFCE
     if 'XFCE' in desktop_env:
         print('Detected XFCE environment, applying GTK style')
         os.environ['QT_QPA_PLATFORMTHEME'] = 'gtk3'
         os.environ['QT_STYLE_OVERRIDE'] = 'gtk2'
-        try:
-            QApplication.setStyle('gtk2')
-        except:
-            try:
-                QApplication.setStyle('fusion')  # Fallback to Fusion style
-            except:
-                pass
+        
+        # Try different styles in order of preference
+        styles_to_try = ['gtk2', 'gtk+', 'cleanlooks', 'fusion']
+        for style in styles_to_try:
+            if style in QStyleFactory.keys():
+                print(f'Setting style to {style}')
+                QApplication.setStyle(style)
+                break
         
         # Try to force font rendering
         from PySide6.QtGui import QFont
         font = QFont("Sans Serif", 9)
         QApplication.setFont(font)
+        
+        # Set palette to match GTK
+        from PySide6.QtGui import QPalette
+        palette = QPalette()
+        QApplication.setPalette(palette)
     
     # Force the style for Wayland/Hyprland
     if 'HYPRLAND' in desktop_env or os.environ.get('WAYLAND_DISPLAY'):
